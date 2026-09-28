@@ -15,11 +15,11 @@ void main() {
   test('spaces are %20 and new lines %0A, never +', () {
     final uri = FeedbackEmail.uri(
       to: to,
-      subject: 'VocabNote feedback',
+      subject: 'Schwa Notes feedback',
       body: 'App version: 1.0.0\nDevice: Pixel 9',
     );
 
-    expect(query(uri), contains('VocabNote%20feedback'));
+    expect(query(uri), contains('Schwa%20Notes%20feedback'));
     expect(query(uri), contains('%0A'));
     expect(query(uri), isNot(contains('+')));
   });
@@ -90,10 +90,18 @@ void main() {
     });
   });
 
+  test("Buy me a coffee goes to the owner's Ko-fi page, over https", () {
+    // A tip there unlocks nothing; the link is public and not a secret.
+    expect(
+      ProjectLinks.support.toString(),
+      'https://ko-fi.com/williamphucpham',
+    );
+  });
+
   test('GitHub Issues is the project page, over https', () {
     expect(
       ProjectLinks.issues.toString(),
-      'https://github.com/hongphuc-pham/VocabNote/issues',
+      'https://github.com/hongphuc-pham/SchwaNotes/issues',
     );
   });
 }

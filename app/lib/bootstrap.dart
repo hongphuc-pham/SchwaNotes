@@ -61,9 +61,11 @@ Future<void> bootstrap() async {
     // 2-5.
     final opened = await DatabaseOpener().open();
 
-    // The app version is read here rather than in a widget: it is a platform
-    // channel call, and the About screen must not wait on one.
-    final version = await resolveAppVersion();
+    // Started, never awaited (F-092). It is a platform-channel call that was
+    // 4.9s of a 5.2s cold start on the emulator at M7, and nothing before the
+    // first frame needs it. About, the licences page, the look-up's User-Agent
+    // and a backup's manifest each wait for it only when they need it.
+    final version = resolveAppVersion();
 
     final database = opened.valueOrNull?.database;
 

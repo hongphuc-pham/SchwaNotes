@@ -8,12 +8,13 @@ part 'app_info.g.dart';
 
 /// The app's version as the platform reports it, e.g. `1.0.0`.
 ///
-/// Read once in `bootstrap` - it is a platform channel call, and Settings must
-/// not wait on one - and supplied by the composition root. Declared here like
-/// the repositories, and for the same reason: nothing above `data/` may name
-/// `package_info_plus`.
+/// Started by `bootstrap` and **never waited for there**: it is a
+/// platform-channel call, and on the emulator at M7 it was 4.9s of a 5.2s cold
+/// start (F-092). Whatever shows it reads the value once it has arrived.
+/// Supplied by the composition root, and declared here like the repositories
+/// for the same reason: nothing above `data/` may name `package_info_plus`.
 @Riverpod(keepAlive: true)
-String appVersion(Ref ref) => throw UnimplementedError(
+Future<String> appVersion(Ref ref) => throw UnimplementedError(
   'appVersionProvider must be overridden in bootstrap() or in a test.',
 );
 
@@ -34,3 +35,9 @@ bool showOnboarding(Ref ref) => false;
 @Riverpod(keepAlive: true)
 String? feedbackAddress(Ref ref) =>
     FeedbackEmail.address.isEmpty ? null : FeedbackEmail.address;
+
+/// Where *Buy me a coffee* goes, or null when there is nowhere yet - which
+/// hides the row. A provider rather than the constant itself so a test can
+/// show the row without a real page.
+@Riverpod(keepAlive: true)
+Uri? supportLink(Ref ref) => ProjectLinks.support;

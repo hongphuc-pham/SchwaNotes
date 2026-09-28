@@ -1,4 +1,4 @@
-# VocabNote — Flutter app
+# Schwa Notes — Flutter app
 
 The app itself. Product docs, architecture and the binding rules live one level
 up in [`../docs/`](../docs/); read [`../docs/RULES.md`](../docs/RULES.md) before

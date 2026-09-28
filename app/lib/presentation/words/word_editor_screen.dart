@@ -588,6 +588,19 @@ class _PartOfSpeechChips extends StatelessWidget {
       l10n.posAdjective,
       l10n.posAdverb,
       l10n.posOther,
+      // A value none of the five matches - a dictionary's "preposition", say -
+      // is what will be saved, so it gets a chip of its own: shown selected,
+      // and tappable to clear. Otherwise accepting it lit nothing and looked
+      // like it had not worked (M8, found on the emulator).
+      if (selected.isNotEmpty &&
+          !<String>[
+            l10n.posNoun,
+            l10n.posVerb,
+            l10n.posAdjective,
+            l10n.posAdverb,
+            l10n.posOther,
+          ].contains(selected))
+        selected,
     ];
 
     return Column(

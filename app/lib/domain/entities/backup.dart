@@ -104,7 +104,7 @@ class ExportedBackup {
   /// Where the file is.
   final String path;
 
-  /// Its name, `vocabnote-backup-YYYYMMDD-HHmm.vnb`.
+  /// Its name, `schwanotes-backup-YYYYMMDD-HHmm.vnb`.
   final String fileName;
 
   /// What it says about itself.

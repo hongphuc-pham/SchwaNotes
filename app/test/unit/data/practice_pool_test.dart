@@ -54,6 +54,26 @@ void main() {
         db.studyCards,
       )..where((c) => c.wordId.equals(wordId))).write(patch);
 
+  // M8, found on the emulator: "Daily review (2 due)" over a four-card round.
+  // The count took its "now" once, when it started watching; a card added
+  // afterwards - due at once - was never counted. Real time here, because the
+  // defect was about the clock.
+  group('the due count', () {
+    test('counts a card added after it started watching', () async {
+      final counts = <int>[];
+      final subscription = db.practiceDao.watchDueCount().listen(counts.add);
+      addTearDown(subscription.cancel);
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+      expect(counts, isNotEmpty, reason: 'the stream answered at all');
+      expect(counts.last, 0);
+
+      await seedWord(db, id: 'late', headword: 'late', dueAt: DateTime.now());
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+
+      expect(counts.last, 1);
+    });
+  });
+
   group('the 30 cap holds at the query, not only in GameConfig', () {
     setUp(() => seedManyWords(db, 500));
 

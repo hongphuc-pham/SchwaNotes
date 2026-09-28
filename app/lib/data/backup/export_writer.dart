@@ -8,7 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
 import 'package:vocabnote/domain/entities/backup.dart';
 
-/// Writes [bytes] to [folder] as `vocabnote-backup-YYYYMMDD-HHmm.vnb`,
+/// Writes [bytes] to [folder] as `schwanotes-backup-YYYYMMDD-HHmm.vnb`,
 /// named for [now] in local time.
 ///
 /// Earlier exports in [folder] are removed first: each is a full copy of the
@@ -27,7 +27,7 @@ Future<ExportedBackup> writeExport({
   }
 
   final stamp = DateFormat('yyyyMMdd-HHmm').format(now.toLocal());
-  final fileName = 'vocabnote-backup-$stamp.vnb';
+  final fileName = 'schwanotes-backup-$stamp.vnb';
   final file = File(p.join(folder.path, fileName));
   await file.writeAsBytes(bytes, flush: true);
 

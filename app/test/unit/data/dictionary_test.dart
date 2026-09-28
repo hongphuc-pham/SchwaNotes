@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -187,15 +188,17 @@ void main() {
     late FreeDictionaryClient client;
     late List<Duration> sleeps;
 
+    late Dio dio;
+
     setUp(() {
       sleeps = <Duration>[];
-      final dio = Dio();
+      dio = Dio();
       adapter = DioAdapter();
       dio.httpClientAdapter = adapter;
       client = FreeDictionaryClient(
         dio: dio,
         baseUrl: 'https://example.test/api/v1',
-        userAgent: 'VocabNote/test',
+        userAgent: 'SchwaNotes/test',
         sleep: (d) async => sleeps.add(d),
       );
     });
@@ -204,7 +207,27 @@ void main() {
       adapter.respond(200, jsonEncode(<String, Object?>{'word': 'cough'}));
       await client.lookup('cough');
 
-      expect(adapter.lastHeaders?['user-agent'], 'VocabNote/test');
+      expect(adapter.lastHeaders?['user-agent'], 'SchwaNotes/test');
+    });
+
+    // F-092: the version in the User-Agent comes from a platform channel that
+    // start-up no longer waits for, so the client may be built before it is
+    // known - and must still send it, not a placeholder.
+    test('sends a User-Agent that was not known when it was built', () async {
+      final agent = Completer<String>();
+      final pending = FreeDictionaryClient(
+        dio: dio,
+        baseUrl: 'https://example.test/api/v1',
+        userAgent: agent.future,
+        sleep: (d) async => sleeps.add(d),
+      );
+      adapter.respond(200, jsonEncode(<String, Object?>{'word': 'cough'}));
+
+      final lookup = pending.lookup('cough');
+      agent.complete('SchwaNotes/1.2.3');
+      await lookup;
+
+      expect(adapter.lastHeaders?['user-agent'], 'SchwaNotes/1.2.3');
     });
 
     test(

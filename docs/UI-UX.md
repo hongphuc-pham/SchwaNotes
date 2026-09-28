@@ -242,7 +242,7 @@ Your data       Backup & restore ▸ (export · import) · Storage used
                 Dictionary look-up (on by default) · Delete all data
 Help            How to use  ▸        ← always present (F-071)
                 Help & feedback ▸    ← always present (F-072)
-About           Version · Data sources & licences · Privacy
+About           Version · Data sources & licences · Privacy · Buy me a coffee ↗ (only with a page)
 ```
 
 *Built at M6:*
@@ -262,6 +262,10 @@ About           Version · Data sources & licences · Privacy
   main list would bury *Help* below the fold.
 - **Privacy** opens a sheet; the same note is a section of *Data sources & licences*. No
   route of its own.
+- **Buy me a coffee** *(M8)* is the last row of About and exists only when the build has a Ko-fi
+  page (`ProjectLinks.support`). It opens the page in the browser, and its hint says a tip
+  unlocks nothing — which must stay true: a tip that grants no content is what keeps it outside
+  Google Play Billing. No icon, no badge, no prompt anywhere else in the app.
 - **Import** (F-074) is the second button on *Backup & restore*. The picker offers any file —
   Android cannot filter by an extension it has never heard of — and a file that is not a
   backup is named as such in a snackbar ("Backups end in .vnb"), as is one too large or

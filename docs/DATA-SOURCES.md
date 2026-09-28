@@ -33,7 +33,7 @@ Everything below was checked in September 2026; re-verify before each public rel
 - Show a small "Wiktionary · CC BY-SA 4.0" line under any API-derived definition.
 - Respect the rate limit: debounce the search box, one request per explicit *Look up* tap,
   in-memory + on-disk cache per word (24h), exponential back-off on `429`.
-- Send a descriptive `User-Agent` (`VocabNote/<version> (github.com/<repo>)`) — courteous and
+- Send a descriptive `User-Agent` (`SchwaNotes/<version> (github.com/<repo>)`) — courteous and
   expected by community APIs.
 - Content the user typed themselves is `source = 'manual'` and carries **no** attribution,
   because it is theirs.
@@ -103,7 +103,7 @@ whenever their markup changes, and risks store removal. So:
   in the user's external browser, labelled "Open in Cambridge Dictionary".
 - **Forbidden, in code review terms — reject any PR that:** fetches a `dictionary.cambridge.org`
   URL programmatically; parses their HTML; caches or stores their definitions, examples or
-  audio; embeds their site in an in-app WebView styled to look like part of VocabNote; or uses
+  audio; embeds their site in an in-app WebView styled to look like part of Schwa Notes; or uses
   their name, logo or wordmark as branding. The word "Cambridge" may appear only as the plain
   text of the link, and nothing about the app may suggest affiliation.
 - *Applied at M6:* *Data sources & licences* does not mention Cambridge at all — not even a
@@ -174,7 +174,7 @@ is **MPL-2.0**. It arrives transitively through `file_picker_linux` and
 `flutter_local_notifications_linux` — the Linux desktop implementations of two federated
 plugins.
 
-VocabNote ships **Android and iOS only**, so Flutter never compiles those implementation
+Schwa Notes ships **Android and iOS only**, so Flutter never compiles those implementation
 packages and no MPL code reaches a released artefact. The exemption is recorded by name in
 `check_licences.dart`, never by wildcard, so a genuinely new copyleft dependency cannot hide
 behind it. Re-verify at each release: if a desktop target is ever added, this stops being
@@ -188,10 +188,13 @@ exempt and the plugin must be replaced.
 - No analytics, no ads, no tracking SDKs, no advertising ID.
 - The only outbound requests: (a) a word you explicitly look up, sent to
   `freedictionaryapi.com`; (b) URLs you explicitly tap open in your browser.
-- Feedback is composed in the user's own mail app; the pre-filled diagnostics (app version, OS
-  version, device model) are visible to the user before they press send, and nothing else is
-  attached — unless the user ticks *Include the error log*, in which case the log's newest
-  entries appear in the same preview before anything opens.
+- Feedback, **only in a build that sets a feedback address** (`--dart-define=FEEDBACK_EMAIL`), is
+  composed in the user's own mail app; the pre-filled diagnostics (app version, OS version,
+  device model) are visible to the user before they press send, and nothing else is attached —
+  unless the user ticks *Include the error log*, in which case the log's newest entries appear in
+  the same preview before anything opens. **v1.0 sets no address** (owner, 14 Sep 2026): feedback
+  is a GitHub Issues link the user opens in their browser, which the point above already covers,
+  and the in-app privacy note shows this point only when an address is set.
 
 *Recorded at M6, for the M8 store declarations:* Google Play's Data safety form treats a
 transfer the user initiates, and would reasonably expect, as exempt from "data sharing"

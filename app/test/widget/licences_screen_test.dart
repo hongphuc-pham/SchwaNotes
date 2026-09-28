@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vocabnote/app.dart';
+import 'package:vocabnote/application/settings/app_info.dart';
 import 'package:vocabnote/data/composition_root.dart';
 import 'package:vocabnote/data/db/app_database.dart';
 import 'package:vocabnote/data/db/database_provider.dart';
@@ -24,7 +25,7 @@ void main() {
 
   /// F-076, word for word.
   const privacy =
-      'VocabNote has no account and no analytics. Your words never leave '
+      'Schwa Notes has no account and no analytics. Your words never leave '
       'your phone unless you export them. Looking up a word sends only that '
       'word to freedictionaryapi.com.';
 
@@ -40,10 +41,14 @@ void main() {
       .descendant(of: find.byType(ListView), matching: find.byType(Scrollable))
       .first;
 
-  Future<void> openSettings(WidgetTester tester) async {
+  Future<void> openSettings(
+    WidgetTester tester, {
+    String? feedbackAddress,
+  }) async {
     container = ProviderContainer(
       overrides: <Override>[
         appDatabaseProvider.overrideWithValue(db),
+        feedbackAddressProvider.overrideWithValue(feedbackAddress),
         ...repositoryOverrides(
           db,
           speechService: FakeSpeechService(),
@@ -73,8 +78,11 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  Future<void> openLicences(WidgetTester tester) async {
-    await openSettings(tester);
+  Future<void> openLicences(
+    WidgetTester tester, {
+    String? feedbackAddress,
+  }) async {
+    await openSettings(tester, feedbackAddress: feedbackAddress);
     final row = find.text('Data sources & licences');
     await scrollTo(tester, row);
     await tester.tap(row);
@@ -102,6 +110,37 @@ void main() {
     await openLicences(tester);
 
     expect(find.text(privacy), findsOneWidget);
+  });
+
+  // DATA-SOURCES §7: the email point describes a build with a feedback
+  // address. v1.0 has none (GitHub Issues only), and the note must not claim
+  // a feature the app does not have.
+  group('the feedback point', () {
+    const emailPoint =
+        'Feedback is written in your own email app. You see what it includes '
+        'before it opens, and nothing else is attached unless you choose to '
+        'add the error log.';
+    const lastPoint =
+        'Your words, IPA, highlights, notes and practice history stay on this '
+        'phone, and leave it only in a backup you export.';
+
+    testWidgets('is absent when the build has no feedback address', (
+      tester,
+    ) async {
+      await openLicences(tester);
+
+      // The note's last point is built and on screen, so the absence of the
+      // one before it means something.
+      expect(find.text(lastPoint), findsOneWidget);
+      expect(find.text(emailPoint), findsNothing);
+    });
+
+    testWidgets('is there when the build has one', (tester) async {
+      await openLicences(tester, feedbackAddress: 'feedback@example.com');
+
+      expect(find.text(emailPoint), findsOneWidget);
+      expect(find.text(lastPoint), findsOneWidget);
+    });
   });
 
   testWidgets('names every source with its licence', (tester) async {

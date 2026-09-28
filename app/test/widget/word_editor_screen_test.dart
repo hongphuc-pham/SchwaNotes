@@ -1,9 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 // Riverpod 3 moved `Override` out of the main barrel file.
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vocabnote/app.dart';
+import 'package:vocabnote/core/router/app_router.dart';
+import 'package:vocabnote/core/router/routes.dart';
 import 'package:vocabnote/data/composition_root.dart';
 import 'package:vocabnote/data/db/app_database.dart';
 import 'package:vocabnote/data/db/database_provider.dart';
@@ -101,6 +105,53 @@ void main() {
 
     final rows = await db.select(db.words).get();
     expect(rows.map((r) => r.headword), <String>['cough']);
+  });
+
+  // M8, found on the emulator: accepting a dictionary's "preposition" for
+  // "about" lit none of the five chips, though that is the value that would
+  // be saved - it looked as if the suggestion had not been taken.
+  testWidgets('a part of speech outside the five still shows, selected', (
+    tester,
+  ) async {
+    await seedWord(db, id: 'w1', headword: 'about');
+    await db.customStatement(
+      "UPDATE words SET part_of_speech = 'preposition' WHERE id = 'w1'",
+    );
+    container = ProviderContainer(
+      overrides: <Override>[
+        appDatabaseProvider.overrideWithValue(db),
+        ...repositoryOverrides(db),
+      ],
+    );
+    addTearDown(container.dispose);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const VocabNoteApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+    unawaited(container.read(appRouterProvider).push(Routes.wordEditOf('w1')));
+    // Editing an existing word reads it from the database, with a spinner
+    // turning meanwhile - so pumpAndSettle never settles. Let the read land in
+    // real time, then draw the loaded form.
+    for (var i = 0; i < 5; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 50)),
+      );
+      await tester.pump();
+    }
+
+    final preposition = find.widgetWithText(ChoiceChip, 'preposition');
+    await scrollTo(tester, preposition);
+    expect(tester.widget<ChoiceChip>(preposition).selected, isTrue);
+    expect(
+      tester
+          .widget<ChoiceChip>(find.widgetWithText(ChoiceChip, 'other'))
+          .selected,
+      isFalse,
+      reason: 'it is shown as what it is, not folded into "other"',
+    );
   });
 
   group('list membership (F-042, A4)', () {

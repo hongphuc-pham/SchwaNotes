@@ -1,4 +1,4 @@
-# VocabNote — common tasks.
+# Schwa Notes — common tasks.
 #
 # `make` is not installed by default on Windows. Either install it once:
 #

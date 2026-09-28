@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 // Riverpod 3 moved `Override` out of the main barrel file.
@@ -54,9 +55,12 @@ import 'package:vocabnote/domain/repositories/speech_service.dart';
 /// [backupFiles] and [exportDirectory] likewise: a test has no share sheet
 /// and no `path_provider`, so it records the share and names a temporary
 /// folder.
+///
+/// [appVersion] may still be on its way - `bootstrap` does not wait for it
+/// (F-092) - so everything here that needs it waits for it itself.
 List<Override> repositoryOverrides(
   AppDatabase database, {
-  String? appVersion,
+  FutureOr<String>? appVersion,
   SpeechService? speechService,
   ReminderService? reminderService,
   BackupFiles? backupFiles,
@@ -74,15 +78,16 @@ List<Override> repositoryOverrides(
   // One cache, shared: *Delete all data* must clear the very instance the
   // dictionary look-up writes through.
   final dictionaryCache = DictionaryCache();
+  final version = Future<String>.value(appVersion ?? '0.0.0');
   final client = FreeDictionaryClient(
     // Descriptive, as community APIs expect (docs/DATA-SOURCES.md §1).
-    userAgent:
-        'VocabNote/${appVersion ?? '0.0.0'} '
-        '(github.com/hongphuc-pham/VocabNote)',
+    userAgent: version.then(
+      (v) => 'SchwaNotes/$v (github.com/hongphuc-pham/SchwaNotes)',
+    ),
   );
 
   return <Override>[
-    appVersionProvider.overrideWithValue(appVersion ?? '0.0.0'),
+    appVersionProvider.overrideWith((ref) => version),
     wordRepositoryProvider.overrideWithValue(WordRepositoryImpl(database)),
     listRepositoryProvider.overrideWithValue(ListRepositoryImpl(database)),
     practiceRepositoryProvider.overrideWithValue(
@@ -105,7 +110,7 @@ List<Override> repositoryOverrides(
     userDataRepositoryProvider.overrideWithValue(
       UserDataRepositoryImpl(
         database,
-        appVersion: appVersion ?? '0.0.0',
+        appVersion: version,
         exportDirectory: exportDirectory,
         safetyDirectory: safetyDirectory,
         libraryDirectory: libraryDirectory,
@@ -187,13 +192,13 @@ Future<bool> resolveOnboarding(AppDatabase database) async {
 /// as any other backup, then offered to the share sheet. True when the sheet
 /// opened; false for anything else, which the screen reports - without ever
 /// having written to the database.
-Future<bool> exportForRecovery({required String appVersion}) async {
+Future<bool> exportForRecovery({required FutureOr<String> appVersion}) async {
   try {
     final location = await DatabaseOpener().resolveLocation();
     final temporary = await getTemporaryDirectory();
     final exported = await exportUnopenableDatabase(
       database: location.file,
-      appVersion: appVersion,
+      appVersion: await appVersion,
       exportDirectory: Directory(p.join(temporary.path, 'vocabnote', 'export')),
     );
     final backup = exported.valueOrNull;

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 // Riverpod 3 moved `Override` out of the main barrel file.
@@ -5,11 +7,13 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vocabnote/app.dart';
 import 'package:vocabnote/application/practice/scheduler/review_schedule.dart';
+import 'package:vocabnote/application/settings/app_info.dart';
 import 'package:vocabnote/data/composition_root.dart';
 import 'package:vocabnote/data/db/app_database.dart';
 import 'package:vocabnote/data/db/database_provider.dart';
 import 'package:vocabnote/domain/entities/app_settings.dart';
 
+import '../unit/application/fake_links.dart';
 import '../unit/application/fake_reminder_service.dart';
 import '../unit/application/fake_speech_service.dart';
 
@@ -20,24 +24,37 @@ void main() {
   late ProviderContainer container;
   late FakeReminderService reminders;
   late FakeSpeechService speech;
+  late FakeLinkOpener links;
 
   setUp(() async {
     db = AppDatabase.memory();
     await db.customSelect('SELECT 1').get();
     reminders = FakeReminderService();
     speech = FakeSpeechService();
+    links = FakeLinkOpener();
   });
 
   tearDown(() => db.close());
 
-  Future<void> launch(WidgetTester tester) async {
+  Future<void> launch(
+    WidgetTester tester, {
+    FutureOr<String>? appVersion,
+    Uri? supportLink,
+    bool noSupportPage = false,
+  }) async {
     container = ProviderContainer(
       overrides: <Override>[
         appDatabaseProvider.overrideWithValue(db),
+        if (noSupportPage)
+          supportLinkProvider.overrideWithValue(null)
+        else if (supportLink != null)
+          supportLinkProvider.overrideWithValue(supportLink),
         ...repositoryOverrides(
           db,
+          appVersion: appVersion,
           reminderService: reminders,
           speechService: speech,
+          linkOpener: links,
         ),
       ],
     );
@@ -53,8 +70,18 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  Future<void> openSettings(WidgetTester tester) async {
-    await launch(tester);
+  Future<void> openSettings(
+    WidgetTester tester, {
+    FutureOr<String>? appVersion,
+    Uri? supportLink,
+    bool noSupportPage = false,
+  }) async {
+    await launch(
+      tester,
+      appVersion: appVersion,
+      supportLink: supportLink,
+      noSupportPage: noSupportPage,
+    );
     await tester.tap(find.byIcon(Icons.settings_outlined));
     await tester.pumpAndSettle();
   }
@@ -113,6 +140,63 @@ void main() {
         await scrollTo(tester, find.text(heading));
         expect(find.text(heading), findsOneWidget);
       }
+    });
+
+    // F-092: the version is a platform-channel call that took 4.9s of a cold
+    // start on the emulator, so nothing may wait for it - not the first frame,
+    // and not this screen.
+    testWidgets(
+      'About does not wait for the version, and shows it once known',
+      (tester) async {
+        final version = Completer<String>();
+        await openSettings(tester, appVersion: version.future);
+        await scrollTo(tester, find.text('Version'));
+        // The tile is built and on screen, so this absence means something.
+        expect(find.text('1.2.3'), findsNothing);
+
+        version.complete('1.2.3');
+        await tester.pumpAndSettle();
+        expect(find.text('1.2.3'), findsOneWidget);
+      },
+    );
+
+    // M8: a gentle tip link, and only once there is a page to go to.
+    testWidgets('Buy me a coffee is absent while there is no Ko-fi page', (
+      tester,
+    ) async {
+      // The shipped build has a page, so "no page" is forced here.
+      await openSettings(tester, noSupportPage: true);
+      await scrollTo(tester, find.text('Privacy'));
+      // Drag past the end, so the whole bottom of the list is built and on
+      // screen and the absence below Privacy means something.
+      await tester.drag(
+        find
+            .descendant(
+              of: find.byType(ListView),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+        const Offset(0, -800),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Privacy'), findsOneWidget);
+      expect(find.text('Buy me a coffee'), findsNothing);
+    });
+
+    testWidgets('with a page, it says a tip unlocks nothing and opens it', (
+      tester,
+    ) async {
+      final page = Uri.parse('https://ko-fi.com/example');
+      await openSettings(tester, supportLink: page);
+
+      final row = find.text('Buy me a coffee');
+      await scrollTo(tester, row);
+      expect(find.textContaining('unlocks nothing'), findsOneWidget);
+
+      await tester.tap(row);
+      await tester.pumpAndSettle();
+      expect(links.opened, <Uri>[page]);
     });
 
     testWidgets('always offers How to use and Help & feedback (RULES §4)', (
@@ -327,7 +411,7 @@ void main() {
       expect(reminderOn(tester), isFalse);
       expect(
         find.text(
-          'Notifications are off for VocabNote. You can allow them in your '
+          'Notifications are off for Schwa Notes. You can allow them in your '
           "phone's settings.",
         ),
         findsOneWidget,

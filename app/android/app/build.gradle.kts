@@ -1,11 +1,25 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// The Play upload key (M8). `android/key.properties` is written by
+// `tool/make_upload_key.ps1` on the owner's machine, or by the Release workflow
+// from GitHub secrets, and is git-ignored. Without it a release build is signed
+// with the debug key: it still installs on an emulator, and Play refuses a
+// debug-signed bundle, so an unkeyed build cannot be uploaded by mistake.
+// https://docs.flutter.dev/deployment/android#configure-signing-in-gradle
+val uploadKeyFile = rootProject.file("key.properties")
+val uploadKey = Properties().apply {
+    if (uploadKeyFile.exists()) FileInputStream(uploadKeyFile).use { load(it) }
+}
+
 android {
-    namespace = "com.vocabnote.vocabnote"
+    namespace = "io.github.hongphuc_pham.schwanotes"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -19,8 +33,10 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.vocabnote.vocabnote"
+        // Permanent once uploaded to Play. Based on the owner's GitHub account, the one
+        // namespace they own; `_` because Android package segments cannot contain `-`
+        // (iOS, which cannot contain `_`, uses io.github.hongphuc-pham.schwanotes).
+        applicationId = "io.github.hongphuc_pham.schwanotes"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -33,11 +49,25 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        if (uploadKeyFile.exists()) {
+            create("upload") {
+                keyAlias = uploadKey.getProperty("keyAlias")
+                keyPassword = uploadKey.getProperty("keyPassword")
+                storeFile = file(uploadKey.getProperty("storeFile"))
+                storePassword = uploadKey.getProperty("storePassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig =
+                if (uploadKeyFile.exists()) {
+                    signingConfigs.getByName("upload")
+                } else {
+                    signingConfigs.getByName("debug")
+                }
         }
     }
 }

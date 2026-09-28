@@ -96,7 +96,7 @@ abstract class AppL10n {
   /// The application name. Not translated.
   ///
   /// In en, this message translates to:
-  /// **'VocabNote'**
+  /// **'Schwa Notes'**
   String get appTitle;
 
   /// Bottom navigation label for the words tab.
@@ -258,13 +258,13 @@ abstract class AppL10n {
   /// Heading when the database on disk was written by a newer version of the app.
   ///
   /// In en, this message translates to:
-  /// **'This data was made by a newer VocabNote'**
+  /// **'This data was made by a newer Schwa Notes'**
   String get recoverySchemaTooNewTitle;
 
   /// Body when the database was written by a newer version. Explains why the app refuses to open it.
   ///
   /// In en, this message translates to:
-  /// **'Please update VocabNote to open your words. Opening them with this older version could damage them, so we haven\'t tried.'**
+  /// **'Please update Schwa Notes to open your words. Opening them with this older version could damage them, so we haven\'t tried.'**
   String get recoverySchemaTooNewBody;
 
   /// Heading when a database migration failed.
@@ -300,7 +300,7 @@ abstract class AppL10n {
   /// Reassurance shown on the recovery screen. States the app's data-safety promise plainly.
   ///
   /// In en, this message translates to:
-  /// **'Nothing has been deleted. VocabNote never resets your database to recover from a problem.'**
+  /// **'Nothing has been deleted. Schwa Notes never resets your database to recover from a problem.'**
   String get recoveryNothingDeleted;
 
   /// Button that exports whatever can be read, from the recovery screen.
@@ -750,7 +750,7 @@ abstract class AppL10n {
   /// Snackbar when notification permission is refused. Plain, never pleading.
   ///
   /// In en, this message translates to:
-  /// **'Notifications are off for VocabNote. You can allow them in your phone\'s settings.'**
+  /// **'Notifications are off for Schwa Notes. You can allow them in your phone\'s settings.'**
   String get reminderDenied;
 
   /// Snackbar when the reminder could not be scheduled.
@@ -846,7 +846,7 @@ abstract class AppL10n {
   /// Explains that the app follows the OS text size rather than having its own.
   ///
   /// In en, this message translates to:
-  /// **'VocabNote uses your phone\'s text size. You can change it in your phone\'s display settings.'**
+  /// **'Schwa Notes uses your phone\'s text size. You can change it in your phone\'s display settings.'**
   String get settingsTextSizeHint;
 
   /// The setting that chooses British or American English for speech.
@@ -1080,7 +1080,7 @@ abstract class AppL10n {
   /// Under the look-up switch when it is off.
   ///
   /// In en, this message translates to:
-  /// **'Off - VocabNote stays fully offline'**
+  /// **'Off - Schwa Notes stays fully offline'**
   String get settingsLookupOff;
 
   /// Top of the backup screen. Says what is in the file and that nothing leaves the phone by itself.
@@ -1152,13 +1152,13 @@ abstract class AppL10n {
   /// The chosen file is not a backup at all.
   ///
   /// In en, this message translates to:
-  /// **'That file isn\'t a VocabNote backup. Backups end in .vnb.'**
+  /// **'That file isn\'t a Schwa Notes backup. Backups end in .vnb.'**
   String get importProblemNotABackup;
 
   /// The chosen file is far larger than any backup could be.
   ///
   /// In en, this message translates to:
-  /// **'That file is too large to be a VocabNote backup.'**
+  /// **'That file is too large to be a Schwa Notes backup.'**
   String get importProblemTooLarge;
 
   /// The backup is ours but broken - often cut short by an interrupted download.
@@ -1422,7 +1422,7 @@ abstract class AppL10n {
   /// Snackbar after Delete all data.
   ///
   /// In en, this message translates to:
-  /// **'Everything has been deleted. VocabNote is ready for new words.'**
+  /// **'Everything has been deleted. Schwa Notes is ready for new words.'**
   String get deleteAllDone;
 
   /// Snackbar when Delete all data failed and was rolled back.
@@ -1434,7 +1434,7 @@ abstract class AppL10n {
   /// Top of the How to use guide.
   ///
   /// In en, this message translates to:
-  /// **'Six small things that make VocabNote work for you. Tap Try it on any of them to go straight there.'**
+  /// **'Six small things that make Schwa Notes work for you. Tap Try it on any of them to go straight there.'**
   String get guideIntro;
 
   /// Guide card 1 title.
@@ -1590,7 +1590,7 @@ abstract class AppL10n {
   /// At the end of the guide during onboarding: leaves onboarding for good.
   ///
   /// In en, this message translates to:
-  /// **'Start using VocabNote'**
+  /// **'Start using Schwa Notes'**
   String get onboardingStart;
 
   /// What a screen reader hears for the onboarding page dots.
@@ -1668,7 +1668,7 @@ abstract class AppL10n {
   /// FAQ answer 1.
   ///
   /// In en, this message translates to:
-  /// **'Only on this phone, in VocabNote\'s own private storage. There is no account and no server. To keep a copy anywhere else, make a backup.'**
+  /// **'Only on this phone, in Schwa Notes\'s own private storage. There is no account and no server. To keep a copy anywhere else, make a backup.'**
   String get faqA1;
 
   /// FAQ question 2.
@@ -1680,13 +1680,13 @@ abstract class AppL10n {
   /// FAQ answer 2.
   ///
   /// In en, this message translates to:
-  /// **'Go to Settings → Backup & restore → Export backup, and save the file somewhere your new phone can reach. Then install VocabNote there and choose Import backup.'**
+  /// **'Go to Settings → Backup & restore → Export backup, and save the file somewhere your new phone can reach. Then install Schwa Notes there and choose Import backup.'**
   String get faqA2;
 
   /// FAQ question 3.
   ///
   /// In en, this message translates to:
-  /// **'Does VocabNote need the internet?'**
+  /// **'Does Schwa Notes need the internet?'**
   String get faqQ3;
 
   /// FAQ answer 3.
@@ -1716,7 +1716,7 @@ abstract class AppL10n {
   /// FAQ answer 5.
   ///
   /// In en, this message translates to:
-  /// **'Add one in your phone\'s settings, under Text-to-speech on Android or Spoken Content on iPhone. Until then, VocabNote uses the closest voice it can find.'**
+  /// **'Add one in your phone\'s settings, under Text-to-speech on Android or Spoken Content on iPhone. Until then, Schwa Notes uses the closest voice it can find.'**
   String get faqA5;
 
   /// FAQ question 6.
@@ -1866,7 +1866,7 @@ abstract class AppL10n {
   /// Subject of the feedback email.
   ///
   /// In en, this message translates to:
-  /// **'VocabNote feedback'**
+  /// **'Schwa Notes feedback'**
   String get feedbackSubject;
 
   /// First line of the feedback email body, where the user types.
@@ -1944,7 +1944,7 @@ abstract class AppL10n {
   /// Top of the error log sheet.
   ///
   /// In en, this message translates to:
-  /// **'Problems VocabNote ran into, kept only on this phone. Nothing here is ever sent by itself.'**
+  /// **'Problems Schwa Notes ran into, kept only on this phone. Nothing here is ever sent by itself.'**
   String get errorLogIntro;
 
   /// When the error log is empty.
@@ -1977,6 +1977,18 @@ abstract class AppL10n {
   /// **'What leaves your phone, and when'**
   String get settingsPrivacyHint;
 
+  /// Last row of About, shown only when the build has a Ko-fi page. Opens it in the browser.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy me a coffee'**
+  String get settingsSupport;
+
+  /// Under the Buy me a coffee row. Must stay true: the tip changes nothing in the app.
+  ///
+  /// In en, this message translates to:
+  /// **'Schwa Notes is free. A tip on Ko-fi is kind, unlocks nothing, and is never expected.'**
+  String get settingsSupportHint;
+
   /// Heading of the privacy note.
   ///
   /// In en, this message translates to:
@@ -1986,7 +1998,7 @@ abstract class AppL10n {
   /// F-076, word for word. Must match FEATURES F-076, DATA-SOURCES 7 and the store privacy declarations; change all in the same PR.
   ///
   /// In en, this message translates to:
-  /// **'VocabNote has no account and no analytics. Your words never leave your phone unless you export them. Looking up a word sends only that word to freedictionaryapi.com.'**
+  /// **'Schwa Notes has no account and no analytics. Your words never leave your phone unless you export them. Looking up a word sends only that word to freedictionaryapi.com.'**
   String get privacyNote;
 
   /// Privacy point (DATA-SOURCES 7).
@@ -2004,7 +2016,7 @@ abstract class AppL10n {
   /// Privacy point (DATA-SOURCES 7).
   ///
   /// In en, this message translates to:
-  /// **'VocabNote reaches the internet only when you ask it to: to look up a word, or to open a link you tapped, in your browser.'**
+  /// **'Schwa Notes reaches the internet only when you ask it to: to look up a word, or to open a link you tapped, in your browser.'**
   String get privacyPoint3;
 
   /// Privacy point (DATA-SOURCES 7).
@@ -2028,7 +2040,7 @@ abstract class AppL10n {
   /// Attribution for dictionary content (CC BY-SA 4.0: attribute, name the licence, no implied endorsement).
   ///
   /// In en, this message translates to:
-  /// **'Definitions, examples and pronunciations you choose from Look up come from Wiktionary, shared under the CC BY-SA 4.0 licence through FreeDictionaryAPI.com. Each word keeps a link to its source page. Neither Wiktionary nor FreeDictionaryAPI.com endorses VocabNote.'**
+  /// **'Definitions, examples and pronunciations you choose from Look up come from Wiktionary, shared under the CC BY-SA 4.0 licence through FreeDictionaryAPI.com. Each word keeps a link to its source page. Neither Wiktionary nor FreeDictionaryAPI.com endorses Schwa Notes.'**
   String get licencesDictionaryBody;
 
   /// Link to Wiktionary.
@@ -2124,7 +2136,7 @@ abstract class AppL10n {
   /// Above the button to the full package licence list.
   ///
   /// In en, this message translates to:
-  /// **'VocabNote is built with open-source packages, all under permissive licences.'**
+  /// **'Schwa Notes is built with open-source packages, all under permissive licences.'**
   String get licencesPackagesBody;
 
   /// Opens Flutter's licence page.

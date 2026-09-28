@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:vocabnote/application/settings/app_info.dart';
 import 'package:vocabnote/core/l10n/gen/app_localizations.dart';
 import 'package:vocabnote/core/theme/app_metrics.dart';
 import 'package:vocabnote/presentation/design/gap.dart';
@@ -13,7 +15,11 @@ import 'package:vocabnote/presentation/design/sheet_body.dart';
 ///
 /// Shown as a section of *Data sources & licences* and, from Settings →
 /// About → Privacy, as a sheet - one widget, so the two cannot drift apart.
-class PrivacyNote extends StatelessWidget {
+///
+/// The feedback point describes the email a build with a feedback address
+/// offers. A build without one (v1.0: GitHub Issues only) has no such email,
+/// so the note does not claim it (M8).
+class PrivacyNote extends ConsumerWidget {
   /// Creates the note.
   const new({super.key});
 
@@ -35,10 +41,11 @@ class PrivacyNote extends StatelessWidget {
   );
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppL10n.of(context);
     final theme = Theme.of(context);
     final metrics = context.metrics;
+    final hasFeedbackEmail = ref.watch(feedbackAddressProvider) != null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -49,7 +56,7 @@ class PrivacyNote extends StatelessWidget {
           l10n.privacyPoint1,
           l10n.privacyPoint2,
           l10n.privacyPoint3,
-          l10n.privacyPoint4,
+          if (hasFeedbackEmail) l10n.privacyPoint4,
           l10n.privacyPoint5,
         ])
           Padding(

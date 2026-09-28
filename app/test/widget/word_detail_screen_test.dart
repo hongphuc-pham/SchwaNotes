@@ -161,6 +161,54 @@ void main() {
     });
   });
 
+  group('notes (F-045)', () {
+    // M8, found on the emulator: a note written at 01:51 in Adelaide was dated
+    // the day before. Instants are stored as UTC and come back as UTC; the date
+    // a person reads must be their own.
+    //
+    // The instant is chosen so its local day differs from its UTC day on the
+    // machine running the test. Where local time *is* UTC (CI), no instant can
+    // tell the two apart, so the test says so and is skipped rather than
+    // passing for nothing.
+    final offset = DateTime.now().timeZoneOffset;
+    final instant = offset.isNegative
+        ? DateTime.utc(2026, 9, 14, 0, 30)
+        : DateTime.utc(2026, 9, 13, 23, 30);
+
+    testWidgets(
+      "a note is dated with the phone's day, not UTC's",
+      (tester) async {
+        final id = await seedWord();
+        final note = await container
+            .read(wordRepositoryProvider)
+            .addNote(wordId: id, body: 'Heard it on a podcast.');
+        await db.customStatement(
+          'UPDATE word_notes SET created_at = ? WHERE id = ?',
+          <Object>[instant.millisecondsSinceEpoch, note.valueOrNull!.id],
+        );
+
+        await pumpDetail(tester, id);
+        final row = find.textContaining('Heard it on a podcast.');
+        await tester.scrollUntilVisible(
+          row,
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+
+        final local = instant.toLocal();
+        expect(
+          local.day,
+          isNot(instant.day),
+          reason: 'the premise of the test',
+        );
+        expect(find.textContaining('Sep ${local.day} — '), findsOneWidget);
+        expect(find.textContaining('Sep ${instant.day} — '), findsNothing);
+      },
+      // Skipped where local time is UTC: no instant tells the two days apart.
+      skip: offset == Duration.zero,
+    );
+  });
+
   group('favourite (F-044, M4 A8)', () {
     // The words list's star was tested; this one never was. Found by M4's T7,
     // which set out to verify A8 rather than assume it.

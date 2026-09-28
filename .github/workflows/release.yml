@@ -1,0 +1,96 @@
+name: Release
+
+# Builds the signed App Bundle to upload to Google Play (M8). It uploads nothing to Play:
+# the bundle is a workflow artifact the owner downloads and uploads in Play Console.
+#
+# Runs on a version tag (`v1.0.0`, which must match `version:` in app/pubspec.yaml) or by hand.
+# Needs four repository secrets, printed by app/tool/make_upload_key.ps1:
+#   UPLOAD_KEYSTORE_BASE64, UPLOAD_KEYSTORE_PASSWORD, UPLOAD_KEY_ALIAS, UPLOAD_KEY_PASSWORD
+# CI (ci.yml) never needs them: its build proves the code compiles, this one signs it.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  FLUTTER_VERSION: 3.47.2
+
+defaults:
+  run:
+    working-directory: app
+
+jobs:
+  android:
+    name: Signed App Bundle
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Tag matches the pubspec version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          version=$(sed -nE 's/^version: *([^+ ]+).*/\1/p' pubspec.yaml)
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match pubspec version $version"
+            exit 1
+          fi
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Restore the upload key
+        env:
+          UPLOAD_KEYSTORE_BASE64: ${{ secrets.UPLOAD_KEYSTORE_BASE64 }}
+          UPLOAD_KEYSTORE_PASSWORD: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
+          UPLOAD_KEY_ALIAS: ${{ secrets.UPLOAD_KEY_ALIAS }}
+          UPLOAD_KEY_PASSWORD: ${{ secrets.UPLOAD_KEY_PASSWORD }}
+        run: |
+          if [ -z "$UPLOAD_KEYSTORE_BASE64" ]; then
+            echo "::error::The UPLOAD_KEYSTORE_BASE64 secret is not set. Run app/tool/make_upload_key.ps1 and add the secrets it prints."
+            exit 1
+          fi
+          echo "$UPLOAD_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/upload.jks"
+          {
+            echo "storePassword=$UPLOAD_KEYSTORE_PASSWORD"
+            echo "keyPassword=$UPLOAD_KEY_PASSWORD"
+            echo "keyAlias=$UPLOAD_KEY_ALIAS"
+            echo "storeFile=$RUNNER_TEMP/upload.jks"
+          } > android/key.properties
+
+      - name: Build App Bundle
+        run: flutter build appbundle --release
+
+      # The Gradle config falls back to the debug key when key.properties is missing, so
+      # prove this bundle carries the upload key before anyone downloads it.
+      - name: Signed with the upload key, not the debug key
+        run: |
+          keytool -printcert -jarfile build/app/outputs/bundle/release/app-release.aab > cert.txt
+          grep -E '^(Owner|Valid)' cert.txt
+          if grep -q 'CN=Android Debug' cert.txt; then
+            echo "::error::The bundle is signed with the debug key."
+            exit 1
+          fi
+
+      - name: Remove key material
+        if: always()
+        run: rm -f android/key.properties "$RUNNER_TEMP/upload.jks" cert.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: schwanotes-${{ github.ref_name }}-aab
+          path: app/build/app/outputs/bundle/release/app-release.aab
+          if-no-files-found: error

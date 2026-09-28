@@ -24,12 +24,37 @@ import 'package:vocabnote/presentation/practice/quick_test_sheet.dart';
 /// One card per registered game, whether or not it can be started — a game the
 /// user cannot play yet still needs to say *why*, which is more useful than an
 /// empty screen.
-class PracticeHubScreen extends ConsumerWidget {
+class PracticeHubScreen extends ConsumerStatefulWidget {
   /// Creates the hub.
   const new({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<PracticeHubScreen> createState() => _PracticeHubScreenState();
+}
+
+class _PracticeHubScreenState extends ConsumerState<PracticeHubScreen> {
+  // Time passes without a database write: a card graded *Again* comes due ten
+  // minutes later, and nothing re-runs the count. Coming back to the app
+  // re-reads it, or the hub would go on saying nothing is due - with Daily
+  // review disabled - until a restart (M8).
+  late final AppLifecycleListener _lifecycle;
+
+  @override
+  void initState() {
+    super.initState();
+    _lifecycle = AppLifecycleListener(
+      onResume: () => ref.invalidate(dueCardCountProvider),
+    );
+  }
+
+  @override
+  void dispose() {
+    _lifecycle.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
     final metrics = context.metrics;
     final registry = ref.watch(gameRegistryProvider);

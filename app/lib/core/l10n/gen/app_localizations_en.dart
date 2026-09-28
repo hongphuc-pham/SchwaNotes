@@ -10,7 +10,7 @@ class AppL10nEn extends AppL10n {
   AppL10nEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'VocabNote';
+  String get appTitle => 'Schwa Notes';
 
   @override
   String get navWords => 'Words';
@@ -95,11 +95,11 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get recoverySchemaTooNewTitle =>
-      'This data was made by a newer VocabNote';
+      'This data was made by a newer Schwa Notes';
 
   @override
   String get recoverySchemaTooNewBody =>
-      'Please update VocabNote to open your words. Opening them with this older version could damage them, so we haven\'t tried.';
+      'Please update Schwa Notes to open your words. Opening them with this older version could damage them, so we haven\'t tried.';
 
   @override
   String get recoveryMigrationTitle =>
@@ -122,7 +122,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get recoveryNothingDeleted =>
-      'Nothing has been deleted. VocabNote never resets your database to recover from a problem.';
+      'Nothing has been deleted. Schwa Notes never resets your database to recover from a problem.';
 
   @override
   String get recoveryExportAction => 'Export my data';
@@ -386,7 +386,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get reminderDenied =>
-      'Notifications are off for VocabNote. You can allow them in your phone\'s settings.';
+      'Notifications are off for Schwa Notes. You can allow them in your phone\'s settings.';
 
   @override
   String get reminderFailed =>
@@ -437,7 +437,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get settingsTextSizeHint =>
-      'VocabNote uses your phone\'s text size. You can change it in your phone\'s display settings.';
+      'Schwa Notes uses your phone\'s text size. You can change it in your phone\'s display settings.';
 
   @override
   String get settingsVoice => 'Voice';
@@ -588,7 +588,7 @@ class AppL10nEn extends AppL10n {
       'Look up sends only the word to freedictionaryapi.com';
 
   @override
-  String get settingsLookupOff => 'Off - VocabNote stays fully offline';
+  String get settingsLookupOff => 'Off - Schwa Notes stays fully offline';
 
   @override
   String get backupIntro =>
@@ -631,11 +631,11 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get importProblemNotABackup =>
-      'That file isn\'t a VocabNote backup. Backups end in .vnb.';
+      'That file isn\'t a Schwa Notes backup. Backups end in .vnb.';
 
   @override
   String get importProblemTooLarge =>
-      'That file is too large to be a VocabNote backup.';
+      'That file is too large to be a Schwa Notes backup.';
 
   @override
   String get importProblemDamaged =>
@@ -871,7 +871,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get deleteAllDone =>
-      'Everything has been deleted. VocabNote is ready for new words.';
+      'Everything has been deleted. Schwa Notes is ready for new words.';
 
   @override
   String get deleteAllFailed =>
@@ -879,7 +879,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get guideIntro =>
-      'Six small things that make VocabNote work for you. Tap Try it on any of them to go straight there.';
+      'Six small things that make Schwa Notes work for you. Tap Try it on any of them to go straight there.';
 
   @override
   String get guideAddTitle => 'Add a word';
@@ -967,7 +967,7 @@ class AppL10nEn extends AppL10n {
   String get onboardingShowMe => 'See how it works';
 
   @override
-  String get onboardingStart => 'Start using VocabNote';
+  String get onboardingStart => 'Start using Schwa Notes';
 
   @override
   String onboardingPage(int page, int count) {
@@ -1022,17 +1022,17 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get faqA1 =>
-      'Only on this phone, in VocabNote\'s own private storage. There is no account and no server. To keep a copy anywhere else, make a backup.';
+      'Only on this phone, in Schwa Notes\'s own private storage. There is no account and no server. To keep a copy anywhere else, make a backup.';
 
   @override
   String get faqQ2 => 'How do I move my words to a new phone?';
 
   @override
   String get faqA2 =>
-      'Go to Settings → Backup & restore → Export backup, and save the file somewhere your new phone can reach. Then install VocabNote there and choose Import backup.';
+      'Go to Settings → Backup & restore → Export backup, and save the file somewhere your new phone can reach. Then install Schwa Notes there and choose Import backup.';
 
   @override
-  String get faqQ3 => 'Does VocabNote need the internet?';
+  String get faqQ3 => 'Does Schwa Notes need the internet?';
 
   @override
   String get faqA3 =>
@@ -1050,7 +1050,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get faqA5 =>
-      'Add one in your phone\'s settings, under Text-to-speech on Android or Spoken Content on iPhone. Until then, VocabNote uses the closest voice it can find.';
+      'Add one in your phone\'s settings, under Text-to-speech on Android or Spoken Content on iPhone. Until then, Schwa Notes uses the closest voice it can find.';
 
   @override
   String get faqQ6 => 'How do I type IPA symbols?';
@@ -1137,7 +1137,7 @@ class AppL10nEn extends AppL10n {
   }
 
   @override
-  String get feedbackSubject => 'VocabNote feedback';
+  String get feedbackSubject => 'Schwa Notes feedback';
 
   @override
   String get feedbackBodyPrompt => 'Write your message here.';
@@ -1185,7 +1185,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get errorLogIntro =>
-      'Problems VocabNote ran into, kept only on this phone. Nothing here is ever sent by itself.';
+      'Problems Schwa Notes ran into, kept only on this phone. Nothing here is ever sent by itself.';
 
   @override
   String get errorLogEmpty =>
@@ -1204,11 +1204,18 @@ class AppL10nEn extends AppL10n {
   String get settingsPrivacyHint => 'What leaves your phone, and when';
 
   @override
+  String get settingsSupport => 'Buy me a coffee';
+
+  @override
+  String get settingsSupportHint =>
+      'Schwa Notes is free. A tip on Ko-fi is kind, unlocks nothing, and is never expected.';
+
+  @override
   String get privacyHeading => 'Privacy';
 
   @override
   String get privacyNote =>
-      'VocabNote has no account and no analytics. Your words never leave your phone unless you export them. Looking up a word sends only that word to freedictionaryapi.com.';
+      'Schwa Notes has no account and no analytics. Your words never leave your phone unless you export them. Looking up a word sends only that word to freedictionaryapi.com.';
 
   @override
   String get privacyPoint1 => 'No account, no sign-in, and no server of ours.';
@@ -1219,7 +1226,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get privacyPoint3 =>
-      'VocabNote reaches the internet only when you ask it to: to look up a word, or to open a link you tapped, in your browser.';
+      'Schwa Notes reaches the internet only when you ask it to: to look up a word, or to open a link you tapped, in your browser.';
 
   @override
   String get privacyPoint4 =>
@@ -1234,7 +1241,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get licencesDictionaryBody =>
-      'Definitions, examples and pronunciations you choose from Look up come from Wiktionary, shared under the CC BY-SA 4.0 licence through FreeDictionaryAPI.com. Each word keeps a link to its source page. Neither Wiktionary nor FreeDictionaryAPI.com endorses VocabNote.';
+      'Definitions, examples and pronunciations you choose from Look up come from Wiktionary, shared under the CC BY-SA 4.0 licence through FreeDictionaryAPI.com. Each word keeps a link to its source page. Neither Wiktionary nor FreeDictionaryAPI.com endorses Schwa Notes.';
 
   @override
   String get licencesWiktionary => 'Wiktionary';
@@ -1287,7 +1294,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get licencesPackagesBody =>
-      'VocabNote is built with open-source packages, all under permissive licences.';
+      'Schwa Notes is built with open-source packages, all under permissive licences.';
 
   @override
   String get licencesPackages => 'All package licences';

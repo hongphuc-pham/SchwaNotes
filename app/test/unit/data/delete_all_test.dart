@@ -55,8 +55,8 @@ void main() {
       await seedWord(db, id: 'w1', headword: 'cough');
       final live = fileIn(library, 'vocabnote.sqlite');
       final copies = <File>[
-        fileIn(library, p.join('backups', 'vocabnote-before-replace-1.vnb')),
-        fileIn(exports, 'vocabnote-backup-20260911-1405.vnb'),
+        fileIn(library, p.join('backups', 'schwanotes-before-replace-1.vnb')),
+        fileIn(exports, 'schwanotes-backup-20260911-1405.vnb'),
         fileIn(library, 'vocabnote.pre-v1.bak'),
         fileIn(library, p.join('dictionary', 'cough.json')),
       ];

@@ -1,6 +1,6 @@
 {
   "@@locale": "en",
-  "appTitle": "VocabNote",
+  "appTitle": "Schwa Notes",
   "@appTitle": {
     "description": "The application name. Not translated."
   },
@@ -114,11 +114,11 @@
   "@routeNotFoundAction": {
     "description": "Button that returns the user to the words screen from an unresolved route."
   },
-  "recoverySchemaTooNewTitle": "This data was made by a newer VocabNote",
+  "recoverySchemaTooNewTitle": "This data was made by a newer Schwa Notes",
   "@recoverySchemaTooNewTitle": {
     "description": "Heading when the database on disk was written by a newer version of the app."
   },
-  "recoverySchemaTooNewBody": "Please update VocabNote to open your words. Opening them with this older version could damage them, so we haven't tried.",
+  "recoverySchemaTooNewBody": "Please update Schwa Notes to open your words. Opening them with this older version could damage them, so we haven't tried.",
   "@recoverySchemaTooNewBody": {
     "description": "Body when the database was written by a newer version. Explains why the app refuses to open it."
   },
@@ -142,7 +142,7 @@
   "@recoveryGenericBody": {
     "description": "Body when the database could not be opened for some other reason."
   },
-  "recoveryNothingDeleted": "Nothing has been deleted. VocabNote never resets your database to recover from a problem.",
+  "recoveryNothingDeleted": "Nothing has been deleted. Schwa Notes never resets your database to recover from a problem.",
   "@recoveryNothingDeleted": {
     "description": "Reassurance shown on the recovery screen. States the app's data-safety promise plainly."
   },
@@ -481,7 +481,7 @@
   "@reminderTimeLabel": {
     "description": "The row that changes when the daily reminder arrives."
   },
-  "reminderDenied": "Notifications are off for VocabNote. You can allow them in your phone's settings.",
+  "reminderDenied": "Notifications are off for Schwa Notes. You can allow them in your phone's settings.",
   "@reminderDenied": {
     "description": "Snackbar when notification permission is refused. Plain, never pleading."
   },
@@ -545,7 +545,7 @@
   "@settingsTextSize": {
     "description": "A row explaining where text size is set. Not a control."
   },
-  "settingsTextSizeHint": "VocabNote uses your phone's text size. You can change it in your phone's display settings.",
+  "settingsTextSizeHint": "Schwa Notes uses your phone's text size. You can change it in your phone's display settings.",
   "@settingsTextSizeHint": {
     "description": "Explains that the app follows the OS text size rather than having its own."
   },
@@ -739,7 +739,7 @@
   "@settingsLookupOn": {
     "description": "Under the look-up switch when it is on. Says exactly what leaves the phone."
   },
-  "settingsLookupOff": "Off - VocabNote stays fully offline",
+  "settingsLookupOff": "Off - Schwa Notes stays fully offline",
   "@settingsLookupOff": {
     "description": "Under the look-up switch when it is off."
   },
@@ -792,11 +792,11 @@
   "@backupImportHint": {
     "description": "Under the import button."
   },
-  "importProblemNotABackup": "That file isn't a VocabNote backup. Backups end in .vnb.",
+  "importProblemNotABackup": "That file isn't a Schwa Notes backup. Backups end in .vnb.",
   "@importProblemNotABackup": {
     "description": "The chosen file is not a backup at all."
   },
-  "importProblemTooLarge": "That file is too large to be a VocabNote backup.",
+  "importProblemTooLarge": "That file is too large to be a Schwa Notes backup.",
   "@importProblemTooLarge": {
     "description": "The chosen file is far larger than any backup could be."
   },
@@ -1047,7 +1047,7 @@
   "@deleteAllConfirmAction": {
     "description": "The button that carries out a confirmed Delete all data."
   },
-  "deleteAllDone": "Everything has been deleted. VocabNote is ready for new words.",
+  "deleteAllDone": "Everything has been deleted. Schwa Notes is ready for new words.",
   "@deleteAllDone": {
     "description": "Snackbar after Delete all data."
   },
@@ -1055,7 +1055,7 @@
   "@deleteAllFailed": {
     "description": "Snackbar when Delete all data failed and was rolled back."
   },
-  "guideIntro": "Six small things that make VocabNote work for you. Tap Try it on any of them to go straight there.",
+  "guideIntro": "Six small things that make Schwa Notes work for you. Tap Try it on any of them to go straight there.",
   "@guideIntro": {
     "description": "Top of the How to use guide."
   },
@@ -1164,7 +1164,7 @@
   "@onboardingShowMe": {
     "description": "On the last slide: goes on to the guide."
   },
-  "onboardingStart": "Start using VocabNote",
+  "onboardingStart": "Start using Schwa Notes",
   "@onboardingStart": {
     "description": "At the end of the guide during onboarding: leaves onboarding for good."
   },
@@ -1232,13 +1232,13 @@
   },
   "faqQ1": "Where are my words kept?",
   "@faqQ1": {"description": "FAQ question 1."},
-  "faqA1": "Only on this phone, in VocabNote's own private storage. There is no account and no server. To keep a copy anywhere else, make a backup.",
+  "faqA1": "Only on this phone, in Schwa Notes's own private storage. There is no account and no server. To keep a copy anywhere else, make a backup.",
   "@faqA1": {"description": "FAQ answer 1."},
   "faqQ2": "How do I move my words to a new phone?",
   "@faqQ2": {"description": "FAQ question 2."},
-  "faqA2": "Go to Settings → Backup & restore → Export backup, and save the file somewhere your new phone can reach. Then install VocabNote there and choose Import backup.",
+  "faqA2": "Go to Settings → Backup & restore → Export backup, and save the file somewhere your new phone can reach. Then install Schwa Notes there and choose Import backup.",
   "@faqA2": {"description": "FAQ answer 2."},
-  "faqQ3": "Does VocabNote need the internet?",
+  "faqQ3": "Does Schwa Notes need the internet?",
   "@faqQ3": {"description": "FAQ question 3."},
   "faqA3": "No. Everything works offline. Only Look up uses the internet, and all it sends is the word you are looking up.",
   "@faqA3": {"description": "FAQ answer 3."},
@@ -1248,7 +1248,7 @@
   "@faqA4": {"description": "FAQ answer 4. The honest line about TTS (DATA-SOURCES 4)."},
   "faqQ5": "My phone has no British English voice.",
   "@faqQ5": {"description": "FAQ question 5."},
-  "faqA5": "Add one in your phone's settings, under Text-to-speech on Android or Spoken Content on iPhone. Until then, VocabNote uses the closest voice it can find.",
+  "faqA5": "Add one in your phone's settings, under Text-to-speech on Android or Spoken Content on iPhone. Until then, Schwa Notes uses the closest voice it can find.",
   "@faqA5": {"description": "FAQ answer 5."},
   "faqQ6": "How do I type IPA symbols?",
   "@faqQ6": {"description": "FAQ question 6."},
@@ -1323,7 +1323,7 @@
       }
     }
   },
-  "feedbackSubject": "VocabNote feedback",
+  "feedbackSubject": "Schwa Notes feedback",
   "@feedbackSubject": {
     "description": "Subject of the feedback email."
   },
@@ -1395,7 +1395,7 @@
   "@errorLogTitle": {
     "description": "Title of the error log sheet."
   },
-  "errorLogIntro": "Problems VocabNote ran into, kept only on this phone. Nothing here is ever sent by itself.",
+  "errorLogIntro": "Problems Schwa Notes ran into, kept only on this phone. Nothing here is ever sent by itself.",
   "@errorLogIntro": {
     "description": "Top of the error log sheet."
   },
@@ -1419,11 +1419,19 @@
   "@settingsPrivacyHint": {
     "description": "Under the Privacy row."
   },
+  "settingsSupport": "Buy me a coffee",
+  "@settingsSupport": {
+    "description": "Last row of About, shown only when the build has a Ko-fi page. Opens it in the browser."
+  },
+  "settingsSupportHint": "Schwa Notes is free. A tip on Ko-fi is kind, unlocks nothing, and is never expected.",
+  "@settingsSupportHint": {
+    "description": "Under the Buy me a coffee row. Must stay true: the tip changes nothing in the app."
+  },
   "privacyHeading": "Privacy",
   "@privacyHeading": {
     "description": "Heading of the privacy note."
   },
-  "privacyNote": "VocabNote has no account and no analytics. Your words never leave your phone unless you export them. Looking up a word sends only that word to freedictionaryapi.com.",
+  "privacyNote": "Schwa Notes has no account and no analytics. Your words never leave your phone unless you export them. Looking up a word sends only that word to freedictionaryapi.com.",
   "@privacyNote": {
     "description": "F-076, word for word. Must match FEATURES F-076, DATA-SOURCES 7 and the store privacy declarations; change all in the same PR."
   },
@@ -1431,7 +1439,7 @@
   "@privacyPoint1": {"description": "Privacy point (DATA-SOURCES 7)."},
   "privacyPoint2": "No analytics, no ads, no tracking, and no advertising ID.",
   "@privacyPoint2": {"description": "Privacy point (DATA-SOURCES 7)."},
-  "privacyPoint3": "VocabNote reaches the internet only when you ask it to: to look up a word, or to open a link you tapped, in your browser.",
+  "privacyPoint3": "Schwa Notes reaches the internet only when you ask it to: to look up a word, or to open a link you tapped, in your browser.",
   "@privacyPoint3": {"description": "Privacy point (DATA-SOURCES 7)."},
   "privacyPoint4": "Feedback is written in your own email app. You see what it includes before it opens, and nothing else is attached unless you choose to add the error log.",
   "@privacyPoint4": {"description": "Privacy point (DATA-SOURCES 7)."},
@@ -1439,7 +1447,7 @@
   "@privacyPoint5": {"description": "Privacy point (DATA-SOURCES 7)."},
   "licencesDictionaryHeading": "Dictionary look-up",
   "@licencesDictionaryHeading": {"description": "Licences section heading."},
-  "licencesDictionaryBody": "Definitions, examples and pronunciations you choose from Look up come from Wiktionary, shared under the CC BY-SA 4.0 licence through FreeDictionaryAPI.com. Each word keeps a link to its source page. Neither Wiktionary nor FreeDictionaryAPI.com endorses VocabNote.",
+  "licencesDictionaryBody": "Definitions, examples and pronunciations you choose from Look up come from Wiktionary, shared under the CC BY-SA 4.0 licence through FreeDictionaryAPI.com. Each word keeps a link to its source page. Neither Wiktionary nor FreeDictionaryAPI.com endorses Schwa Notes.",
   "@licencesDictionaryBody": {"description": "Attribution for dictionary content (CC BY-SA 4.0: attribute, name the licence, no implied endorsement)."},
   "licencesWiktionary": "Wiktionary",
   "@licencesWiktionary": {"description": "Link to Wiktionary."},
@@ -1478,7 +1486,7 @@
   "@licencesLoading": {"description": "While a licence text loads."},
   "licencesPackagesHeading": "Software",
   "@licencesPackagesHeading": {"description": "Licences section heading."},
-  "licencesPackagesBody": "VocabNote is built with open-source packages, all under permissive licences.",
+  "licencesPackagesBody": "Schwa Notes is built with open-source packages, all under permissive licences.",
   "@licencesPackagesBody": {"description": "Above the button to the full package licence list."},
   "licencesPackages": "All package licences",
   "@licencesPackages": {"description": "Opens Flutter's licence page."},

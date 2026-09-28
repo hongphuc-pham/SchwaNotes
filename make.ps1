@@ -100,7 +100,7 @@ $tasks = [ordered]@{
 
 function Show-Help {
   Write-Host ''
-  Write-Host 'VocabNote tasks:' -ForegroundColor Green
+  Write-Host 'Schwa Notes tasks:' -ForegroundColor Green
   foreach ($name in $tasks.Keys) {
     Write-Host ('  {0,-18} {1}' -f $name, $tasks[$name])
   }

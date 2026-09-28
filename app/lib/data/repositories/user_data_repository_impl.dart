@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
 import 'dart:typed_data';
@@ -32,6 +33,8 @@ class UserDataRepositoryImpl implements UserDataRepository {
   /// * **exports** go to a folder in the OS temporary directory, which it
   ///   may - right for a file whose only job is to be handed to the share
   ///   sheet.
+  ///
+  /// The app version may still be on its way (F-092); an export waits for it.
   new(
     this._db, {
     required this._appVersion,
@@ -46,7 +49,7 @@ class UserDataRepositoryImpl implements UserDataRepository {
        _now = now ?? DateTime.now;
 
   final AppDatabase _db;
-  final String _appVersion;
+  final FutureOr<String> _appVersion;
   final Future<Directory> Function() _exportDirectory;
 
   /// Null means `<library>/backups`; see [_safetyFolder].
@@ -211,7 +214,7 @@ class UserDataRepositoryImpl implements UserDataRepository {
       ),
     );
     final manifest = BackupCodec.manifestFor(
-      appVersion: _appVersion,
+      appVersion: await _appVersion,
       schemaVersion: AppDatabase.latestSchemaVersion,
       exportedAt: now,
       tables: tables,
@@ -231,7 +234,7 @@ class UserDataRepositoryImpl implements UserDataRepository {
     final folder = await _safetyFolder();
     await folder.create(recursive: true);
     final stamp = DateFormat('yyyyMMdd-HHmmss').format(now.toLocal());
-    await File(p.join(folder.path, 'vocabnote-before-replace-$stamp.vnb'))
+    await File(p.join(folder.path, 'schwanotes-before-replace-$stamp.vnb'))
         .writeAsBytes(bytes, flush: true);
 
     // Newest first: the name is the moment, so it sorts as time does.

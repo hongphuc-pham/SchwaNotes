@@ -99,8 +99,9 @@ jobs:
           if-no-files-found: warn
 
   # ---------------------------------------------------------------------------
-  # Android — release App Bundle, unsigned. Signing keys live only in GitHub
-  # secrets and are wired up at M8; CI must never need them to prove a build.
+  # Android — release App Bundle, signed with the debug key (no key.properties
+  # here). The upload key lives only in GitHub secrets and is used by
+  # release.yml on a version tag; CI must never need it to prove a build.
   # ---------------------------------------------------------------------------
   build-android:
     name: Build Android AAB
@@ -127,7 +128,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: vocabnote-android-aab
+          name: schwanotes-android-aab
           path: app/build/app/outputs/bundle/release/*.aab
           if-no-files-found: error
 
@@ -156,10 +157,10 @@ jobs:
       - name: Package .app
         run: |
           cd build/ios/iphoneos
-          zip -ryq VocabNote-unsigned.zip Runner.app
+          zip -ryq SchwaNotes-unsigned.zip Runner.app
 
       - uses: actions/upload-artifact@v4
         with:
-          name: vocabnote-ios-unsigned
-          path: app/build/ios/iphoneos/VocabNote-unsigned.zip
+          name: schwanotes-ios-unsigned
+          path: app/build/ios/iphoneos/SchwaNotes-unsigned.zip
           if-no-files-found: error

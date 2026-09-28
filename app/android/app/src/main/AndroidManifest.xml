@@ -5,8 +5,13 @@
          No exact-alarm permission: the reminder is scheduled inexactly. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <!-- Look up (F-006), and nothing else: the dictionary request the user
+         taps for. Flutter's template declares INTERNET only in the debug and
+         profile manifests, so until M8 every release build's look-up failed
+         as if offline. Guarded by test/architecture/android_manifest_test.dart. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:label="vocabnote"
+        android:label="Schwa Notes"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

@@ -137,9 +137,12 @@ class _NoteRow extends StatelessWidget {
     final theme = Theme.of(context);
     final l10n = AppL10n.of(context);
     // "3 Sep" — the spec's format. Localised, so a second locale gets its own.
+    // In the phone's own time zone: stored instants come back as UTC,
+    // and a note written at breakfast in Adelaide would be dated the day
+    // before (M8).
     final date = DateFormat.MMMd(
       Localizations.localeOf(context).toLanguageTag(),
-    ).format(note.createdAt);
+    ).format(note.createdAt.toLocal());
 
     return Padding(
       padding: EdgeInsets.symmetric(vertical: context.metrics.spaceXs),

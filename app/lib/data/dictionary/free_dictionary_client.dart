@@ -20,8 +20,11 @@ class FreeDictionaryClient {
   ///
   /// [dio] is injectable so tests can drive it with a mock adapter instead of
   /// hitting the real API - which would be rude, slow, and flaky.
+  ///
+  /// The user agent may still be on its way: it carries the app version, which
+  /// start-up no longer waits for (F-092). Each request waits for it instead.
   new({
-    required String userAgent,
+    required this._userAgent,
     Dio? dio,
     String? baseUrl,
     Future<void> Function(Duration)? sleep,
@@ -32,11 +35,7 @@ class FreeDictionaryClient {
       connectTimeout: timeout,
       receiveTimeout: timeout,
       sendTimeout: timeout,
-      headers: <String, String>{
-        // Courteous and expected by community APIs (DATA-SOURCES.md §1).
-        HttpHeaders.userAgentHeader: userAgent,
-        HttpHeaders.acceptHeader: 'application/json',
-      },
+      headers: <String, String>{HttpHeaders.acceptHeader: 'application/json'},
       // Statuses are inspected rather than thrown on, so a 429 can be backed
       // off and a 404 can become a clean "no entry" instead of an exception.
       validateStatus: (_) => true,
@@ -61,6 +60,7 @@ class FreeDictionaryClient {
   static const Duration baseBackoff = Duration(milliseconds: 500);
 
   final Dio _dio;
+  final FutureOr<String> _userAgent;
   final Future<void> Function(Duration) _sleep;
 
   /// Looks up [word].
@@ -94,7 +94,15 @@ class FreeDictionaryClient {
   Future<AppResult<DictionaryResponseDto>> _attempt(String path) async {
     Response<dynamic> response;
     try {
-      response = await _dio.get<dynamic>(path);
+      response = await _dio.get<dynamic>(
+        path,
+        options: Options(
+          headers: <String, String>{
+            // Courteous and expected by community APIs (DATA-SOURCES.md §1).
+            HttpHeaders.userAgentHeader: await _userAgent,
+          },
+        ),
+      );
     } on DioException catch (error, stackTrace) {
       return Err<DictionaryResponseDto, AppFailure>(
         NetworkFailure(

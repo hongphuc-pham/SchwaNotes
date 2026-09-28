@@ -203,7 +203,7 @@ void main() {
       }
 
       await scrollThrough(tester, 'onboarding guide');
-      await expectReachable(tester, find.text('Start using VocabNote'));
+      await expectReachable(tester, find.text('Start using Schwa Notes'));
     });
 
     testWidgets('the recovery screen', (tester) async {

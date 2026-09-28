@@ -65,7 +65,7 @@ void main() {
   test('names the file after the moment it was made', () async {
     final backup = await export();
 
-    expect(backup.fileName, 'vocabnote-backup-20260911-1405.vnb');
+    expect(backup.fileName, 'schwanotes-backup-20260911-1405.vnb');
     expect(File(backup.path).existsSync(), isTrue);
     expect(File(backup.path).parent.path, folder.path);
   });

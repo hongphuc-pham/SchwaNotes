@@ -31,7 +31,9 @@ class LicencesScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppL10n.of(context);
-    final version = ref.watch(appVersionProvider);
+    // Null only in the moment before the platform answers (F-092); the
+    // licence page then simply shows no version line.
+    final version = ref.watch(appVersionProvider).value;
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.licencesTitle)),

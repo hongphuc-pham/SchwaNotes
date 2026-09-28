@@ -89,6 +89,48 @@ void main() {
     });
   });
 
+  // M8, found on the emulator: the due count froze when the hub started
+  // watching. A card that comes due later without a database write - the usual
+  // way, ten minutes after *Again* - never showed, and Daily review stayed
+  // disabled until the app restarted.
+  group('the due count', () {
+    testWidgets('catches up when the app comes back to the foreground', (
+      tester,
+    ) async {
+      // Far enough ahead that opening the app - which takes real seconds in a
+      // widget test - is over before the cards come due.
+      final soon = DateTime.now().add(const Duration(seconds: 6));
+      for (var i = 0; i < 4; i++) {
+        await seedWord(db, id: 'w$i', headword: 'word$i', dueAt: soon);
+      }
+
+      await openHub(tester);
+      expect(
+        find.text('Daily review (0 due)'),
+        findsOneWidget,
+        reason: 'the premise: nothing is due yet when the hub first shows',
+      );
+
+      // Real time, outside the fake clock, until the cards really are due.
+      final wait =
+          soon.difference(DateTime.now()) + const Duration(milliseconds: 500);
+      await tester.runAsync(() => Future<void>.delayed(wait));
+      tester.binding
+        ..handleAppLifecycleStateChanged(AppLifecycleState.inactive)
+        ..handleAppLifecycleStateChanged(AppLifecycleState.hidden)
+        ..handleAppLifecycleStateChanged(AppLifecycleState.paused)
+        ..handleAppLifecycleStateChanged(AppLifecycleState.hidden)
+        ..handleAppLifecycleStateChanged(AppLifecycleState.inactive)
+        ..handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 50)),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Daily review (4 due)'), findsOneWidget);
+    });
+  });
+
   group('below the minimum', () {
     setUp(() async {
       // The flashcard game needs four.

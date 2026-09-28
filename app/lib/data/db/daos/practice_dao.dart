@@ -59,8 +59,19 @@ class PracticeDao extends DatabaseAccessor<AppDatabase>
       (update(studyCards)..where((c) => c.wordId.equals(wordId))).write(patch);
 
   /// How many cards are due now - the "Daily review (N due)" count.
+  ///
+  /// "Now" is SQLite's own clock, read each time the query re-runs. It used
+  /// to be a Dart `DateTime` fixed when the stream started, so a word added
+  /// while the hub was open - due at once - was never counted, and the count
+  /// said "2 due" over a four-card round (M8, found on the emulator).
+  /// Milliseconds, not `strftime('%s')`: a card made in the same second as
+  /// the re-run must count. [now] pins the clock for tests.
   Stream<int> watchDueCount({DateTime? now}) {
-    final at = now ?? DateTime.now();
+    final at = now == null
+        ? const CustomExpression<int>(
+            "CAST((julianday('now') - 2440587.5) * 86400000 AS INTEGER)",
+          )
+        : Variable<int>(now.toUtc().millisecondsSinceEpoch);
     final count = studyCards.wordId.count();
     final query =
         selectOnly(studyCards).join(<Join<HasResultSet, dynamic>>[
@@ -74,9 +85,7 @@ class PracticeDao extends DatabaseAccessor<AppDatabase>
           ..addColumns(<Expression<Object>>[count])
           ..where(
             studyCards.suspended.equals(false) &
-                studyCards.dueAt.isSmallerOrEqualValue(
-                  at.toUtc().millisecondsSinceEpoch,
-                ),
+                studyCards.dueAt.isSmallerOrEqual(at),
           );
     return query.map((row) => row.read(count) ?? 0).watchSingle();
   }

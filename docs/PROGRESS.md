@@ -4,7 +4,63 @@
 binding ones. This says where the work actually is, what is waiting on you, and how to pick
 it up without rediscovering anything.
 
-Last updated: **14 September 2026**, M7 merged; M8 not started.
+Last updated: **14 September 2026**, M8 release preparation done on `feat/m8-release`; the steps
+only you can take are §3 rows 7–10 and `store/README.md`.
+
+---
+
+## ▶ Resume here (14 September 2026)
+
+**Where it stands.** M0–M7 are merged. M8 — everything a Google Play release needs that does not
+need your Play Console account — is built, tested (931 tests, goldens 6, perf 8, analyze clean)
+and pushed to **`feat/m8-release`**, not yet merged. The app is now **Schwa Notes**
+(`io.github.hongphuc_pham.schwanotes`). What M8 found and fixed is in §6.
+
+**Done by you so far**
+- ✅ Ko-fi page: `https://ko-fi.com/williamphucpham` — wired into Settings → About and the site.
+- ✅ Upload key created (14 Sep) at `C:\Users\hongp\keys\schwanotes-upload.jks`, alias `upload`,
+  `CN=Hong Phuc Pham, O=Schwa Notes`, valid to 2054; `app/android/key.properties` written
+  (git-ignored — checked). A signed release bundle was built and carries this key. Upload-key
+  certificate SHA-256:
+  `E0:CD:C0:EA:E5:C1:7D:90:B4:A2:8D:82:0A:5D:0E:31:3B:BE:C7:14:81:65:6C:37:32:E3:2E:AF:AD:A2:70:C9`
+  (Play Console shows the upload key's fingerprint under App signing; it should match).
+- ✅ Play listing contact email chosen (your Gmail).
+
+**Still to do, in this order**
+1. **Back up the keystore and its password** somewhere other than this PC (password manager +
+   a copy of the `.jks`). Clear the clipboard if the base64 is still on it
+   (`Set-Clipboard -Value ' '`, and delete it from Win+V history).
+2. **Rename the repository on GitHub** to `SchwaNotes` (Settings → General). Your local `origin`
+   already points at `https://github.com/hongphuc-pham/SchwaNotes.git`, so **`git push` and
+   `git pull` fail with "Repository not found" until the rename is done**. Until then, push with
+   `git push https://github.com/hongphuc-pham/VocabNote.git feat/m8-release`, or undo with
+   `git remote set-url origin https://github.com/hongphuc-pham/VocabNote.git`.
+3. **Open and merge the M8 pull request** from `feat/m8-release` (after the rename, the address is
+   `github.com/hongphuc-pham/SchwaNotes/pull/new/feat/m8-release`). CI must be green.
+4. **Turn on GitHub Pages**: Settings → Pages → Source: *GitHub Actions*. After the merge to
+   `main`, open `https://hongphuc-pham.github.io/SchwaNotes/privacy.html` in a private window.
+5. **Add the four GitHub secrets** (Settings → Secrets and variables → Actions) — only needed for
+   the tag-triggered Release workflow; a manual upload does not need them:
+   `UPLOAD_KEYSTORE_BASE64` (from
+   `[Convert]::ToBase64String([IO.File]::ReadAllBytes('C:\Users\hongp\keys\schwanotes-upload.jks')) | Set-Clipboard`),
+   `UPLOAD_KEYSTORE_PASSWORD`, `UPLOAD_KEY_ALIAS` = `upload`, `UPLOAD_KEY_PASSWORD`.
+6. **Google Play Console** — `store/README.md`, top to bottom: create the app, the *App content*
+   declarations (`store/data-safety.md`, `store/content-rating.md`), the listing
+   (`store/listing.md`, `store/graphics/`, `store/screenshots/`), then a **closed test**: upload
+   the bundle, accept Play App Signing, invite **15+ testers** (`store/testers.md`) and keep 12
+   opted in for **14 days**. Then apply for production and roll out at 10% for 48 hours.
+
+**The bundle to upload.** `cd app; flutter build appbundle --release` →
+`app/build/app/outputs/bundle/release/app-release.aab` (version 1.0.0, build 1). With
+`key.properties` present it is signed with your upload key. Every later upload needs a higher
+build number in `app/pubspec.yaml` (`1.0.1+2`, …).
+
+**Still unverified** (§5, §6): cold start on a real phone (F-092 not yet demonstrated), the backup
+round trip on the renamed build, the launcher's themed icon, TalkBack's voice, any iPhone. The
+closed test is the first chance to see them.
+
+**Commands** are in §2 below; the local task notes, if you want the full discovery log, are in
+`plans/active/m8-release/` (git-ignored, on this PC only).
 
 ---
 
@@ -20,10 +76,10 @@ Last updated: **14 September 2026**, M7 merged; M8 not started.
 | M5 — Practice framework + flashcards | ✅ done | PR #3 |
 | M6 — Settings, guide, help, backup | ✅ done | PR #4 (`540b4f9`) |
 | M7 — Polish & accessibility | ✅ done — F-092 cold start **not met** (§3 row 6) | PRs #5 (`9dce7bd`), #6 (`b787b8f`) |
-| M8 — Release | not started | — |
+| **M8 — Release** | 🔨 preparation done — Play Console, upload key and closed test are yours (§3) | `feat/m8-release` |
 
 ```
-916 tests passing (8 perf + 6 golden run apart) · 2 integration tests on the emulator
+931 tests passing (8 perf + 6 golden run apart) · 2 integration tests on the emulator
 flutter analyze clean · dart format clean · licences and migration safety clean
 529 l10n strings · schema version 2 (M7 changes nothing in it)
 ```
@@ -81,6 +137,22 @@ flutter test integration_test/backup_round_trip_test.dart -d emulator-5554
 
 Run nothing heavy beside the emulator — it has crashed under a test run or a Gradle build.
 
+### Releasing (from M8)
+
+- **Upload key:** once, `powershell -ExecutionPolicy Bypass -File app/tool/make_upload_key.ps1`.
+  It creates the keystore outside the repo, writes the git-ignored `app/android/key.properties`,
+  and prints the four GitHub secrets. With the file present, `flutter build appbundle --release`
+  is signed with the upload key; without it, with the debug key (installable on an emulator,
+  refused by Play).
+- **Signed bundle in CI:** push a tag matching the pubspec version (`git tag v1.0.0 && git push
+  origin v1.0.0`). `.github/workflows/release.yml` builds the App Bundle from the secrets, fails
+  if it is debug-signed, and leaves it as a workflow artifact. Nothing is uploaded to Play.
+- **Site and privacy policy:** `site/`, deployed by `.github/workflows/pages.yml` on pushes to
+  `main` that touch it (Settings → Pages → Source: GitHub Actions, once).
+- **Store listing and Play Console steps:** `store/README.md`.
+- **Icons and store graphics:** `flutter test tool/brand_assets_test.dart` redraws them; look at
+  every PNG before committing.
+
 Regenerating the offline pronunciation asset (rarely needed — it is committed):
 
 ```bash
@@ -99,9 +171,13 @@ a signing key, the feedback address — and these deserve a decision when you ha
 | 1 | **Riverpod 3, not 2** | Your stack said Riverpod 2. It is not installable alongside Drift — `riverpod_generator` 2.x needs `source_gen ^2`, `drift_dev` needs `>=3` — and 2.6.1 is 22 months unmaintained. Proceeded with 3.4.3. Recorded in `ARCHITECTURE.md` §3.1. Reversible only by dropping Drift, which breaks ADR-001. |
 | 2 | **`riverpod_lint` is absent** | Impossible to install: `custom_lint` caps at `analyzer ^8`, `drift_dev` needs `>=13`. The layer rule is enforced by `test/architecture/layer_boundaries_test.dart` instead, which fails the build the same way. Not re-checked at M6. |
 | 3 | ~~**Index on `study_cards(box, lapses)`**~~ | ✅ Settled in M7: the index had existed since M5's v2 migration, and cannot serve this sort anyway. The real cost was the join reading every card column and discarding it; `useColumns: false` took the sort from ~100ms to ~62ms on 5,000 words, and its gate from 150ms to 100ms. No schema change. |
-| 4 | **The feedback address** | *Send feedback* stays hidden until a build sets `--dart-define=FEEDBACK_EMAIL=…` (decided 11 Sep: fill it at M8). Once shipped the address is public, so it is yours to choose. Until then Help offers GitHub Issues. |
+| 4 | ~~**The feedback address**~~ | ✅ Decided at M8 (14 Sep): **GitHub Issues only**. `FEEDBACK_EMAIL` is never set, *Send feedback* stays hidden, and the privacy note no longer lists the email point in a build without an address (DATA-SOURCES §7). |
+| 7 | **Rename the repository to `SchwaNotes`** | Decided 14 Sep. Every link — in the app, the look-up's User-Agent, the site, the privacy policy and the store pack — already uses `hongphuc-pham/SchwaNotes`; GitHub redirects the old URLs. After renaming: `git remote set-url origin https://github.com/hongphuc-pham/SchwaNotes.git`. |
+| 8 | ~~**A contact email for the Play listing**~~ | ✅ Your Gmail (14 Sep). Shown publicly on the listing, and named as the privacy contact on the site. |
+| 9 | ~~**Your Ko-fi page**~~ | ✅ `https://ko-fi.com/williamphucpham`, wired into Settings → About and the site (14 Sep). The row is hidden in any build where `ProjectLinks.support` is null. Chosen at M8 over Buy Me a Coffee (5% fee, Stripe payouts in 44 countries) and GitHub Sponsors (supporters need a GitHub account): Ko-fi takes 0% of one-off tips, supporters pay by card, PayPal, Apple Pay or Google Pay without an account, and it pays out to PayPal or Stripe. Google Play treats a tip that unlocks nothing as a peer-to-peer payment, so no Play Billing (Payments policy, answer 10281818). |
+| 10 | **The upload key and Pages** | ✅ Upload key created 14 Sep (see *Resume here*). Still to do: back it up off this PC, add the four GitHub secrets, and turn on *Settings → Pages → Source: GitHub Actions*. `store/README.md` walks the rest. |
 | 5 | **Play Data safety, one reading to confirm** | A feedback email the user sends from their own mail app carries the app version and device model. Google's docs exempt user-initiated transfers the user expects, but do not name this case; `DATA-SOURCES.md` §7 records it as the reading relied on. Worth a look before the M8 store listing. |
-| 6 | **Cold start misses F-092, and it is one line of `bootstrap`** | Measured and then instrumented at M7 (§5): of the 5162ms between framework init and the first frame, **`resolveAppVersion()` is 4872ms — 94%**. Opening and migrating the database is 26ms, so the migration theory first recorded here was wrong. Nothing before the first frame needs the app version (About and the feedback email want it), so the fix is to make it lazy or to start it unawaited like the 30-day purge already is. **Deliberately not fixed in M7** — you timeboxed this to instrumentation, and 4.9s for one channel call wants a real phone's number before anyone changes start-up. Recorded as **not met**. |
+| 6 | **Cold start: the app's own cost is fixed (M8); the 2s budget still needs a real phone** | *M8, 14 Sep:* `bootstrap` no longer waits for the version (`9c140ed`). Same-boot interleaved traces: first frame 2495 → 579ms, but first frame on screen 3.0 → 2.6s on the emulator's software GPU (§5). Run it on a phone before calling F-092 met. *Before M8:* | Measured and then instrumented at M7 (§5): of the 5162ms between framework init and the first frame, **`resolveAppVersion()` is 4872ms — 94%**. Opening and migrating the database is 26ms, so the migration theory first recorded here was wrong. Nothing before the first frame needs the app version (About and the feedback email want it), so the fix is to make it lazy or to start it unawaited like the 30-day purge already is. **Deliberately not fixed in M7** — you timeboxed this to instrumentation, and 4.9s for one channel call wants a real phone's number before anyone changes start-up. Recorded as **not met**. |
 
 Two smaller ones, mentioned once and not worth blocking on:
 
@@ -126,7 +202,7 @@ All of these are in the binding docs, not just here.
   `dateTime()` (which defaults to seconds). Both asserted by tests.
 - **The DI seam** — `application/repositories.dart` declares providers against domain
   interfaces; `data/composition_root.dart` supplies implementations. `ARCHITECTURE.md` §3.3.
-- **`dbus` is MPL-2.0** but reaches only Linux desktop, which VocabNote does not ship.
+- **`dbus` is MPL-2.0** but reaches only Linux desktop, which Schwa Notes does not ship.
   Exempted by name in `tool/check_licences.dart`. `DATA-SOURCES.md` §6.
 - **F-002 corrected** to 21 IPA symbols, matching `UI-UX.md` §4.2.
 - **Verified API shape** — a miss is HTTP 200 with `entries: []`, the accent lives in
@@ -148,7 +224,7 @@ milestone since M3. At M6, on 11 September: onboarding on a fresh install, expor
 the real share sheet, import through the real file picker (merge and replace), *Delete all
 data*, and the licences pages — and `integration_test/backup_round_trip_test.dart`
 (export → wipe → import, every table deep-equal) passes there. Two privacy defects were
-found doing it, both fixed — see §7.
+found doing it, both fixed — see §8.
 
 At M7, on 13 September, an accessibility pass on the same emulator: dark theme, reduce motion
 (all three animation scales at 0) and the platform accessibility tree, read with
@@ -202,6 +278,28 @@ Three things this says, in order of how much they matter:
 3. **Scrolling is fine.** Both medians fit inside a 60Hz frame even on this emulator. One
    252.9ms build frame (~15 dropped) is a start-up frame, recorded and not chased.
 
+**M8, 14 September: the fix, measured.** `--trace-startup` on profile builds of `ce13187`
+(before) and the fixed tree, both prebuilt and installed, runs **interleaved on one emulator
+boot** so the emulator's drift lands on both; only the emulator was using the host's CPU.
+Milliseconds, after framework init / first frame / first frame rasterised:
+
+| Pair | Before | After |
+|---|---|---|
+| 1 | 2182 / 2598 / 4043 | 129 / 647 / 2709 |
+| 2 | 1948 / 2564 / 3113 | 206 / 510 / 2347 |
+| 3 | 1802 / 2161 / 2622 | 95 / 443 / 2649 |
+| 4 | 2118 / 2426 / 2963 | 909 / 1288 / 2557 |
+| **median** | **2033 / 2495 / 3038** | **168 / 579 / 2603** |
+
+The app's own work before the first frame is gone. What a user sees moved less: the first frame
+reaches the screen at 2.6s instead of 3.0s, because on this software GPU painting that first
+frame takes about two seconds — work that was simply queued behind Dart before. **F-092 is not
+demonstrated on the emulator**, and the remaining cost is the emulator's rasteriser, which a
+phone's GPU does in a fraction of the time. This boot's "before" (2.0s after init) is also
+quicker than M7's 5.2s: boots differ, which is why only same-boot pairs are compared. Two traps
+on the way, both mine: an `am start` A/B whose numbers climbed run on run (discarded), and a
+script parse error that made the first trace run measure nothing.
+
 Caveats stated so the numbers are not over-read: profile mode carries VM-service and
 `ProfileInstaller` overhead and is slower than the release build it describes, and ART was
 JIT-compiling framework code cold.
@@ -225,7 +323,64 @@ JIT-compiling framework code cold.
 
 ---
 
-## 6. What M7 turned out to be
+## 6. What M8 turned out to be
+
+Release **preparation** for Google Play. Everything that does not need your Play Console account
+is done; what does is in §3 rows 7–10 and walked step by step in `store/README.md`. iOS is not
+being released (no Apple account); its unsigned CI build stays.
+
+**Three things were found rather than built:**
+
+1. **The release build could not reach the internet.** `aapt dump permissions` on the release
+   APK showed no `INTERNET`: Flutter's template declares it only in the debug and profile
+   manifests. So *Look up* had failed in every release build since M2, looking exactly like
+   being offline — debug runs, widget tests and M7's release-APK device pass (which never looked
+   a word up) all hid it. Fixed, and guarded by `test/architecture/android_manifest_test.dart`,
+   which reads the manifest because no widget test can see this. **Verified on the emulator with
+   the renamed release APK:** *Look up* on "cough" returned UK /kɒf/, US /kɔːf/ and /kɔf/, the
+   parts of speech, definitions, examples and the Wiktionary attribution — the first look-up
+   ever driven end to end in a release build (§5 had flagged it as never driven through the UI).
+2. **The name was taken.** "VocabNote" is a live iOS vocabulary app, and "Vocab Note" exists on
+   Android and Windows. The app is now **Schwa Notes**, with the permanent ID
+   `io.github.hongphuc_pham.schwanotes` (iOS: `io.github.hongphuc-pham.schwanotes`, which cannot
+   contain `_`). The Dart package, the database file and the `.vnb` extension keep the old name
+   on purpose. Guarded by `test/architecture/product_name_test.dart`. (Web search, not a legal
+   clearance.)
+3. **The privacy note described a feature the release does not have.** Its email-feedback point
+   showed in every build, but v1.0 has no feedback address. It now shows only when one is set,
+   and DATA-SOURCES §7 says so.
+
+**Three more were found by using the renamed release build on the emulator** (onboarding, look
+up, four words, a highlight, a note, a full flashcard round, Settings) — none of them visible to
+the 900-odd host tests:
+
+4. **The Daily review count froze when it started watching.** It took "now" once, so a word added
+   while the hub was open was never counted ("2 due" over a four-card round), and a card graded
+   *Again* that came due ten minutes later left the hub saying nothing was due, with Daily review
+   disabled, until a restart. The count now uses SQLite's own clock on every re-run, and the hub
+   re-reads it when the app resumes.
+5. **A note was dated with the UTC day.** Written at 01:51 in Adelaide, it said the day before. The
+   notes section was the only place formatting a stored instant without `toLocal()`.
+6. **A suggested part of speech outside the five chips lit nothing** — "preposition" for "about"
+   was taken but not shown. It now gets a chip of its own.
+
+Each has a test that passes on the fix and a mutation that fails on an assertion. Not re-run on
+the renamed build: the backup round trip (only its file-name prefix changed, which unit tests
+cover), and the launcher's themed icon (`adb` cannot switch themed icons on).
+
+**F-092, cold start:** `bootstrap` no longer waits for the app version (`9c140ed`). Measured with
+`--trace-startup` on profile builds of the commit before and after, interleaved on one emulator
+boot — figures in §5. The work before the first frame is gone (median 2033 → 168ms after
+framework init; first frame 2495 → 579ms), but on the emulator's software GPU the first frame
+still reaches the screen at about **2.6s** (was 3.0s): painting it takes ~2s there. So F-092 is
+**still not demonstrated** — a real phone decides it.
+
+**Built:** upload-key signing (`app/tool/make_upload_key.ps1`, `release.yml` on a version tag),
+the icon and store graphics (`tool/brand_assets_test.dart`, no new dependency), the website and
+privacy policy (`site/`, `pages.yml`), the store pack (`store/`), and a gentle *Buy me a coffee*
+row that stays hidden until your Ko-fi page exists.
+
+## 7. What M7 turned out to be
 
 Features **F-090–F-097**: states, motion, contrast, semantics, 200% text, goldens, and the
 performance budgets. Built in eight slices over two PRs, each fix mutation-checked. **F-092
@@ -260,7 +415,7 @@ shape, spacing, surface colour, fixed layout.**
 
 **Carried to M8:** the F-092 fix, a physical phone, an iPhone, and hearing TalkBack.
 
-## 7. What M6 turned out to be
+## 8. What M6 turned out to be
 
 Features **F-070–F-077 and F-079**: the settings screen, the *How to use* guide, Help &
 feedback, backup export and import, data sources & licences, the privacy note, first-run
@@ -289,7 +444,7 @@ mutation-checked.
 - A *Dictionary look-up* switch was added under *Your data* (`UI-UX.md` §4.9).
 - Merging takes the backup's settings only when this phone is still on the defaults.
 
-## 8. What M3 turned out to be
+## 9. What M3 turned out to be
 
 Features **F-020–F-025**, all met. Two screens (word detail, IPA highlight editor), six
 controllers, one device-speech adapter behind a domain interface.
@@ -331,7 +486,7 @@ controllers, one device-speech adapter behind a domain interface.
    was fixed) dismissed the row mid-word and sent the next keystroke nowhere. Fixed with
    `canRequestFocus: false` and covered by `test/widget/ipa_keyboard_row_test.dart`.
 
-## 9. Issue tracking
+## 10. Issue tracking
 
 `bd` (beads) is installed on this machine but **not initialised in this repository** — there
 is no database and no issues. It was left that way on purpose: initialising a tracker is a

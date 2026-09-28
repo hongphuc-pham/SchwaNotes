@@ -1,0 +1,70 @@
+name: Site
+
+# The project website and privacy policy (M8), published to GitHub Pages from `site/`.
+# `docs/` holds the internal specs and is deliberately never published.
+#
+# One-time setup by the repository owner: Settings -> Pages -> Source: GitHub Actions.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'site/**'
+      - 'app/assets/fonts/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Assemble site
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # The site uses the app's own typefaces, served from the site itself so a
+      # visit loads nothing from any other host (see site/privacy.html).
+      # Copied at deploy time rather than committed twice.
+      - name: Assemble
+        run: |
+          mkdir -p _site
+          cp -R site/. _site/
+          mkdir -p _site/assets/fonts
+          cp app/assets/fonts/charis_sil/CharisSIL-Regular.ttf \
+             app/assets/fonts/charis_sil/CharisSIL-Bold.ttf \
+             app/assets/fonts/inter/Inter-Regular.ttf \
+             app/assets/fonts/inter/Inter-SemiBold.ttf \
+             _site/assets/fonts/
+          # The fonts' licence travels with them (SIL OFL 1.1).
+          cp app/assets/fonts/charis_sil/OFL.txt _site/assets/fonts/OFL-CharisSIL.txt
+          cp app/assets/fonts/inter/OFL.txt _site/assets/fonts/OFL-Inter.txt
+          # Plain static files: no Jekyll processing.
+          touch _site/.nojekyll
+
+      - name: Check the privacy page is there
+        run: test -s _site/privacy.html
+
+      - uses: actions/configure-pages@v6
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

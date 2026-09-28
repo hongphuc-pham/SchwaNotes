@@ -215,7 +215,7 @@ void main() {
       files.picked = Uint8List.fromList(<int>[1, 2, 3, 4, 5]);
       await openBackup(tester);
       final notOurs = find.text(
-        "That file isn't a VocabNote backup. Backups end in .vnb.",
+        "That file isn't a Schwa Notes backup. Backups end in .vnb.",
       );
 
       await tapImport(tester);

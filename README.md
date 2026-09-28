@@ -1,4 +1,6 @@
-# VocabNote
+# Schwa Notes
+
+*Formerly VocabNote — renamed at M8, because another vocabulary app already uses that name.*
 
 A free, offline-first mobile app for **noting English words and mastering their pronunciation**.
 
@@ -6,16 +8,17 @@ You type a word, get (or write) its IPA, highlight the exact sounds you keep get
 leave yourself notes, listen to it, and practise it as flashcards. No account. No server.
 No subscription. Your words live on your phone and stay yours.
 
-> **Status: M0–M7 built; M8 (release) next.** You can add words by hand
+> **Status: M0–M7 built; M8 (release preparation) in progress.** You can add words by hand
 > or from the dictionary, search them instantly, hear them in UK or US English, colour the
 > exact IPA symbols you keep getting wrong, keep lists and notes, practise with flashcards on
 > a spaced schedule, and back everything up to one file you can bring back on another phone.
 > Settings, a *How to use* guide and *Help & feedback* are in, and M7 checked every screen
 > for contrast, tap targets, screen-reader labels, reduced motion and 200% text.
 >
-> 916 tests passing (timed and golden checks run apart) · `flutter analyze --fatal-infos
+> 931 tests passing (timed and golden checks run apart) · `flutter analyze --fatal-infos
 > --fatal-warnings` clean · backup round trip and a 5,000-word scroll measured on the Android
-> emulator · **cold start does not yet meet its 2-second budget** — see
+> emulator · cold start's own cost removed at M8 (first frame ~0.6s), but the 2-second budget is
+> **not yet shown on a real phone** — see
 > [`docs/PROGRESS.md`](docs/PROGRESS.md) §5 for that and for what is still unverified
 > (iOS, a real phone).
 
@@ -77,7 +80,7 @@ Full, numbered list with acceptance criteria: [`docs/FEATURES.md`](docs/FEATURES
 ## 4. Repository layout
 
 ```
-VocabNote/
+SchwaNotes/
 ├─ README.md                 <- you are here
 ├─ docs/
 │  ├─ PROGRESS.md            <- where the work is, what's waiting on you, how to resume

@@ -110,7 +110,7 @@ void main() {
     expect(find.text('Add a word'), findsOneWidget, reason: 'the guide');
     expect(await finished(tester), isFalse, reason: 'not until they leave');
 
-    final start = find.text('Start using VocabNote');
+    final start = find.text('Start using Schwa Notes');
     await tester.scrollUntilVisible(
       start,
       300,

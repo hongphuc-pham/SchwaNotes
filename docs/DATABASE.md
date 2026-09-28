@@ -1,7 +1,7 @@
 # Database & upgrade safety
 
 > The single most important non-negotiable in this project: **installing a new version of
-> VocabNote must adopt the user's existing database, in place, without data loss.**
+> Schwa Notes must adopt the user's existing database, in place, without data loss.**
 > There is no backend to restore from. A wiped database is a permanently lost user.
 
 ## 1. Storage
@@ -158,7 +158,7 @@ It is a **derived** table: it may be dropped and rebuilt in any migration withou
 9. **Data backfills are guarded**: `UPDATE … WHERE new_col IS NULL`, never blanket rewrites.
 10. **Downgrade is not supported** but must not destroy anything: if the on-disk version is
     *higher* than the binary's, refuse to open, show "This data was created by a newer version
-    of VocabNote — please update", and offer export. Do not migrate downwards.
+    of Schwa Notes — please update", and offer export. Do not migrate downwards.
 
 ## 4. Worked example — adding a field in v2
 
