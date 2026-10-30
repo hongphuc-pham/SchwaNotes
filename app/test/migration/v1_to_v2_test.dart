@@ -2,8 +2,6 @@ import 'package:drift/drift.dart' show Value;
 import 'package:drift_dev/api/migrations_native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vocabnote/data/db/app_database.dart';
-import 'package:vocabnote/domain/entities/app_settings.dart';
-import 'package:vocabnote/domain/entities/practice_session.dart';
 import 'package:vocabnote/domain/repositories/word_query.dart';
 
 import 'generated/schema.dart';
@@ -85,6 +83,10 @@ void main() {
     return db;
   }
 
+  Future<Map<String, Object?>> v2Settings(AppDatabase db) async =>
+      (await db.customSelect('SELECT * FROM settings WHERE id = 1').getSingle())
+          .data;
+
   test('every v1 row survives with every field intact', () async {
     final db = await migratedFromV1();
     addTearDown(db.close);
@@ -111,13 +113,13 @@ void main() {
     final db = await migratedFromV1();
     addTearDown(db.close);
 
-    // The DAO returns converted types, so these are enums rather than the
-    // strings SQLite holds - which is the point of the converters.
-    final settings = await db.settingsDao.getSettings();
-    expect(settings.themeMode, ThemePreference.dark);
-    expect(settings.ttsRate, 0.7);
-    expect(settings.dailyGoal, 35);
-    expect(settings.promptSide, PromptSide.ipaFirst);
+    // Read raw: the DAO is today's code and asks for columns a later
+    // version added, which a database stopped at v2 does not have yet.
+    final settings = await v2Settings(db);
+    expect(settings['theme_mode'], 'dark');
+    expect(settings['tts_rate'], 0.7);
+    expect(settings['daily_goal'], 35);
+    expect(settings['prompt_side'], 'ipa_first');
   });
 
   test('the new columns arrive with the documented defaults', () async {
@@ -127,9 +129,9 @@ void main() {
     final db = await migratedFromV1();
     addTearDown(db.close);
 
-    final settings = await db.settingsDao.getSettings();
-    expect(settings.reviewSchedule, '[0,1,2,4,7,15,30]');
-    expect(settings.againRepeats, 1);
+    final settings = await v2Settings(db);
+    expect(settings['review_schedule'], '[0,1,2,4,7,15,30]');
+    expect(settings['again_repeats'], 1);
   });
 
   test('the new index exists and is usable', () async {

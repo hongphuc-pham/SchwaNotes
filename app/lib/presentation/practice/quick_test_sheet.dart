@@ -4,12 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabnote/application/lists/list_controller.dart';
 import 'package:vocabnote/application/practice/game_contracts.dart';
+import 'package:vocabnote/application/settings/settings_controller.dart';
 import 'package:vocabnote/core/l10n/gen/app_localizations.dart';
 import 'package:vocabnote/core/theme/app_metrics.dart';
 import 'package:vocabnote/domain/entities/practice_session.dart';
 import 'package:vocabnote/domain/entities/word_list.dart';
 import 'package:vocabnote/domain/repositories/practice_repository.dart';
 import 'package:vocabnote/presentation/design/gap.dart';
+import 'package:vocabnote/presentation/practice/mix_options.dart';
 
 /// Configures a quick test (`docs/UI-UX.md` §4.6, F-062).
 ///
@@ -56,6 +58,11 @@ class _QuickTestSheetState extends ConsumerState<QuickTestSheet> {
   late String? _listId = widget.listId;
   int? _size = 10;
   PromptSide _promptSide = PromptSide.wordFirst;
+  // Starts from the user's settings; changing it here is for this test only.
+  late Set<PromptSide> _mixSides = ref
+      .read(appSettingsOrDefaultsProvider)
+      .mixSides;
+  late MixOrder _mixOrder = ref.read(appSettingsOrDefaultsProvider).mixOrder;
   bool _autoplay = true;
 
   void _start() {
@@ -68,6 +75,8 @@ class _QuickTestSheetState extends ConsumerState<QuickTestSheet> {
         source: _source,
         sourceId: _source == CardSourceKind.list ? _listId : null,
         promptSide: _promptSide,
+        mixSides: _mixSides,
+        mixOrder: _mixOrder,
         ttsAutoPlay: _autoplay,
         // Stored so a session can be replayed or debugged (`GAMES.md` §4).
         seed: Random().nextInt(1 << 31),
@@ -158,19 +167,25 @@ class _QuickTestSheetState extends ConsumerState<QuickTestSheet> {
             const VnGap(VnSpace.sm),
             Wrap(
               spacing: metrics.spaceSm,
+              runSpacing: metrics.spaceSm,
               children: <Widget>[
                 for (final side in PromptSide.values)
                   ChoiceChip(
-                    label: Text(switch (side) {
-                      PromptSide.wordFirst => l10n.promptSideWord,
-                      PromptSide.ipaFirst => l10n.promptSideIpa,
-                      PromptSide.meaningFirst => l10n.promptSideMeaning,
-                    }),
+                    label: Text(promptSideLabel(l10n, side)),
                     selected: _promptSide == side,
                     onSelected: (_) => setState(() => _promptSide = side),
                   ),
               ],
             ),
+            if (_promptSide == PromptSide.mix) ...<Widget>[
+              const VnGap(VnSpace.md),
+              MixOptions(
+                sides: _mixSides,
+                order: _mixOrder,
+                onSidesChanged: (sides) => setState(() => _mixSides = sides),
+                onOrderChanged: (order) => setState(() => _mixOrder = order),
+              ),
+            ],
             const VnGap(VnSpace.sm),
 
             SwitchListTile(

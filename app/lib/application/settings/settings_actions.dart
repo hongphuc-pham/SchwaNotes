@@ -56,6 +56,15 @@ class SettingsActions extends _$SettingsActions {
   Future<void> setPromptSide(PromptSide side) =>
       _update((s) => s.copyWith(promptSide: side));
 
+  /// The faces a mix draws from. A set that is not a valid mix (fewer than
+  /// two faces) is replaced by the default rather than stored.
+  Future<void> setMixSides(Set<PromptSide> sides) =>
+      _update((s) => s.copyWith(mixSides: PromptSide.validMix(sides)));
+
+  /// Random faces, or taking turns.
+  Future<void> setMixOrder(MixOrder order) =>
+      _update((s) => s.copyWith(mixOrder: order));
+
   /// Extra times a missed card returns within one session. 0 disables it.
   Future<void> setAgainRepeats(int repeats) =>
       _update((s) => s.copyWith(againRepeats: repeats));

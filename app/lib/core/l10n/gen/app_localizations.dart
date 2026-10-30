@@ -699,6 +699,42 @@ abstract class AppL10n {
   /// **'The meaning'**
   String get promptSideMeaning;
 
+  /// Prompt side: each card opens on one of several faces the user ticked.
+  ///
+  /// In en, this message translates to:
+  /// **'Mix'**
+  String get promptSideMix;
+
+  /// Label above the chips that choose which faces a Mix draws from.
+  ///
+  /// In en, this message translates to:
+  /// **'Mix these'**
+  String get mixSidesLabel;
+
+  /// Says why the last two mix chips cannot be unticked.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick at least two.'**
+  String get mixSidesHint;
+
+  /// Label above the choice of how a Mix picks each card's face.
+  ///
+  /// In en, this message translates to:
+  /// **'Order'**
+  String get mixOrderLabel;
+
+  /// Mix order: a random face per card.
+  ///
+  /// In en, this message translates to:
+  /// **'Random'**
+  String get mixOrderRandom;
+
+  /// Mix order: rotate word, sounds, meaning in turn.
+  ///
+  /// In en, this message translates to:
+  /// **'Take turns'**
+  String get mixOrderRotate;
+
   /// Button that starts a daily review, with how many cards are due.
   ///
   /// In en, this message translates to:

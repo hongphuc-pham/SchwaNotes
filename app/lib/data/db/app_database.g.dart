@@ -5218,6 +5218,28 @@ class $SettingsTable extends Settings
     requiredDuringInsert: false,
     defaultValue: const Constant(1),
   );
+  static const VerificationMeta _mixSidesMeta = const VerificationMeta(
+    'mixSides',
+  );
+  @override
+  late final GeneratedColumn<String> mixSides = GeneratedColumn<String>(
+    'mix_sides',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('word_first,meaning_first'),
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<MixOrder, String> mixOrder =
+      GeneratedColumn<String>(
+        'mix_order',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('random'),
+      ).withConverter<MixOrder>($SettingsTable.$convertermixOrder);
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -5233,6 +5255,8 @@ class $SettingsTable extends Settings
     lookupEnabled,
     reviewSchedule,
     againRepeats,
+    mixSides,
+    mixOrder,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -5321,6 +5345,12 @@ class $SettingsTable extends Settings
         ),
       );
     }
+    if (data.containsKey('mix_sides')) {
+      context.handle(
+        _mixSidesMeta,
+        mixSides.isAcceptableOrUnknown(data['mix_sides']!, _mixSidesMeta),
+      );
+    }
     return context;
   }
 
@@ -5388,6 +5418,16 @@ class $SettingsTable extends Settings
         DriftSqlType.int,
         data['${effectivePrefix}again_repeats'],
       )!,
+      mixSides: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}mix_sides'],
+      )!,
+      mixOrder: $SettingsTable.$convertermixOrder.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}mix_order'],
+        )!,
+      ),
     );
   }
 
@@ -5402,6 +5442,7 @@ class $SettingsTable extends Settings
       ttsLocaleConverter;
   static TypeConverter<PromptSide, String> $converterpromptSide =
       promptSideConverter;
+  static TypeConverter<MixOrder, String> $convertermixOrder = mixOrderConverter;
 }
 
 class SettingsRow extends DataClass implements Insertable<SettingsRow> {
@@ -5433,7 +5474,7 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
   /// Minutes after local midnight, or null when never set.
   final int? reminderTimeMinutes;
 
-  /// `word_first`, `ipa_first` or `meaning_first`.
+  /// `word_first`, `ipa_first`, `meaning_first` or `mix` (v3).
   final PromptSide promptSide;
 
   /// Whether the *Look up* button is offered on the word form.
@@ -5456,6 +5497,14 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
   /// Session-local: it changes what one sitting feels like and touches no
   /// scheduling column. 0 disables it.
   final int againRepeats;
+
+  /// The faces a `mix` prompt draws from: storage values joined by commas
+  /// (v3). Read through `PromptSide.decodeMix`, which falls back rather than
+  /// trusting the string.
+  final String mixSides;
+
+  /// `random` or `rotate` - how a `mix` prompt picks each card's face (v3).
+  final MixOrder mixOrder;
   const SettingsRow({
     required this.id,
     required this.themeMode,
@@ -5470,6 +5519,8 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
     required this.lookupEnabled,
     required this.reviewSchedule,
     required this.againRepeats,
+    required this.mixSides,
+    required this.mixOrder,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -5501,6 +5552,12 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
     map['lookup_enabled'] = Variable<bool>(lookupEnabled);
     map['review_schedule'] = Variable<String>(reviewSchedule);
     map['again_repeats'] = Variable<int>(againRepeats);
+    map['mix_sides'] = Variable<String>(mixSides);
+    {
+      map['mix_order'] = Variable<String>(
+        $SettingsTable.$convertermixOrder.toSql(mixOrder),
+      );
+    }
     return map;
   }
 
@@ -5521,6 +5578,8 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
       lookupEnabled: Value(lookupEnabled),
       reviewSchedule: Value(reviewSchedule),
       againRepeats: Value(againRepeats),
+      mixSides: Value(mixSides),
+      mixOrder: Value(mixOrder),
     );
   }
 
@@ -5545,6 +5604,8 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
       lookupEnabled: serializer.fromJson<bool>(json['lookupEnabled']),
       reviewSchedule: serializer.fromJson<String>(json['reviewSchedule']),
       againRepeats: serializer.fromJson<int>(json['againRepeats']),
+      mixSides: serializer.fromJson<String>(json['mixSides']),
+      mixOrder: serializer.fromJson<MixOrder>(json['mixOrder']),
     );
   }
   @override
@@ -5564,6 +5625,8 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
       'lookupEnabled': serializer.toJson<bool>(lookupEnabled),
       'reviewSchedule': serializer.toJson<String>(reviewSchedule),
       'againRepeats': serializer.toJson<int>(againRepeats),
+      'mixSides': serializer.toJson<String>(mixSides),
+      'mixOrder': serializer.toJson<MixOrder>(mixOrder),
     };
   }
 
@@ -5581,6 +5644,8 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
     bool? lookupEnabled,
     String? reviewSchedule,
     int? againRepeats,
+    String? mixSides,
+    MixOrder? mixOrder,
   }) => SettingsRow(
     id: id ?? this.id,
     themeMode: themeMode ?? this.themeMode,
@@ -5597,6 +5662,8 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
     lookupEnabled: lookupEnabled ?? this.lookupEnabled,
     reviewSchedule: reviewSchedule ?? this.reviewSchedule,
     againRepeats: againRepeats ?? this.againRepeats,
+    mixSides: mixSides ?? this.mixSides,
+    mixOrder: mixOrder ?? this.mixOrder,
   );
   SettingsRow copyWithCompanion(SettingsCompanion data) {
     return SettingsRow(
@@ -5627,6 +5694,8 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
       againRepeats: data.againRepeats.present
           ? data.againRepeats.value
           : this.againRepeats,
+      mixSides: data.mixSides.present ? data.mixSides.value : this.mixSides,
+      mixOrder: data.mixOrder.present ? data.mixOrder.value : this.mixOrder,
     );
   }
 
@@ -5645,7 +5714,9 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
           ..write('promptSide: $promptSide, ')
           ..write('lookupEnabled: $lookupEnabled, ')
           ..write('reviewSchedule: $reviewSchedule, ')
-          ..write('againRepeats: $againRepeats')
+          ..write('againRepeats: $againRepeats, ')
+          ..write('mixSides: $mixSides, ')
+          ..write('mixOrder: $mixOrder')
           ..write(')'))
         .toString();
   }
@@ -5665,6 +5736,8 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
     lookupEnabled,
     reviewSchedule,
     againRepeats,
+    mixSides,
+    mixOrder,
   );
   @override
   bool operator ==(Object other) =>
@@ -5682,7 +5755,9 @@ class SettingsRow extends DataClass implements Insertable<SettingsRow> {
           other.promptSide == this.promptSide &&
           other.lookupEnabled == this.lookupEnabled &&
           other.reviewSchedule == this.reviewSchedule &&
-          other.againRepeats == this.againRepeats);
+          other.againRepeats == this.againRepeats &&
+          other.mixSides == this.mixSides &&
+          other.mixOrder == this.mixOrder);
 }
 
 class SettingsCompanion extends UpdateCompanion<SettingsRow> {
@@ -5699,6 +5774,8 @@ class SettingsCompanion extends UpdateCompanion<SettingsRow> {
   final Value<bool> lookupEnabled;
   final Value<String> reviewSchedule;
   final Value<int> againRepeats;
+  final Value<String> mixSides;
+  final Value<MixOrder> mixOrder;
   const SettingsCompanion({
     this.id = const Value.absent(),
     this.themeMode = const Value.absent(),
@@ -5713,6 +5790,8 @@ class SettingsCompanion extends UpdateCompanion<SettingsRow> {
     this.lookupEnabled = const Value.absent(),
     this.reviewSchedule = const Value.absent(),
     this.againRepeats = const Value.absent(),
+    this.mixSides = const Value.absent(),
+    this.mixOrder = const Value.absent(),
   });
   SettingsCompanion.insert({
     this.id = const Value.absent(),
@@ -5728,6 +5807,8 @@ class SettingsCompanion extends UpdateCompanion<SettingsRow> {
     this.lookupEnabled = const Value.absent(),
     this.reviewSchedule = const Value.absent(),
     this.againRepeats = const Value.absent(),
+    this.mixSides = const Value.absent(),
+    this.mixOrder = const Value.absent(),
   });
   static Insertable<SettingsRow> custom({
     Expression<int>? id,
@@ -5743,6 +5824,8 @@ class SettingsCompanion extends UpdateCompanion<SettingsRow> {
     Expression<bool>? lookupEnabled,
     Expression<String>? reviewSchedule,
     Expression<int>? againRepeats,
+    Expression<String>? mixSides,
+    Expression<String>? mixOrder,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -5759,6 +5842,8 @@ class SettingsCompanion extends UpdateCompanion<SettingsRow> {
       if (lookupEnabled != null) 'lookup_enabled': lookupEnabled,
       if (reviewSchedule != null) 'review_schedule': reviewSchedule,
       if (againRepeats != null) 'again_repeats': againRepeats,
+      if (mixSides != null) 'mix_sides': mixSides,
+      if (mixOrder != null) 'mix_order': mixOrder,
     });
   }
 
@@ -5776,6 +5861,8 @@ class SettingsCompanion extends UpdateCompanion<SettingsRow> {
     Value<bool>? lookupEnabled,
     Value<String>? reviewSchedule,
     Value<int>? againRepeats,
+    Value<String>? mixSides,
+    Value<MixOrder>? mixOrder,
   }) {
     return SettingsCompanion(
       id: id ?? this.id,
@@ -5791,6 +5878,8 @@ class SettingsCompanion extends UpdateCompanion<SettingsRow> {
       lookupEnabled: lookupEnabled ?? this.lookupEnabled,
       reviewSchedule: reviewSchedule ?? this.reviewSchedule,
       againRepeats: againRepeats ?? this.againRepeats,
+      mixSides: mixSides ?? this.mixSides,
+      mixOrder: mixOrder ?? this.mixOrder,
     );
   }
 
@@ -5842,6 +5931,14 @@ class SettingsCompanion extends UpdateCompanion<SettingsRow> {
     if (againRepeats.present) {
       map['again_repeats'] = Variable<int>(againRepeats.value);
     }
+    if (mixSides.present) {
+      map['mix_sides'] = Variable<String>(mixSides.value);
+    }
+    if (mixOrder.present) {
+      map['mix_order'] = Variable<String>(
+        $SettingsTable.$convertermixOrder.toSql(mixOrder.value),
+      );
+    }
     return map;
   }
 
@@ -5860,7 +5957,9 @@ class SettingsCompanion extends UpdateCompanion<SettingsRow> {
           ..write('promptSide: $promptSide, ')
           ..write('lookupEnabled: $lookupEnabled, ')
           ..write('reviewSchedule: $reviewSchedule, ')
-          ..write('againRepeats: $againRepeats')
+          ..write('againRepeats: $againRepeats, ')
+          ..write('mixSides: $mixSides, ')
+          ..write('mixOrder: $mixOrder')
           ..write(')'))
         .toString();
   }
@@ -10065,6 +10164,8 @@ typedef $$SettingsTableCreateCompanionBuilder = SettingsCompanion Function({
   Value<bool> lookupEnabled,
   Value<String> reviewSchedule,
   Value<int> againRepeats,
+  Value<String> mixSides,
+  Value<MixOrder> mixOrder,
 });
 typedef $$SettingsTableUpdateCompanionBuilder = SettingsCompanion Function({
   Value<int> id,
@@ -10080,6 +10181,8 @@ typedef $$SettingsTableUpdateCompanionBuilder = SettingsCompanion Function({
   Value<bool> lookupEnabled,
   Value<String> reviewSchedule,
   Value<int> againRepeats,
+  Value<String> mixSides,
+  Value<MixOrder> mixOrder,
 });
 
 class $$SettingsTableFilterComposer
@@ -10158,6 +10261,17 @@ class $$SettingsTableFilterComposer
     column: $table.againRepeats,
     builder: (column) => ColumnFilters(column),
   );
+
+  ColumnFilters<String> get mixSides => $composableBuilder(
+    column: $table.mixSides,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<MixOrder, MixOrder, String> get mixOrder =>
+      $composableBuilder(
+        column: $table.mixOrder,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
 }
 
 class $$SettingsTableOrderingComposer
@@ -10233,6 +10347,16 @@ class $$SettingsTableOrderingComposer
     column: $table.againRepeats,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get mixSides => $composableBuilder(
+    column: $table.mixSides,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get mixOrder => $composableBuilder(
+    column: $table.mixOrder,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$SettingsTableAnnotationComposer
@@ -10297,6 +10421,12 @@ class $$SettingsTableAnnotationComposer
     column: $table.againRepeats,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get mixSides =>
+      $composableBuilder(column: $table.mixSides, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<MixOrder, String> get mixOrder =>
+      $composableBuilder(column: $table.mixOrder, builder: (column) => column);
 }
 
 class $$SettingsTableTableManager
@@ -10343,6 +10473,8 @@ class $$SettingsTableTableManager
                 Value<bool> lookupEnabled = const Value.absent(),
                 Value<String> reviewSchedule = const Value.absent(),
                 Value<int> againRepeats = const Value.absent(),
+                Value<String> mixSides = const Value.absent(),
+                Value<MixOrder> mixOrder = const Value.absent(),
               }) => SettingsCompanion(
                 id: id,
                 themeMode: themeMode,
@@ -10357,6 +10489,8 @@ class $$SettingsTableTableManager
                 lookupEnabled: lookupEnabled,
                 reviewSchedule: reviewSchedule,
                 againRepeats: againRepeats,
+                mixSides: mixSides,
+                mixOrder: mixOrder,
               ),
           createCompanionCallback:
               ({
@@ -10373,6 +10507,8 @@ class $$SettingsTableTableManager
                 Value<bool> lookupEnabled = const Value.absent(),
                 Value<String> reviewSchedule = const Value.absent(),
                 Value<int> againRepeats = const Value.absent(),
+                Value<String> mixSides = const Value.absent(),
+                Value<MixOrder> mixOrder = const Value.absent(),
               }) => SettingsCompanion.insert(
                 id: id,
                 themeMode: themeMode,
@@ -10387,6 +10523,8 @@ class $$SettingsTableTableManager
                 lookupEnabled: lookupEnabled,
                 reviewSchedule: reviewSchedule,
                 againRepeats: againRepeats,
+                mixSides: mixSides,
+                mixOrder: mixOrder,
               ),
           withReferenceMapper: (p0) => p0
               .map(

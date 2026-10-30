@@ -120,6 +120,53 @@ void main() {
       expect(config.promptSide, PromptSide.wordFirst);
     });
 
+    test('round-trips the mix choices', () {
+      final before = GameConfig(
+        gameId: 'flashcard',
+        mode: PracticeMode.daily,
+        selection: CardSelection.due,
+        limit: 20,
+        promptSide: PromptSide.mix,
+        mixSides: const <PromptSide>{
+          PromptSide.ipaFirst,
+          PromptSide.meaningFirst,
+        },
+        mixOrder: MixOrder.rotate,
+      );
+
+      final after = GameConfig.fromJson(before.toJson());
+
+      expect(after.promptSide, PromptSide.mix);
+      expect(after.mixSides, before.mixSides);
+      expect(after.mixOrder, MixOrder.rotate);
+    });
+
+    test('a config written before mix existed reads the mix defaults', () {
+      final config = GameConfig.fromJson(const <String, dynamic>{
+        'gameId': 'flashcard',
+        'mode': 'daily',
+        'selection': 'due',
+        'limit': 20,
+        'promptSide': 'wordFirst',
+      });
+
+      expect(config.mixSides, PromptSide.defaultMixSides);
+      expect(config.mixOrder, MixOrder.random);
+    });
+
+    test('corrupt mix sides fall back to the defaults', () {
+      // `mix` itself is not a face, and fewer than two faces is not a mix.
+      final config = GameConfig.fromJson(const <String, dynamic>{
+        'gameId': 'flashcard',
+        'promptSide': 'mix',
+        'mixSides': <String>['mix', 'sideways', 'ipaFirst'],
+        'mixOrder': 'zigzag',
+      });
+
+      expect(config.mixSides, PromptSide.defaultMixSides);
+      expect(config.mixOrder, MixOrder.random);
+    });
+
     test('a re-read quick test is still capped', () {
       // The cap has to survive storage: a config_json hand-edited to 500 must
       // not come back as a 500-card session.

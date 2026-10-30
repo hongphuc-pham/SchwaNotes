@@ -347,6 +347,24 @@ class AppL10nEn extends AppL10n {
   String get promptSideMeaning => 'The meaning';
 
   @override
+  String get promptSideMix => 'Mix';
+
+  @override
+  String get mixSidesLabel => 'Mix these';
+
+  @override
+  String get mixSidesHint => 'Pick at least two.';
+
+  @override
+  String get mixOrderLabel => 'Order';
+
+  @override
+  String get mixOrderRandom => 'Random';
+
+  @override
+  String get mixOrderRotate => 'Take turns';
+
+  @override
   String practiceDailyReview(int count) {
     return 'Daily review ($count due)';
   }

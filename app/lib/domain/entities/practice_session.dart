@@ -81,7 +81,14 @@ enum PromptSide implements StorageEnum {
   ipaFirst('ipa_first'),
 
   /// Show the meaning, recall the word.
-  meaningFirst('meaning_first');
+  meaningFirst('meaning_first'),
+
+  /// Each card opens on one of the faces the user ticked ([mixableSides]),
+  /// picked by [MixOrder].
+  ///
+  /// Never the side of a built round: the game resolves it to a real face
+  /// when it builds the rounds, so a replayed session shows the same faces.
+  mix('mix');
 
   new(this.storageValue);
 
@@ -89,12 +96,75 @@ enum PromptSide implements StorageEnum {
   @override
   final String storageValue;
 
+  /// The faces a mix can be made of, in take-turns order.
+  static const Set<PromptSide> mixableSides = <PromptSide>{
+    PromptSide.wordFirst,
+    PromptSide.ipaFirst,
+    PromptSide.meaningFirst,
+  };
+
+  /// What a mix uses until the user ticks otherwise: word and meaning, the
+  /// two directions every card has once it has a definition.
+  static const Set<PromptSide> defaultMixSides = <PromptSide>{
+    PromptSide.wordFirst,
+    PromptSide.meaningFirst,
+  };
+
+  /// The fewest faces a mix may have. One face is not a mix.
+  static const int minMixSides = 2;
+
   /// Parses a stored value, falling back to [PromptSide.wordFirst].
   static PromptSide fromStorage(String value) {
     for (final side in PromptSide.values) {
       if (side.storageValue == value) return side;
     }
     return PromptSide.wordFirst;
+  }
+
+  /// [sides] if they make a valid mix, otherwise [defaultMixSides].
+  ///
+  /// Valid means: only [mixableSides], and at least [minMixSides] of them.
+  /// Returned in take-turns order whatever order they arrived in.
+  static Set<PromptSide> validMix(Iterable<PromptSide> sides) {
+    final picked = <PromptSide>{
+      for (final side in mixableSides)
+        if (sides.contains(side)) side,
+    };
+    return picked.length >= minMixSides ? picked : defaultMixSides;
+  }
+
+  /// `settings.mix_sides`: storage values joined by commas.
+  static String encodeMix(Set<PromptSide> sides) =>
+      validMix(sides).map((side) => side.storageValue).join(',');
+
+  /// Reads `settings.mix_sides`, falling back to [defaultMixSides].
+  static Set<PromptSide> decodeMix(String stored) => validMix(<PromptSide>[
+    for (final part in stored.split(','))
+      for (final side in mixableSides)
+        if (side.storageValue == part.trim()) side,
+  ]);
+}
+
+/// How a [PromptSide.mix] session picks each card's face.
+enum MixOrder implements StorageEnum {
+  /// A seeded random pick per card.
+  random('random'),
+
+  /// Word, sounds, meaning, word… through the ticked faces.
+  rotate('rotate');
+
+  new(this.storageValue);
+
+  /// The exact string written to `settings.mix_order`.
+  @override
+  final String storageValue;
+
+  /// Parses a stored value, falling back to [MixOrder.random].
+  static MixOrder fromStorage(String value) {
+    for (final order in MixOrder.values) {
+      if (order.storageValue == value) return order;
+    }
+    return MixOrder.random;
   }
 }
 

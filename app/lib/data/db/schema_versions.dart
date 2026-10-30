@@ -1110,8 +1110,338 @@ i1.GeneratedColumn<int> _column_71(String aliasedName) =>
       $customConstraints: 'NOT NULL DEFAULT 1',
       defaultValue: const i1.CustomExpression('1'),
     );
+
+final class Schema3 extends i0.VersionedSchema {
+  Schema3({required super.database}) : super(version: 3);
+  @override
+  late final List<i1.DatabaseSchemaEntity> entities = [
+    wordsFts,
+    words,
+    wordNotes,
+    notesFtsAfterInsert,
+    notesFtsAfterUpdate,
+    notesFtsAfterDelete,
+    idxNotesWord,
+    idxWordsNormalized,
+    idxWordsUpdated,
+    ipaHighlights,
+    wordLists,
+    wordListItems,
+    studyCards,
+    practiceSessions,
+    practiceAnswers,
+    appMeta,
+    settings,
+    idxHighlightsWord,
+    idxCardsDue,
+    idxCardsBoxLapses,
+  ];
+  late final Shape0 wordsFts = Shape0(
+    source: i0.VersionedVirtualTable(
+      entityName: 'words_fts',
+      moduleAndArgs: 'fts5(word_id UNINDEXED, headword, definition, example, notes, tokenize = \'unicode61 remove_diacritics 2\')',
+      columns: [_column_0, _column_1, _column_2, _column_3, _column_4],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape1 words = Shape1(
+    source: i0.VersionedTable(
+      entityName: 'words',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_5,
+        _column_6,
+        _column_7,
+        _column_8,
+        _column_9,
+        _column_10,
+        _column_11,
+        _column_12,
+        _column_13,
+        _column_14,
+        _column_15,
+        _column_16,
+        _column_17,
+        _column_18,
+        _column_19,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape2 wordNotes = Shape2(
+    source: i0.VersionedTable(
+      entityName: 'word_notes',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_5,
+        _column_20,
+        _column_21,
+        _column_17,
+        _column_18,
+        _column_22,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  final i1.Trigger notesFtsAfterInsert = i1.Trigger(
+    'CREATE TRIGGER notes_fts_after_insert AFTER INSERT ON word_notes BEGIN UPDATE words_fts SET notes = coalesce((SELECT group_concat(body, \' \') FROM word_notes WHERE word_id = new.word_id), \'\') WHERE word_id = new.word_id;END',
+    'notes_fts_after_insert',
+  );
+  final i1.Trigger notesFtsAfterUpdate = i1.Trigger(
+    'CREATE TRIGGER notes_fts_after_update AFTER UPDATE ON word_notes BEGIN UPDATE words_fts SET notes = coalesce((SELECT group_concat(body, \' \') FROM word_notes WHERE word_id = new.word_id), \'\') WHERE word_id = new.word_id;END',
+    'notes_fts_after_update',
+  );
+  final i1.Trigger notesFtsAfterDelete = i1.Trigger(
+    'CREATE TRIGGER notes_fts_after_delete AFTER DELETE ON word_notes BEGIN UPDATE words_fts SET notes = coalesce((SELECT group_concat(body, \' \') FROM word_notes WHERE word_id = old.word_id), \'\') WHERE word_id = old.word_id;END',
+    'notes_fts_after_delete',
+  );
+  final i1.Index idxNotesWord = i1.Index(
+    'idx_notes_word',
+    'CREATE INDEX idx_notes_word ON word_notes (word_id)',
+  );
+  final i1.Index idxWordsNormalized = i1.Index(
+    'idx_words_normalized',
+    'CREATE INDEX idx_words_normalized ON words (headword_normalized)',
+  );
+  final i1.Index idxWordsUpdated = i1.Index(
+    'idx_words_updated',
+    'CREATE INDEX idx_words_updated ON words (updated_at DESC)',
+  );
+  late final Shape3 ipaHighlights = Shape3(
+    source: i0.VersionedTable(
+      entityName: 'ipa_highlights',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [
+        'PRIMARY KEY(id)',
+        'CHECK(end_grapheme > start_grapheme)',
+        'CHECK(start_grapheme >= 0)',
+      ],
+      columns: [
+        _column_5,
+        _column_20,
+        _column_23,
+        _column_24,
+        _column_25,
+        _column_26,
+        _column_27,
+        _column_17,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape4 wordLists = Shape4(
+    source: i0.VersionedTable(
+      entityName: 'word_lists',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_5,
+        _column_28,
+        _column_26,
+        _column_29,
+        _column_30,
+        _column_17,
+        _column_18,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape5 wordListItems = Shape5(
+    source: i0.VersionedTable(
+      entityName: 'word_list_items',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(list_id, word_id)'],
+      columns: [_column_31, _column_20, _column_32],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape6 studyCards = Shape6(
+    source: i0.VersionedTable(
+      entityName: 'study_cards',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [
+        'PRIMARY KEY(word_id)',
+        'CHECK(box >= 0 AND box <= 6)',
+      ],
+      columns: [
+        _column_20,
+        _column_33,
+        _column_34,
+        _column_35,
+        _column_36,
+        _column_37,
+        _column_38,
+        _column_39,
+        _column_40,
+        _column_41,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape7 practiceSessions = Shape7(
+    source: i0.VersionedTable(
+      entityName: 'practice_sessions',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_5,
+        _column_42,
+        _column_43,
+        _column_44,
+        _column_45,
+        _column_46,
+        _column_47,
+        _column_48,
+        _column_49,
+        _column_50,
+        _column_51,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape8 practiceAnswers = Shape8(
+    source: i0.VersionedTable(
+      entityName: 'practice_answers',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_5,
+        _column_52,
+        _column_20,
+        _column_53,
+        _column_54,
+        _column_55,
+        _column_56,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape9 appMeta = Shape9(
+    source: i0.VersionedTable(
+      entityName: 'app_meta',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY("key")'],
+      columns: [_column_57, _column_58],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape11 settings = Shape11(
+    source: i0.VersionedTable(
+      entityName: 'settings',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)', 'CHECK(id = 1)'],
+      columns: [
+        _column_59,
+        _column_60,
+        _column_61,
+        _column_62,
+        _column_63,
+        _column_64,
+        _column_65,
+        _column_66,
+        _column_67,
+        _column_68,
+        _column_69,
+        _column_70,
+        _column_71,
+        _column_72,
+        _column_73,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  final i1.Index idxHighlightsWord = i1.Index(
+    'idx_highlights_word',
+    'CREATE INDEX idx_highlights_word ON ipa_highlights (word_id, target)',
+  );
+  final i1.Index idxCardsDue = i1.Index(
+    'idx_cards_due',
+    'CREATE INDEX idx_cards_due ON study_cards (due_at, suspended)',
+  );
+  final i1.Index idxCardsBoxLapses = i1.Index(
+    'idx_cards_box_lapses',
+    'CREATE INDEX idx_cards_box_lapses ON study_cards (box, lapses)',
+  );
+}
+
+class Shape11 extends i0.VersionedTable {
+  Shape11({required super.source, required super.alias}) : super.aliased();
+  i1.GeneratedColumn<int> get id =>
+      columnsByName['id']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<String> get themeMode =>
+      columnsByName['theme_mode']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get ttsLocale =>
+      columnsByName['tts_locale']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<double> get ttsRate =>
+      columnsByName['tts_rate']! as i1.GeneratedColumn<double>;
+  i1.GeneratedColumn<double> get ttsPitch =>
+      columnsByName['tts_pitch']! as i1.GeneratedColumn<double>;
+  i1.GeneratedColumn<int> get autoplayOnOpen =>
+      columnsByName['autoplay_on_open']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get dailyGoal =>
+      columnsByName['daily_goal']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get reminderEnabled =>
+      columnsByName['reminder_enabled']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get reminderTimeMinutes =>
+      columnsByName['reminder_time_minutes']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<String> get promptSide =>
+      columnsByName['prompt_side']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<int> get lookupEnabled =>
+      columnsByName['lookup_enabled']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<String> get reviewSchedule =>
+      columnsByName['review_schedule']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<int> get againRepeats =>
+      columnsByName['again_repeats']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<String> get mixSides =>
+      columnsByName['mix_sides']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get mixOrder =>
+      columnsByName['mix_order']! as i1.GeneratedColumn<String>;
+}
+
+i1.GeneratedColumn<String> _column_72(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'mix_sides',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NOT NULL DEFAULT \'word_first,meaning_first\'',
+      defaultValue: const i1.CustomExpression('\'word_first,meaning_first\''),
+    );
+i1.GeneratedColumn<String> _column_73(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'mix_order',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NOT NULL DEFAULT \'random\'',
+      defaultValue: const i1.CustomExpression('\'random\''),
+    );
 i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,
+  required Future<void> Function(i1.Migrator m, Schema3 schema) from2To3,
 }) {
   return (currentVersion, database) async {
     switch (currentVersion) {
@@ -1120,6 +1450,11 @@ i0.MigrationStepWithVersion migrationSteps({
         final migrator = i1.Migrator(database, schema);
         await from1To2(migrator, schema);
         return 2;
+      case 2:
+        final schema = Schema3(database: database);
+        final migrator = i1.Migrator(database, schema);
+        await from2To3(migrator, schema);
+        return 3;
       default:
         throw ArgumentError.value('Unknown migration from $currentVersion');
     }
@@ -1128,6 +1463,7 @@ i0.MigrationStepWithVersion migrationSteps({
 
 i1.OnUpgrade stepByStep({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,
+  required Future<void> Function(i1.Migrator m, Schema3 schema) from2To3,
 }) => i0.VersionedSchema.stepByStepHelper(
-  step: migrationSteps(from1To2: from1To2),
+  step: migrationSteps(from1To2: from1To2, from2To3: from2To3),
 );

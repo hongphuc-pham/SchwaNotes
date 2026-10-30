@@ -35,6 +35,8 @@ void main() {
   GameConfig config({
     PromptSide promptSide = PromptSide.wordFirst,
     PracticeMode mode = PracticeMode.daily,
+    Set<PromptSide> mixSides = PromptSide.defaultMixSides,
+    MixOrder mixOrder = MixOrder.random,
     int? seed,
   }) => GameConfig(
     gameId: FlashcardGame.gameId,
@@ -42,6 +44,8 @@ void main() {
     selection: CardSelection.due,
     limit: 20,
     promptSide: promptSide,
+    mixSides: mixSides,
+    mixOrder: mixOrder,
     seed: seed,
   );
 
@@ -173,6 +177,125 @@ void main() {
       expect(round.frontIsFallback, isTrue);
       expect(round.frontText, 'cough');
       expect(round.frontIsIpa, isFalse);
+    });
+  });
+
+  group('mix', () {
+    List<PracticeCardData> pool(int n, {String? ipaUk = 'kɒf'}) =>
+        <PracticeCardData>[
+          for (var i = 0; i < n; i++) card(id: 'w$i', ipaUk: ipaUk),
+        ];
+
+    test('no round is left as mix: every round gets a real face', () {
+      final rounds = const FlashcardGame().buildRounds(
+        config(promptSide: PromptSide.mix, seed: 1),
+        pool(30),
+      );
+
+      expect(rounds.map((r) => r.promptSide), isNot(contains(PromptSide.mix)));
+    });
+
+    test('random only uses the ticked faces, and uses all of them', () {
+      final rounds = const FlashcardGame().buildRounds(
+        config(
+          promptSide: PromptSide.mix,
+          mixSides: const <PromptSide>{
+            PromptSide.ipaFirst,
+            PromptSide.meaningFirst,
+          },
+          seed: 7,
+        ),
+        pool(30),
+      );
+
+      expect(rounds.map((r) => r.promptSide).toSet(), <PromptSide>{
+        PromptSide.ipaFirst,
+        PromptSide.meaningFirst,
+      });
+    });
+
+    test('random with the same seed picks the same faces twice', () {
+      final c = config(
+        promptSide: PromptSide.mix,
+        mixSides: PromptSide.mixableSides,
+        seed: 99,
+      );
+      final first = const FlashcardGame().buildRounds(c, pool(20));
+      final second = const FlashcardGame().buildRounds(c, pool(20));
+
+      expect(first.map((r) => r.promptSide), second.map((r) => r.promptSide));
+    });
+
+    test('take turns rotates word, sounds, meaning in that order', () {
+      final rounds = const FlashcardGame().buildRounds(
+        config(
+          promptSide: PromptSide.mix,
+          mixSides: PromptSide.mixableSides,
+          mixOrder: MixOrder.rotate,
+        ),
+        pool(5),
+      );
+
+      expect(rounds.map((r) => r.promptSide), <PromptSide>[
+        PromptSide.wordFirst,
+        PromptSide.ipaFirst,
+        PromptSide.meaningFirst,
+        PromptSide.wordFirst,
+        PromptSide.ipaFirst,
+      ]);
+    });
+
+    test('a card without a ticked face opens on another ticked face', () {
+      // No transcription: a sounds-or-meaning mix must open on the meaning,
+      // never on an empty card or a silent fallback to the word.
+      final rounds = const FlashcardGame().buildRounds(
+        config(
+          promptSide: PromptSide.mix,
+          mixSides: const <PromptSide>{
+            PromptSide.ipaFirst,
+            PromptSide.meaningFirst,
+          },
+          mixOrder: MixOrder.rotate,
+        ),
+        pool(4, ipaUk: null),
+      );
+
+      expect(
+        rounds.map((r) => r.promptSide),
+        everyElement(PromptSide.meaningFirst),
+      );
+      expect(rounds.map((r) => r.frontIsFallback), everyElement(isFalse));
+    });
+
+    test('a card with none of the ticked faces falls back to the word', () {
+      final rounds = const FlashcardGame().buildRounds(
+        config(
+          promptSide: PromptSide.mix,
+          mixSides: const <PromptSide>{
+            PromptSide.ipaFirst,
+            PromptSide.meaningFirst,
+          },
+        ),
+        <PracticeCardData>[card(ipaUk: null, definition: null)],
+      );
+
+      expect(rounds.single.frontText, 'cough');
+    });
+
+    test('mix is ignored when the prompt side is not mix', () {
+      final rounds = const FlashcardGame().buildRounds(
+        config(
+          promptSide: PromptSide.ipaFirst,
+          mixSides: PromptSide.mixableSides,
+          mixOrder: MixOrder.rotate,
+        ),
+        pool(3),
+      );
+
+      expect(
+        rounds.map((r) => r.promptSide),
+        everyElement(PromptSide.ipaFirst),
+      );
     });
   });
 

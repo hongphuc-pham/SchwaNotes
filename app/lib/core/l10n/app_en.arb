@@ -429,6 +429,30 @@
   "@promptSideMeaning": {
     "description": "Prompt side: show the definition first."
   },
+  "promptSideMix": "Mix",
+  "@promptSideMix": {
+    "description": "Prompt side: each card opens on one of several faces the user ticked."
+  },
+  "mixSidesLabel": "Mix these",
+  "@mixSidesLabel": {
+    "description": "Label above the chips that choose which faces a Mix draws from."
+  },
+  "mixSidesHint": "Pick at least two.",
+  "@mixSidesHint": {
+    "description": "Says why the last two mix chips cannot be unticked."
+  },
+  "mixOrderLabel": "Order",
+  "@mixOrderLabel": {
+    "description": "Label above the choice of how a Mix picks each card's face."
+  },
+  "mixOrderRandom": "Random",
+  "@mixOrderRandom": {
+    "description": "Mix order: a random face per card."
+  },
+  "mixOrderRotate": "Take turns",
+  "@mixOrderRotate": {
+    "description": "Mix order: rotate word, sounds, meaning in turn."
+  },
   "practiceDailyReview": "Daily review ({count} due)",
   "@practiceDailyReview": {
     "description": "Button that starts a daily review, with how many cards are due.",

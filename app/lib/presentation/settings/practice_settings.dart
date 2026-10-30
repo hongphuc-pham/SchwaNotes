@@ -7,8 +7,10 @@ import 'package:vocabnote/application/settings/reminder_controller.dart';
 import 'package:vocabnote/application/settings/settings_actions.dart';
 import 'package:vocabnote/application/settings/settings_controller.dart';
 import 'package:vocabnote/core/l10n/gen/app_localizations.dart';
+import 'package:vocabnote/core/theme/app_metrics.dart';
 import 'package:vocabnote/domain/entities/practice_session.dart';
 import 'package:vocabnote/domain/repositories/reminder_service.dart';
+import 'package:vocabnote/presentation/practice/mix_options.dart';
 import 'package:vocabnote/presentation/settings/interval_editor_sheet.dart';
 import 'package:vocabnote/presentation/settings/settings_tiles.dart';
 
@@ -94,13 +96,26 @@ class PracticeSettings extends ConsumerWidget {
           title: l10n.settingsPromptSide,
           value: settings.promptSide,
           options: PromptSide.values,
-          labelOf: (side) => switch (side) {
-            PromptSide.wordFirst => l10n.promptSideWord,
-            PromptSide.ipaFirst => l10n.promptSideIpa,
-            PromptSide.meaningFirst => l10n.promptSideMeaning,
-          },
+          labelOf: (side) => promptSideLabel(l10n, side),
           onChanged: (side) => unawaited(actions().setPromptSide(side)),
         ),
+        if (settings.promptSide == PromptSide.mix)
+          Padding(
+            padding: EdgeInsets.fromLTRB(
+              context.metrics.spaceLg,
+              0,
+              context.metrics.spaceLg,
+              context.metrics.spaceMd,
+            ),
+            child: MixOptions(
+              sides: settings.mixSides,
+              order: settings.mixOrder,
+              onSidesChanged: (sides) =>
+                  unawaited(actions().setMixSides(sides)),
+              onOrderChanged: (order) =>
+                  unawaited(actions().setMixOrder(order)),
+            ),
+          ),
         SwitchListTile(
           title: Text(l10n.reminderTitle),
           subtitle: Text(

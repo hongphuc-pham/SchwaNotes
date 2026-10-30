@@ -103,6 +103,12 @@ const promptSideConverter = StorageEnumConverter<PromptSide>(
   PromptSide.wordFirst,
 );
 
+/// `settings.mix_order`. Falls back to `random`.
+const mixOrderConverter = StorageEnumConverter<MixOrder>(
+  MixOrder.values,
+  MixOrder.random,
+);
+
 /// `settings.theme_mode`. Falls back to `system`.
 const themePreferenceConverter = StorageEnumConverter<ThemePreference>(
   ThemePreference.values,

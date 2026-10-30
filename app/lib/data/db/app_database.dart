@@ -86,7 +86,7 @@ class AppDatabase extends _$AppDatabase {
   /// it against the on-disk version without constructing a database just to
   /// ask - which would both waste an open handle and trip drift's
   /// "instantiated twice" warning.
-  static const int latestSchemaVersion = 2;
+  static const int latestSchemaVersion = 3;
 
   @override
   int get schemaVersion => latestSchemaVersion;
@@ -113,6 +113,15 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(schema.settings, schema.settings.reviewSchedule);
         await m.addColumn(schema.settings, schema.settings.againRepeats);
         await m.create(schema.idxCardsBoxLapses);
+      },
+
+      // v3: the *Mix* prompt side - which faces it draws from and in what
+      // order. Purely additive: both columns carry non-null defaults, and
+      // `prompt_side` keeps its value, so an upgrading user still sees the
+      // face they chose. An older build reading `mix` falls back to the word.
+      from2To3: (m, schema) async {
+        await m.addColumn(schema.settings, schema.settings.mixSides);
+        await m.addColumn(schema.settings, schema.settings.mixOrder);
       },
     ),
 

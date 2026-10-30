@@ -54,6 +54,8 @@ class _PracticeRunScreenState extends ConsumerState<PracticeRunScreen> {
       selection: CardSelection.due,
       limit: settings.dailyGoal,
       promptSide: settings.promptSide,
+      mixSides: settings.mixSides,
+      mixOrder: settings.mixOrder,
     );
   }
 

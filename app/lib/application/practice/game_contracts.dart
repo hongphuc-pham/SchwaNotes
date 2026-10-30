@@ -91,11 +91,14 @@ class GameConfig {
     this.source = CardSourceKind.all,
     this.sourceId,
     this.promptSide = PromptSide.wordFirst,
+    Set<PromptSide> mixSides = PromptSide.defaultMixSides,
+    this.mixOrder = MixOrder.random,
     this.ttsAutoPlay = true,
     this.seed,
   }) : limit = mode == PracticeMode.quickTest
            ? min(limit, PracticeRepository.quickTestMaxCards)
            : limit,
+       mixSides = PromptSide.validMix(mixSides),
        assert(limit > 0, 'a session of no cards is not a session');
 
   /// Rebuilds a config from `config_json`.
@@ -123,6 +126,13 @@ class GameConfig {
       sourceId: json['sourceId'] as String?,
       promptSide:
           enumOf(PromptSide.values, json['promptSide']) ?? PromptSide.wordFirst,
+      mixSides: <PromptSide>{
+        if (json['mixSides'] case final List<Object?> names)
+          for (final name in names)
+            if (enumOf(PromptSide.values, name) case final PromptSide side)
+              side,
+      },
+      mixOrder: enumOf(MixOrder.values, json['mixOrder']) ?? MixOrder.random,
       ttsAutoPlay: json['ttsAutoPlay'] as bool? ?? true,
       seed: (json['seed'] as num?)?.toInt(),
     );
@@ -149,6 +159,13 @@ class GameConfig {
   /// Which face the card opens on.
   final PromptSide promptSide;
 
+  /// The faces a [PromptSide.mix] session draws from. Always a valid mix —
+  /// the constructor falls back to [PromptSide.defaultMixSides].
+  final Set<PromptSide> mixSides;
+
+  /// How a [PromptSide.mix] session picks among [mixSides].
+  final MixOrder mixOrder;
+
   /// Whether the word is spoken on reveal.
   final bool ttsAutoPlay;
 
@@ -173,6 +190,8 @@ class GameConfig {
     source: source,
     sourceId: sourceId,
     promptSide: promptSide,
+    mixSides: mixSides,
+    mixOrder: mixOrder,
     ttsAutoPlay: ttsAutoPlay,
     seed: seed,
   );
@@ -186,6 +205,8 @@ class GameConfig {
     'selection': selection.name,
     'limit': limit,
     'promptSide': promptSide.name,
+    'mixSides': <String>[for (final side in mixSides) side.name],
+    'mixOrder': mixOrder.name,
     'ttsAutoPlay': ttsAutoPlay,
     if (seed != null) 'seed': seed,
   };

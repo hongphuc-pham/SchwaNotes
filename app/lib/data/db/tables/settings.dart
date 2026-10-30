@@ -48,7 +48,7 @@ class Settings extends Table {
   IntColumn get reminderTimeMinutes =>
       integer().named('reminder_time_minutes').nullable()();
 
-  /// `word_first`, `ipa_first` or `meaning_first`.
+  /// `word_first`, `ipa_first`, `meaning_first` or `mix` (v3).
   TextColumn get promptSide => text()
       .named('prompt_side')
       .map(promptSideConverter)
@@ -78,6 +78,19 @@ class Settings extends Table {
   /// scheduling column. 0 disables it.
   IntColumn get againRepeats =>
       integer().named('again_repeats').withDefault(const Constant(1))();
+
+  /// The faces a `mix` prompt draws from: storage values joined by commas
+  /// (v3). Read through `PromptSide.decodeMix`, which falls back rather than
+  /// trusting the string.
+  TextColumn get mixSides => text()
+      .named('mix_sides')
+      .withDefault(const Constant('word_first,meaning_first'))();
+
+  /// `random` or `rotate` - how a `mix` prompt picks each card's face (v3).
+  TextColumn get mixOrder => text()
+      .named('mix_order')
+      .map(mixOrderConverter)
+      .withDefault(const Constant('random'))();
 
   @override
   Set<Column<Object>> get primaryKey => {id};

@@ -94,6 +94,13 @@ abstract class AppSettings with _$AppSettings {
     /// Which face of a practice card is shown first.
     @Default(PromptSide.wordFirst) PromptSide promptSide,
 
+    /// The faces a [PromptSide.mix] prompt draws from. Always a valid mix
+    /// when read from the database (`PromptSide.decodeMix`).
+    @Default(PromptSide.defaultMixSides) Set<PromptSide> mixSides,
+
+    /// How a [PromptSide.mix] prompt picks each card's face.
+    @Default(MixOrder.random) MixOrder mixOrder,
+
     /// Whether the *Look up* button is offered on the word form.
     ///
     /// Turning it off makes the app entirely offline by choice, not just by

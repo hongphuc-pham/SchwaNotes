@@ -56,16 +56,48 @@ class FlashcardGame implements PracticeGame<FlashcardRound> {
       ordered.shuffle(Random(seed));
     }
 
+    // A second generator, not the shuffle's: drawing faces from the same one
+    // would make the order of the cards depend on whether mix is on.
+    final faces = Random(config.seed);
     return <FlashcardRound>[
       for (var i = 0; i < ordered.length; i++)
         FlashcardRound(
           index: i,
           card: ordered[i],
-          promptSide: config.promptSide,
+          promptSide: config.promptSide == PromptSide.mix
+              ? _mixFace(config, ordered[i], i, faces)
+              : config.promptSide,
           isFirstRound: i == 0,
           autoPlayOnReveal: config.ttsAutoPlay,
         ),
     ];
+  }
+
+  /// The face round [index] opens on in a [PromptSide.mix] session.
+  ///
+  /// Only faces this card actually has take part, so a word with no
+  /// transcription is never asked by its sounds. If it has none of the ticked
+  /// faces it opens on the word, like any other empty prompt.
+  static PromptSide _mixFace(
+    GameConfig config,
+    PracticeCardData card,
+    int index,
+    Random random,
+  ) {
+    final usable = <PromptSide>[
+      for (final side in config.mixSides)
+        if (FlashcardRound.promptFor(side, card) case final String text
+            when text.trim().isNotEmpty)
+          side,
+    ];
+    // Drawn even when unused, so one card's missing face does not shift the
+    // faces of every card after it.
+    final roll = random.nextInt(1 << 30);
+    if (usable.isEmpty) return PromptSide.wordFirst;
+    return switch (config.mixOrder) {
+      MixOrder.random => usable[roll % usable.length],
+      MixOrder.rotate => usable[index % usable.length],
+    };
   }
 
   @override
@@ -116,11 +148,19 @@ class FlashcardRound extends GameRound {
   /// A word with no transcription cannot be asked `ipaFirst`, and one with no
   /// definition cannot be asked `meaningFirst`. Rather than show an empty card
   /// the view falls back to the headword — see [frontIsFallback].
-  String? get prompt => switch (promptSide) {
-    PromptSide.wordFirst => card.word.headword.value,
-    PromptSide.ipaFirst => card.word.preferredIpa?.value,
-    PromptSide.meaningFirst => card.word.definition,
-  };
+  String? get prompt => promptFor(promptSide, card);
+
+  /// The text [side] would show for [card], or null if it has none.
+  ///
+  /// [PromptSide.mix] is resolved before a round exists; met here it has no
+  /// text of its own, so the card falls back to the headword.
+  static String? promptFor(PromptSide side, PracticeCardData card) =>
+      switch (side) {
+        PromptSide.wordFirst => card.word.headword.value,
+        PromptSide.ipaFirst => card.word.preferredIpa?.value,
+        PromptSide.meaningFirst => card.word.definition,
+        PromptSide.mix => null,
+      };
 
   /// Whether the front had to fall back to the headword.
   ///

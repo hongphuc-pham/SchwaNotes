@@ -204,7 +204,7 @@ class _GameCard extends ConsumerWidget {
   }
 
   void _startDaily(BuildContext context, WidgetRef ref) {
-    final goal = ref.read(appSettingsOrDefaultsProvider).dailyGoal;
+    final settings = ref.read(appSettingsOrDefaultsProvider);
     unawaited(
       context.push(
         Routes.practiceRunOf(descriptor.id),
@@ -212,8 +212,10 @@ class _GameCard extends ConsumerWidget {
           gameId: descriptor.id,
           mode: PracticeMode.daily,
           selection: CardSelection.due,
-          limit: goal,
-          promptSide: ref.read(appSettingsOrDefaultsProvider).promptSide,
+          limit: settings.dailyGoal,
+          promptSide: settings.promptSide,
+          mixSides: settings.mixSides,
+          mixOrder: settings.mixOrder,
         ),
       ),
     );
