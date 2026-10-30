@@ -147,7 +147,14 @@ void main() {
       await openFromSettings(tester, 'Backup & restore');
 
       await scrollThrough(tester, 'Backup & restore');
-      await expectReachable(tester, find.text('Import backup'));
+      // At 200% the screen holds little more than one button and its hint,
+      // so from the bottom neither button is necessarily built: scroll back
+      // up to each.
+      for (final label in <String>['Import words from CSV', 'Import backup']) {
+        final button = find.text(label);
+        await tester.scrollUntilVisible(button, -300, scrollable: frontList());
+        await expectReachable(tester, button);
+      }
     });
 
     testWidgets('How to use, from the empty words list', (tester) async {

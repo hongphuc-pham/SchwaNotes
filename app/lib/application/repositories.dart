@@ -27,6 +27,7 @@ import 'package:vocabnote/domain/repositories/reminder_service.dart';
 import 'package:vocabnote/domain/repositories/settings_repository.dart';
 import 'package:vocabnote/domain/repositories/speech_service.dart';
 import 'package:vocabnote/domain/repositories/user_data_repository.dart';
+import 'package:vocabnote/domain/repositories/word_import_repository.dart';
 import 'package:vocabnote/domain/repositories/word_repository.dart';
 
 part 'repositories.g.dart';
@@ -79,6 +80,13 @@ ReminderService reminderService(Ref ref) => throw UnimplementedError(
 @Riverpod(keepAlive: true)
 UserDataRepository userDataRepository(Ref ref) => throw UnimplementedError(
   'userDataRepositoryProvider must be overridden in bootstrap() or in a '
+  'test.',
+);
+
+/// Bringing words in from a CSV deck (F-010).
+@Riverpod(keepAlive: true)
+WordImportRepository wordImportRepository(Ref ref) => throw UnimplementedError(
+  'wordImportRepositoryProvider must be overridden in bootstrap() or in a '
   'test.',
 );
 

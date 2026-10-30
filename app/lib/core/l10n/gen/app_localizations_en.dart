@@ -648,6 +648,145 @@ class AppL10nEn extends AppL10n {
       'Bring words in from a backup file. You\'ll see what\'s in it before anything changes.';
 
   @override
+  String get csvImport => 'Import words from CSV';
+
+  @override
+  String get csvImportHint =>
+      'A spreadsheet saved as CSV, one word per line with no header row: word, IPA, meaning, category, tags. Separate tags with ; — the category and each tag become lists. Words you already have are never overwritten: only their empty fields are filled in.';
+
+  @override
+  String get csvImporting => 'Importing…';
+
+  @override
+  String get csvPreviewTitle => 'Import words';
+
+  @override
+  String csvPreviewNew(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count new words',
+      one: '1 new word',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String csvPreviewExisting(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count words you already have',
+      one: '1 word you already have',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String csvPreviewSkipped(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count lines have no word and will be skipped',
+      one: '1 line has no word and will be skipped',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String csvPreviewNewLists(String names) {
+    return 'New lists: $names';
+  }
+
+  @override
+  String get csvPreviewRule =>
+      'Words you already have keep everything you wrote. Only their empty fields are filled in from this file.';
+
+  @override
+  String get csvPreviewSample => 'First lines';
+
+  @override
+  String get csvImportAction => 'Import';
+
+  @override
+  String get csvReportTitle => 'Words imported';
+
+  @override
+  String csvReportAdded(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count words added',
+      one: '1 word added',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String csvReportFilled(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count words you had were filled in',
+      one: '1 word you had was filled in',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String csvReportUnchanged(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count words you had were already complete',
+      one: '1 word you had was already complete',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String csvReportSkipped(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count lines skipped (no word)',
+      one: '1 line skipped (no word)',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String csvReportLists(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count new lists',
+      one: '1 new list',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get csvProblemNotText =>
+      'That file isn\'t plain text. In your spreadsheet, save it as \"CSV UTF-8\" and try again.';
+
+  @override
+  String get csvProblemTooLarge =>
+      'That file is too big. Split it into files under 2 MB.';
+
+  @override
+  String get csvProblemTooManyRows =>
+      'That file has more than 5,000 words. Split it into smaller files.';
+
+  @override
+  String get csvProblemNoWords =>
+      'No words found. The first column of each line should be the word.';
+
+  @override
+  String get csvImportFailed =>
+      'Couldn\'t import the words. Nothing was changed.';
+
+  @override
   String get importProblemNotABackup =>
       'That file isn\'t a Schwa Notes backup. Backups end in .vnb.';
 

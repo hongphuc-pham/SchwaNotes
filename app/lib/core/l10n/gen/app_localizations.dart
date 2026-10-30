@@ -1185,6 +1185,138 @@ abstract class AppL10n {
   /// **'Bring words in from a backup file. You\'ll see what\'s in it before anything changes.'**
   String get backupImportHint;
 
+  /// Button on Backup & restore that imports a CSV deck.
+  ///
+  /// In en, this message translates to:
+  /// **'Import words from CSV'**
+  String get csvImport;
+
+  /// Under the CSV import button. Must state the never-overwrite rule.
+  ///
+  /// In en, this message translates to:
+  /// **'A spreadsheet saved as CSV, one word per line with no header row: word, IPA, meaning, category, tags. Separate tags with ; — the category and each tag become lists. Words you already have are never overwritten: only their empty fields are filled in.'**
+  String get csvImportHint;
+
+  /// CSV import button label while the import runs.
+  ///
+  /// In en, this message translates to:
+  /// **'Importing…'**
+  String get csvImporting;
+
+  /// Title of the CSV import preview sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Import words'**
+  String get csvPreviewTitle;
+
+  /// Preview: words not yet in the library.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 new word} other{{count} new words}}'**
+  String csvPreviewNew(int count);
+
+  /// Preview: words already in the library.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 word you already have} other{{count} words you already have}}'**
+  String csvPreviewExisting(int count);
+
+  /// Preview: lines without a word in the first column.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 line has no word and will be skipped} other{{count} lines have no word and will be skipped}}'**
+  String csvPreviewSkipped(int count);
+
+  /// Preview: the lists the import will create.
+  ///
+  /// In en, this message translates to:
+  /// **'New lists: {names}'**
+  String csvPreviewNewLists(String names);
+
+  /// Preview: the duplicate rule, said before importing.
+  ///
+  /// In en, this message translates to:
+  /// **'Words you already have keep everything you wrote. Only their empty fields are filled in from this file.'**
+  String get csvPreviewRule;
+
+  /// Preview: heading above the first few parsed rows.
+  ///
+  /// In en, this message translates to:
+  /// **'First lines'**
+  String get csvPreviewSample;
+
+  /// Preview sheet button that starts the CSV import.
+  ///
+  /// In en, this message translates to:
+  /// **'Import'**
+  String get csvImportAction;
+
+  /// Title of the CSV import report.
+  ///
+  /// In en, this message translates to:
+  /// **'Words imported'**
+  String get csvReportTitle;
+
+  /// Report: new words.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 word added} other{{count} words added}}'**
+  String csvReportAdded(int count);
+
+  /// Report: existing words that had empty fields filled.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 word you had was filled in} other{{count} words you had were filled in}}'**
+  String csvReportFilled(int count);
+
+  /// Report: existing words left unchanged.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 word you had was already complete} other{{count} words you had were already complete}}'**
+  String csvReportUnchanged(int count);
+
+  /// Report: lines without a word.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 line skipped (no word)} other{{count} lines skipped (no word)}}'**
+  String csvReportSkipped(int count);
+
+  /// Report: lists created.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 new list} other{{count} new lists}}'**
+  String csvReportLists(int count);
+
+  /// Refusal: UTF-16 or binary file.
+  ///
+  /// In en, this message translates to:
+  /// **'That file isn\'t plain text. In your spreadsheet, save it as \"CSV UTF-8\" and try again.'**
+  String get csvProblemNotText;
+
+  /// Refusal: file over the size limit.
+  ///
+  /// In en, this message translates to:
+  /// **'That file is too big. Split it into files under 2 MB.'**
+  String get csvProblemTooLarge;
+
+  /// Refusal: too many rows.
+  ///
+  /// In en, this message translates to:
+  /// **'That file has more than 5,000 words. Split it into smaller files.'**
+  String get csvProblemTooManyRows;
+
+  /// Refusal: no usable rows.
+  ///
+  /// In en, this message translates to:
+  /// **'No words found. The first column of each line should be the word.'**
+  String get csvProblemNoWords;
+
+  /// Snackbar when the import transaction failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t import the words. Nothing was changed.'**
+  String get csvImportFailed;
+
   /// The chosen file is not a backup at all.
   ///
   /// In en, this message translates to:

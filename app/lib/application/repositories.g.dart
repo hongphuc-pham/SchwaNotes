@@ -376,6 +376,59 @@ final class UserDataRepositoryProvider
 String _$userDataRepositoryHash() =>
     r'cccd1609f7f9311645c6dd415a7f7470fe3ac535';
 
+/// Bringing words in from a CSV deck (F-010).
+
+@ProviderFor(wordImportRepository)
+final wordImportRepositoryProvider = WordImportRepositoryProvider._();
+
+/// Bringing words in from a CSV deck (F-010).
+
+final class WordImportRepositoryProvider
+    extends
+        $FunctionalProvider<
+          WordImportRepository,
+          WordImportRepository,
+          WordImportRepository
+        >
+    with $Provider<WordImportRepository> {
+  /// Bringing words in from a CSV deck (F-010).
+  WordImportRepositoryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'wordImportRepositoryProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$wordImportRepositoryHash();
+
+  @$internal
+  @override
+  $ProviderElement<WordImportRepository> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  WordImportRepository create(Ref ref) {
+    return wordImportRepository(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(WordImportRepository value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<WordImportRepository>(value),
+    );
+  }
+}
+
+String _$wordImportRepositoryHash() =>
+    r'747b2fe6b31e99b78c6d1eb07d3f31d42a5ecd85';
+
 /// The OS share sheet and file picker (F-073, F-074).
 ///
 /// A device service behind an interface, like [speechService], so nothing

@@ -18,6 +18,7 @@ import 'package:vocabnote/data/diagnostics/platform_diagnostics.dart';
 import 'package:vocabnote/data/dictionary/dictionary_cache.dart';
 import 'package:vocabnote/data/dictionary/free_dictionary_client.dart';
 import 'package:vocabnote/data/dictionary/offline_ipa_source.dart';
+import 'package:vocabnote/data/import/word_import_repository_impl.dart';
 import 'package:vocabnote/data/links/url_launcher_link_opener.dart';
 import 'package:vocabnote/data/notifications/local_notifications_reminder_service.dart';
 import 'package:vocabnote/data/repositories/dictionary_repository_impl.dart';
@@ -128,6 +129,9 @@ List<Override> repositoryOverrides(
       diagnostics ?? const PlatformDiagnostics(),
     ),
     // Inert like the two above: the share sheet opens only on Export.
+    wordImportRepositoryProvider.overrideWithValue(
+      WordImportRepositoryImpl(database),
+    ),
     backupFilesProvider.overrideWithValue(
       backupFiles ?? const PlatformBackupFiles(),
     ),

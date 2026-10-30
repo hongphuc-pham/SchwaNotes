@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -301,6 +302,104 @@ void main() {
       expect(report, findsNothing);
       expect(await wordIds(tester), <Object?>['mine']);
       expect(safety.listSync(), isEmpty);
+    });
+  });
+
+  group('import words from CSV (F-010)', () {
+    Uint8List csv(String text) => Uint8List.fromList(utf8.encode(text));
+
+    Future<void> tapText(WidgetTester tester, String text) async {
+      final target = find.text(text);
+      await tester.ensureVisible(target);
+      await tester.pumpAndSettle();
+      await tester.tap(target);
+      await tester.pumpAndSettle();
+    }
+
+    Future<List<Object?>> rows(WidgetTester tester, String sql) async {
+      final result = await tester.runAsync(() => db.customSelect(sql).get());
+      return <Object?>[for (final row in result!) row.data.values.join('|')];
+    }
+
+    final preview = find.text('Import words');
+    final report = find.text('Words imported');
+
+    testWidgets('the screen states the never-overwrite rule up front', (
+      tester,
+    ) async {
+      await openBackup(tester);
+
+      expect(
+        find.textContaining('Words you already have are never overwritten'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('preview, import, report - and the words arrive', (
+      tester,
+    ) async {
+      await seedWord(db, id: 'mine', headword: 'cough', definition: 'my own');
+      files.picked = csv(
+        'cough,kɒf,ho,Health\nthrough,θruː,qua,Travel,verbs\n,orphan',
+      );
+      await openBackup(tester);
+
+      await tapText(tester, 'Import words from CSV');
+      await settleUntil(tester, () => showing(preview));
+
+      expect(find.text('1 new word'), findsOneWidget);
+      expect(find.text('1 word you already have'), findsOneWidget);
+      expect(find.textContaining('Health'), findsWidgets);
+      expect(
+        find.text('1 line has no word and will be skipped'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('keep everything you wrote'), findsOneWidget);
+
+      await tapText(tester, 'Import');
+      await settleUntil(tester, () => showing(report));
+
+      expect(find.text('1 word added'), findsOneWidget);
+      expect(find.text('1 word you had was filled in'), findsOneWidget);
+      expect(find.text('3 new lists'), findsOneWidget);
+      await tapText(tester, 'Done');
+
+      expect(
+        await rows(
+          tester,
+          'SELECT headword, ipa_uk, definition FROM words ORDER BY rowid',
+        ),
+        <Object?>['cough|kɒf|my own', 'through|θruː|qua'],
+      );
+    });
+
+    testWidgets('cancelling the preview writes nothing', (tester) async {
+      files.picked = csv('cough,kɒf,ho,Health');
+      await openBackup(tester);
+
+      await tapText(tester, 'Import words from CSV');
+      await settleUntil(tester, () => showing(preview));
+      await tapText(tester, 'Cancel');
+
+      expect(report, findsNothing);
+      expect(await rows(tester, 'SELECT id FROM words'), isEmpty);
+      expect(await rows(tester, 'SELECT id FROM word_lists'), isEmpty);
+    });
+
+    testWidgets('a file with no words says what a line should look like', (
+      tester,
+    ) async {
+      files.picked = csv(',,\n');
+      await openBackup(tester);
+      final message = find.text(
+        'No words found. The first column of each line should be the word.',
+      );
+
+      await tapText(tester, 'Import words from CSV');
+      await settleUntil(tester, () => showing(message));
+
+      expect(message, findsOneWidget);
+      expect(preview, findsNothing);
     });
   });
 }

@@ -4,16 +4,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:vocabnote/application/backup/backup_actions.dart';
+import 'package:vocabnote/application/backup/word_import_actions.dart';
 import 'package:vocabnote/core/failure.dart';
 import 'package:vocabnote/core/l10n/gen/app_localizations.dart';
 import 'package:vocabnote/core/theme/app_metrics.dart';
 import 'package:vocabnote/domain/entities/backup.dart';
+import 'package:vocabnote/domain/entities/word_import.dart';
 import 'package:vocabnote/domain/repositories/backup_files.dart';
 import 'package:vocabnote/presentation/common/typed_confirm_dialog.dart';
 import 'package:vocabnote/presentation/design/gap.dart';
 import 'package:vocabnote/presentation/design/section.dart';
 import 'package:vocabnote/presentation/settings/import_preview_sheet.dart';
 import 'package:vocabnote/presentation/settings/import_report_dialog.dart';
+import 'package:vocabnote/presentation/settings/word_import_sheet.dart';
 
 /// Backup & restore (F-073, F-074, `docs/UI-UX.md` §4.9).
 ///
@@ -33,8 +36,53 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
   bool _exporting = false;
   bool _importing = false;
   bool _bringingIn = false;
+  bool _importingCsv = false;
 
-  bool get _busy => _exporting || _importing;
+  bool get _busy => _exporting || _importing || _importingCsv;
+
+  Future<void> _importCsv() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final l10n = AppL10n.of(context);
+    final actions = ref.read(wordImportActionsProvider.notifier);
+
+    setState(() => _importingCsv = true);
+    try {
+      final picked = await actions.pickDeck();
+      if (!mounted) return;
+      final WordImportPreview preview;
+      switch (picked) {
+        case DeckPickCancelled():
+          return;
+        case DeckPickRefused(:final problem):
+          messenger.showSnackBar(
+            SnackBar(content: Text(_csvProblemText(l10n, problem))),
+          );
+          return;
+        case DeckPickReady(preview: final ready):
+          preview = ready;
+      }
+
+      if (!await WordImportSheet.show(context, preview) || !mounted) return;
+      final report = await actions.importDeck(preview);
+      if (!mounted) return;
+      if (report == null) {
+        messenger.showSnackBar(SnackBar(content: Text(l10n.csvImportFailed)));
+        return;
+      }
+      await showWordImportReport(context, report);
+    } finally {
+      if (mounted) setState(() => _importingCsv = false);
+    }
+  }
+
+  static String _csvProblemText(AppL10n l10n, WordImportProblem? problem) =>
+      switch (problem) {
+        WordImportProblem.notText => l10n.csvProblemNotText,
+        WordImportProblem.tooLarge => l10n.csvProblemTooLarge,
+        WordImportProblem.tooManyRows => l10n.csvProblemTooManyRows,
+        WordImportProblem.noWords => l10n.csvProblemNoWords,
+        null => l10n.importProblemUnreadable,
+      };
 
   Future<void> _export(BuildContext buttonContext) async {
     final messenger = ScaffoldMessenger.of(context);
@@ -178,6 +226,14 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
           ),
           const VnGap(VnSpace.sm),
           VnQuietText(l10n.backupImportHint),
+          const VnGap(VnSpace.xl),
+          OutlinedButton.icon(
+            onPressed: _busy ? null : () => unawaited(_importCsv()),
+            icon: const Icon(Icons.table_view_outlined),
+            label: Text(_importingCsv ? l10n.csvImporting : l10n.csvImport),
+          ),
+          const VnGap(VnSpace.sm),
+          VnQuietText(l10n.csvImportHint),
         ],
       ),
     );
