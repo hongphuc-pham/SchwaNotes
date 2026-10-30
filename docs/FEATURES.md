@@ -19,7 +19,7 @@ before the milestone is closed.
 | F-007 | S | Edit any field later | Editing IPA re-validates highlights (F-023). |
 | F-008 | M | Delete a word | Soft delete + 5-second Undo snackbar; purged after 30 days. |
 | F-009 | C | Quick-add from share sheet | Sharing selected text from any app opens the add screen pre-filled. |
-| F-010 | P2 | Bulk import from CSV | |
+| F-010 | P2 | Bulk import from CSV | *Built 30 Oct 2026.* Backup & restore → *Import words from CSV*. No header; columns `front, ipa, back, category, tags`. `back` → definition, IPA → the field for the user's accent, category and each tag (split on `;` or `|`, extra columns count as tags) → lists, matched case-insensitively or created. **Never overwrites**: an existing word only has empty fields filled, said under the button, in the preview and in the report. Preview before writing; one transaction. Comma, semicolon or tab; BOM stripped; UTF-16 refused with advice; 2 MB / 5,000 words. Sample: `docs/samples/sample-deck.csv`. |
 
 ## F-02x · Pronunciation & IPA
 
@@ -53,7 +53,7 @@ before the milestone is closed.
 | F-060 | M | Practice hub | Cards for each registered game, each showing availability and a one-line description. Empty state when fewer than 4 words exist, with a link to add words. |
 | F-061 | M | Flashcards — **Daily review** | Pool = cards with `due_at <= now`, ordered by due then random, capped at the daily goal (default 20). Grading updates the Leitner schedule. |
 | F-062 | M | Flashcards — **Quick test** | User chooses source (All / a list / Favourites) and size (5 / 10 / 20 / All), **hard-capped at 30**. Random selection with a stored seed. Does **not** change the review schedule; it records stats only. |
-| F-063 | M | Card interaction | Front shows the prompt side (word, IPA, or meaning — configurable); tap or swipe up to flip; then *Again* / *Good* / *Easy*. Optional TTS autoplay on reveal. |
+| F-063 | M | Card interaction | Front shows the prompt side (word, IPA, meaning, or **Mix** — configurable; Mix draws each card from the faces the user ticks, at least two, in *Random* (seeded) or *Take turns* order, and only from faces the card has); tap or swipe up to flip; then *Again* / *Good* / *Easy*. Optional TTS autoplay on reveal. |
 | F-064 | M | Session summary | Score, time, list of missed words with a one-tap "add all to a list". |
 | F-065 | S | Streak & daily goal | Days practised in a row; goal ring on the hub. Non-punitive copy — no guilt language. *Built at M5: the goal counts different words practised today in any mode; the streak runs back from yesterday until today has practice, and zero is never announced — see `UI-UX.md` §4.6.* |
 | F-066 | S | Optional daily reminder | Local notification at a user-chosen time; off by default; asks permission only when enabled. *Built at M5: Settings → Practice → Daily reminder, 19:00 until a time is chosen. Scheduled inexactly (no exact-alarm permission) and repeating on UTC, because the device's zone name needs a package RULES has not approved (`flutter_timezone`); it is scheduled again from local time at every launch, so a daylight saving change shifts it by an hour at most until the app next opens.* |

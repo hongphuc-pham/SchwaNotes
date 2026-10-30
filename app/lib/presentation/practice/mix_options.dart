@@ -14,9 +14,10 @@ String promptSideLabel(AppL10n l10n, PromptSide side) => switch (side) {
 
 /// Which faces a [PromptSide.mix] draws from, and in what order.
 ///
-/// Shared by Settings and the quick-test sheet so the two cannot drift. A chip
-/// that would leave fewer than [PromptSide.minMixSides] ticked is disabled
-/// rather than accepted and silently reset.
+/// Shared by Settings and the quick-test sheet so the two cannot drift.
+/// Unticking a face that would leave fewer than [PromptSide.minMixSides] does
+/// nothing, and a line says why. The chip is not disabled: on the device a
+/// disabled chip that is ticked looks greyed out, which reads as *off*.
 class MixOptions extends StatelessWidget {
   /// Creates the options.
   const new({
@@ -60,13 +61,14 @@ class MixOptions extends StatelessWidget {
               FilterChip(
                 label: Text(promptSideLabel(l10n, side)),
                 selected: sides.contains(side),
-                onSelected: sides.contains(side) && atMinimum
-                    ? null
-                    : (on) => onSidesChanged(<PromptSide>{
-                        for (final s in sides)
-                          if (s != side) s,
-                        if (on) side,
-                      }),
+                onSelected: (on) {
+                  if (!on && atMinimum) return;
+                  onSidesChanged(<PromptSide>{
+                    for (final s in sides)
+                      if (s != side) s,
+                    if (on) side,
+                  });
+                },
               ),
           ],
         ),

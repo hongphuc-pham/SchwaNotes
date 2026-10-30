@@ -101,7 +101,8 @@ query in the app by 15× without it; PROGRESS §3 decision 3).*
 `autoplay_on_open` INTEGER · `daily_goal` INTEGER DEFAULT 20 · `reminder_enabled` INTEGER ·
 `reminder_time_minutes` INTEGER NULL · `prompt_side` TEXT · `lookup_enabled` INTEGER DEFAULT 1 ·
 `review_schedule` TEXT DEFAULT `'[0,1,2,4,7,15,30]'` · `again_repeats` INTEGER DEFAULT 1
-*(both added at schema v2)*.
+*(both added at schema v2)* · `mix_sides` TEXT DEFAULT `'word_first,meaning_first'` ·
+`mix_order` TEXT DEFAULT `'random'` *(both added at schema v3, for `prompt_side = 'mix'`)*.
 
 `review_schedule` is the interval each Leitner box waits, as a JSON array of seven integers.
 Its default **is** the `GAMES.md` §5 table, so a user who never opens Settings gets exactly

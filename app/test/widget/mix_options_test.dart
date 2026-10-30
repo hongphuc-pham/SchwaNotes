@@ -32,10 +32,6 @@ void main() {
     );
   }
 
-  FilterChip chip(WidgetTester tester, String label) => tester.widget(
-    find.ancestor(of: find.text(label), matching: find.byType(FilterChip)),
-  );
-
   testWidgets('ticking a face adds it, and only it', (tester) async {
     await pump(tester, PromptSide.defaultMixSides);
 
@@ -60,15 +56,24 @@ void main() {
     tester,
   ) async {
     await pump(tester, PromptSide.defaultMixSides);
-
-    expect(chip(tester, 'The word').onSelected, isNull);
-    expect(chip(tester, 'The meaning').onSelected, isNull);
-    expect(chip(tester, 'The sounds').onSelected, isNotNull);
     expect(find.text('Pick at least two.'), findsOneWidget);
 
     await tester.tap(find.text('The word'));
     await tester.pump();
+    await tester.tap(find.text('The meaning'));
+    await tester.pump();
+
     expect(sides, PromptSide.defaultMixSides);
+  });
+
+  testWidgets('ticked chips stay enabled, so they never look switched off', (
+    tester,
+  ) async {
+    // Found on the emulator: a disabled ticked chip is drawn greyed out.
+    await pump(tester, PromptSide.defaultMixSides);
+
+    final chips = tester.widgetList<FilterChip>(find.byType(FilterChip));
+    expect(chips.map((c) => c.onSelected), everyElement(isNotNull));
   });
 
   testWidgets('the order can be switched to take turns', (tester) async {

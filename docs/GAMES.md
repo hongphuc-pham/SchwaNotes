@@ -16,7 +16,8 @@ So practice is a registry of small plugins behind one set of contracts.
 
 ```dart
 enum PracticeMode  { daily, quickTest }                  // domain, persisted
-enum PromptSide    { wordFirst, ipaFirst, meaningFirst } // domain, persisted
+enum PromptSide    { wordFirst, ipaFirst, meaningFirst, mix } // domain, persisted
+enum MixOrder      { random, rotate }                    // domain, settings.mix_order
 enum ReviewOutcome { again, good, easy, skipped }        // domain, study_cards.last_result
 
 /// Static description used by the hub to render a game card.
