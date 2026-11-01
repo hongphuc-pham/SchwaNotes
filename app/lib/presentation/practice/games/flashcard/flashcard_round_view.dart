@@ -488,8 +488,13 @@ class _AnswerControls extends StatelessWidget {
           controller: typed,
           // Spelling is what is being practised: a keyboard that corrects it
           // would answer the card for the user.
+          //
+          // Never `enableSuggestions: false` as well. On Android that also
+          // marks the field a visible password, which puts keyboards in raw
+          // Latin input: Vietnamese Telex and VNI could not compose an accent.
+          // Users answer in their own language, so that matters more than
+          // hiding a suggestion strip.
           autocorrect: false,
-          enableSuggestions: false,
           textInputAction: TextInputAction.done,
           onSubmitted: (_) => onCheck(),
           decoration: InputDecoration(

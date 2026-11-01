@@ -254,7 +254,9 @@ quick-test sheet with that list chosen, and is disabled on an empty list.
   round 1 only. A meaning-first front has no play button: the word is the answer.
 - Under the front: an answer field ("Type the meaning" / "Type the word"), **Show answer**
   (outline) and **Check** (filled, enabled once something is typed). No autofocus, no autocorrect:
-  the keyboard must not rise on every card, or correct the spelling being practised. With nothing
+  the keyboard must not rise on every card, or correct the spelling being practised. Suggestions
+  stay on: on Android turning them off also marks the field a visible password, which stops
+  Vietnamese Telex and VNI composing accents, and answers can be in any language. With nothing
   to type against, only **Show answer**. With the keyboard up the card and the controls each keep
   a share of the height and scroll inside it.
 - Back: word · IPA with highlights · definition · first note. The play button sits under the

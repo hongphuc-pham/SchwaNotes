@@ -828,9 +828,39 @@ void main() {
     ) async {
       await pumpRound(tester, roundFor(card()), onAnswer: (_) {});
 
+      expect(tester.widget<TextField>(field).autocorrect, isFalse);
+    });
+
+    testWidgets('the field takes any language the keyboard can type', (
+      tester,
+    ) async {
+      // Reported on a device: Vietnamese could not be typed. On Android
+      // `enableSuggestions: false` also sets the visible-password variation,
+      // which stops Telex and VNI composing accents.
+      await pumpRound(tester, roundFor(card()), onAnswer: (_) {});
+
       final input = tester.widget<TextField>(field);
-      expect(input.autocorrect, isFalse);
-      expect(input.enableSuggestions, isFalse);
+      expect(input.enableSuggestions, isTrue);
+      expect(input.obscureText, isFalse);
+      expect(input.keyboardType, anyOf(isNull, TextInputType.text));
+    });
+
+    testWidgets('an answer in Vietnamese can be typed and checked', (
+      tester,
+    ) async {
+      await pumpRound(
+        tester,
+        roundFor(card(definition: 'hòn đảo')),
+        onAnswer: (_) {},
+      );
+
+      await tester.enterText(field, 'hòn đảo');
+      await tester.pump();
+      await tester.tap(check);
+      await tester.pumpAndSettle();
+
+      expect(find.text('100% match'), findsOneWidget);
+      expect(find.text('You wrote: hòn đảo'), findsOneWidget);
     });
 
     testWidgets('fits at 200% text with the keyboard taking the height', (
