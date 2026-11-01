@@ -30,13 +30,17 @@ class SessionSummary {
     required this.correctRounds,
     required this.duration,
     required this.missed,
+    this.skippedRounds = 0,
   });
 
   /// The session this summarises.
   final String sessionId;
 
-  /// How many rounds were answered.
+  /// How many rounds were answered, skipped ones not counting.
   final int totalRounds;
+
+  /// How many rounds the user moved past without grading.
+  final int skippedRounds;
 
   /// How many were `good` or `easy`.
   final int correctRounds;
@@ -129,6 +133,7 @@ class PracticeSessionRunner extends _$PracticeSessionRunner {
     // appear in the new summary and lower its score.
     _repeatsUsed.clear();
     _missed.clear();
+    _skipped = 0;
 
     final repository = ref.read(practiceRepositoryProvider);
     final pool = await repository.loadPool(
@@ -174,6 +179,7 @@ class PracticeSessionRunner extends _$PracticeSessionRunner {
   int _againRepeats = kDefaultAgainRepeats;
   final Map<String, int> _repeatsUsed = <String, int>{};
   final List<PracticeCardData> _missed = <PracticeCardData>[];
+  int _skipped = 0;
   bool _answering = false;
 
   /// Records [answer] for the current round and moves on.
@@ -226,6 +232,7 @@ class PracticeSessionRunner extends _$PracticeSessionRunner {
     );
 
     if (result == ReviewOutcome.again) _missed.add(round.card);
+    if (result == ReviewOutcome.skipped) _skipped++;
 
     final rounds = _withRepeatFor(game, current, round, result);
     final next = current.index + 1;
@@ -267,7 +274,8 @@ class PracticeSessionRunner extends _$PracticeSessionRunner {
 
   Future<void> _finish(PracticeSessionState current) async {
     final repository = ref.read(practiceRepositoryProvider);
-    final answered = current.rounds.length;
+    // A skip is "not now", not a right answer: left in, it scored as correct.
+    final answered = current.rounds.length - _skipped;
     final correct = answered - _missed.length;
 
     final ended = await repository.endSession(
@@ -282,6 +290,7 @@ class PracticeSessionRunner extends _$PracticeSessionRunner {
         sessionId: current.sessionId ?? '',
         totalRounds: answered,
         correctRounds: max(correct, 0),
+        skippedRounds: _skipped,
         duration: ended.valueOrNull?.duration ?? Duration.zero,
         // Deduplicated: a card failed twice is one word worth another look,
         // not two.

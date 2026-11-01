@@ -318,17 +318,27 @@ void main() {
       expect(find.text('To expel air from the lungs'), findsOneWidget);
     });
 
-    testWidgets('grading does nothing before the card is revealed', (
+    testWidgets('there is nothing to grade before the card is revealed', (
       tester,
     ) async {
       // Recording an answer to a question the user never saw would be worse
       // than useless - it would move their schedule.
+      await pumpRound(tester, roundFor(card()), onAnswer: (_) {});
+
+      expect(find.byKey(const ValueKey<String>('grade-good')), findsNothing);
+    });
+
+    testWidgets('the Show answer button reveals without answering', (
+      tester,
+    ) async {
       final answers = <GameAnswer>[];
       await pumpRound(tester, roundFor(card()), onAnswer: answers.add);
 
-      await tester.tap(find.byKey(const ValueKey<String>('grade-good')));
+      await tester.tap(find.text('Show answer'));
       await tester.pumpAndSettle();
 
+      expect(find.text('To expel air from the lungs'), findsOneWidget);
+      expect(find.byKey(const ValueKey<String>('grade-good')), findsOneWidget);
       expect(answers, isEmpty);
     });
 
@@ -399,6 +409,8 @@ void main() {
           ReviewOutcome.skipped => '',
         },
       );
+      await tester.tap(find.byType(Card));
+      await tester.pumpAndSettle();
 
       expect(find.text('10m'), findsOneWidget);
       expect(find.text('2d'), findsOneWidget);
@@ -409,7 +421,10 @@ void main() {
       // A quick test does not move the schedule, so an interval on its buttons
       // would be a lie. The runner passes null and the buttons stay bare.
       await pumpRound(tester, roundFor(card()), onAnswer: (_) {});
+      await tester.tap(find.byType(Card));
+      await tester.pumpAndSettle();
 
+      expect(find.byKey(const ValueKey<String>('grade-good')), findsOneWidget);
       expect(find.text('10m'), findsNothing);
       expect(find.text('2d'), findsNothing);
     });
@@ -427,7 +442,7 @@ void main() {
         roundFor(card(), isFirstRound: true),
         onAnswer: (_) {},
       );
-      expect(find.text('Tap to reveal'), findsOneWidget);
+      expect(find.text('Tap to reveal, swipe to skip'), findsOneWidget);
 
       await pumpRound(
         tester,
@@ -435,7 +450,7 @@ void main() {
         onAnswer: (_) {},
         position: 4,
       );
-      expect(find.text('Tap to reveal'), findsNothing);
+      expect(find.text('Tap to reveal, swipe to skip'), findsNothing);
     });
 
     testWidgets('at 200% text on 320dp the grades stack, not break words', (
@@ -446,6 +461,8 @@ void main() {
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
       await pumpRound(tester, roundFor(card()), onAnswer: (_) {}, textScale: 2);
+      await tester.tap(find.byType(Card));
+      await tester.pumpAndSettle();
 
       final again = tester.getRect(
         find.byKey(const ValueKey<String>('grade-again')),
@@ -541,13 +558,26 @@ void main() {
       ]);
     });
 
-    testWidgets('a sideways swipe before the reveal does nothing', (
+    testWidgets('a sideways swipe on the front skips, either way', (
       tester,
     ) async {
-      // The same rule as the disabled buttons: no grade for a question the
-      // user has not seen the answer to.
-      expect(await swipe(tester, const Offset(300, 0), reveal: false), isEmpty);
-      expect(find.text('To expel air from the lungs'), findsNothing);
+      // Never a grade for a question the user has not seen the answer to, so
+      // the direction that means Good on the back must not mean it here.
+      for (final offset in <Offset>[
+        const Offset(300, 0),
+        const Offset(-300, 0),
+      ]) {
+        expect(await swipe(tester, offset, reveal: false), <ReviewOutcome>[
+          ReviewOutcome.skipped,
+        ]);
+      }
+    });
+
+    testWidgets('a slow drag on the front does not skip', (tester) async {
+      expect(
+        await swipe(tester, const Offset(300, 0), reveal: false, speed: 150),
+        isEmpty,
+      );
     });
 
     testWidgets('the buttons still work, so a swipe is never the only way', (
@@ -561,6 +591,272 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(answers.single.result, ReviewOutcome.easy);
+    });
+  });
+
+  group('skipping', () {
+    testWidgets('Skip moves on from the front without a grade', (tester) async {
+      final answers = <GameAnswer>[];
+      await pumpRound(tester, roundFor(card()), onAnswer: answers.add);
+
+      await tester.tap(find.text('Skip'));
+      await tester.pumpAndSettle();
+
+      expect(answers.map((a) => a.result), <ReviewOutcome>[
+        ReviewOutcome.skipped,
+      ]);
+    });
+
+    testWidgets('Skip moves on from the back without a grade', (tester) async {
+      final answers = <GameAnswer>[];
+      await pumpRound(tester, roundFor(card()), onAnswer: answers.add);
+      await tester.tap(find.byType(Card));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Skip'));
+      await tester.pumpAndSettle();
+
+      expect(answers.map((a) => a.result), <ReviewOutcome>[
+        ReviewOutcome.skipped,
+      ]);
+    });
+
+    testWidgets('a double tap on Skip skips once', (tester) async {
+      final answers = <GameAnswer>[];
+      await pumpRound(tester, roundFor(card()), onAnswer: answers.add);
+
+      await tester.tap(find.text('Skip'));
+      await tester.tap(find.text('Skip'));
+      await tester.pumpAndSettle();
+
+      expect(answers, hasLength(1));
+    });
+
+    test('the game echoes a skip, so it never schedules', () {
+      expect(
+        const FlashcardGame().grade(
+          roundFor(card()),
+          const GameAnswer(
+            result: ReviewOutcome.skipped,
+            elapsed: Duration.zero,
+          ),
+        ),
+        ReviewOutcome.skipped,
+      );
+    });
+  });
+
+  group('typing an answer', () {
+    final field = find.byKey(const ValueKey<String>('flashcard-answer'));
+    final check = find.byKey(const ValueKey<String>('flashcard-check'));
+
+    bool checkEnabled(WidgetTester tester) =>
+        tester.widget<FilledButton>(check).onPressed != null;
+
+    test('the word is the answer when the front hides it', () {
+      for (final side in <PromptSide>[
+        PromptSide.ipaFirst,
+        PromptSide.meaningFirst,
+      ]) {
+        final round = roundFor(card(), promptSide: side);
+        expect(round.expectedAnswer, 'cough', reason: side.name);
+        expect(round.asksForWord, isTrue, reason: side.name);
+      }
+    });
+
+    test('the meaning is the answer when the front shows the word', () {
+      final round = roundFor(card());
+      expect(round.expectedAnswer, 'To expel air from the lungs');
+      expect(round.asksForWord, isFalse);
+    });
+
+    test('a front that fell back to the word asks for the meaning', () {
+      final round = roundFor(
+        card(ipaUk: null),
+        promptSide: PromptSide.ipaFirst,
+      );
+      expect(round.expectedAnswer, 'To expel air from the lungs');
+    });
+
+    test('a word with no definition has no answer to type', () {
+      expect(roundFor(card(definition: '  ')).expectedAnswer, isNull);
+    });
+
+    testWidgets('the field asks for what the card is asking for', (
+      tester,
+    ) async {
+      await pumpRound(tester, roundFor(card()), onAnswer: (_) {});
+      expect(find.text('Type the meaning'), findsOneWidget);
+
+      await pumpRound(
+        tester,
+        roundFor(card(), promptSide: PromptSide.meaningFirst),
+        onAnswer: (_) {},
+      );
+      expect(find.text('Type the word'), findsOneWidget);
+    });
+
+    testWidgets('with no answer to type there is no field, only Show answer', (
+      tester,
+    ) async {
+      await pumpRound(
+        tester,
+        roundFor(card(definition: null)),
+        onAnswer: (_) {},
+      );
+
+      expect(field, findsNothing);
+      expect(check, findsNothing);
+      await tester.tap(find.text('Show answer'));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey<String>('grade-good')), findsOneWidget);
+    });
+
+    testWidgets('Check needs something typed', (tester) async {
+      await pumpRound(tester, roundFor(card()), onAnswer: (_) {});
+      expect(checkEnabled(tester), isFalse);
+
+      await tester.enterText(field, '   ');
+      await tester.pump();
+      expect(checkEnabled(tester), isFalse);
+
+      await tester.enterText(field, 'air');
+      await tester.pump();
+      expect(checkEnabled(tester), isTrue);
+    });
+
+    testWidgets('Check flips the card and shows how close it was', (
+      tester,
+    ) async {
+      final answers = <GameAnswer>[];
+      await pumpRound(tester, roundFor(card()), onAnswer: answers.add);
+
+      await tester.enterText(field, 'air');
+      await tester.pump();
+      await tester.tap(check);
+      await tester.pumpAndSettle();
+
+      expect(find.text('50% match'), findsOneWidget);
+      expect(find.text('You wrote: air'), findsOneWidget);
+      expect(find.text('To expel air from the lungs'), findsOneWidget);
+      expect(answers, isEmpty, reason: 'the user still grades it');
+    });
+
+    testWidgets('a word typed for a meaning-first card is marked on spelling', (
+      tester,
+    ) async {
+      await pumpRound(
+        tester,
+        roundFor(card(), promptSide: PromptSide.meaningFirst),
+        onAnswer: (_) {},
+      );
+
+      await tester.enterText(field, 'Cough');
+      await tester.pump();
+      await tester.tap(check);
+      await tester.pumpAndSettle();
+
+      expect(find.text('100% match'), findsOneWidget);
+    });
+
+    testWidgets('the keyboard Done key checks as well', (tester) async {
+      await pumpRound(tester, roundFor(card()), onAnswer: (_) {});
+
+      await tester.enterText(field, 'air');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+
+      expect(find.text('50% match'), findsOneWidget);
+    });
+
+    testWidgets('a checked card can be graded, once, by the user', (
+      tester,
+    ) async {
+      // A low match must not lapse the card by itself: the answer may be right
+      // in other words.
+      final answers = <GameAnswer>[];
+      await pumpRound(tester, roundFor(card()), onAnswer: answers.add);
+      await tester.enterText(field, 'it means to clear the throat');
+      await tester.pump();
+      await tester.tap(check);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const ValueKey<String>('grade-good')));
+      await tester.pumpAndSettle();
+
+      expect(answers.single.result, ReviewOutcome.good);
+    });
+
+    testWidgets('revealing without Check shows no percentage', (tester) async {
+      await pumpRound(tester, roundFor(card()), onAnswer: (_) {});
+      await tester.enterText(field, 'air');
+      await tester.pump();
+
+      await tester.tap(find.text('Show answer'));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('% match'), findsNothing);
+    });
+
+    testWidgets('the next card opens with an empty field and no result', (
+      tester,
+    ) async {
+      // The State is reused between rounds, so one card's answer would
+      // otherwise be sitting on the next.
+      await pumpRound(tester, roundFor(card(id: 'a')), onAnswer: (_) {});
+      await tester.enterText(field, 'air');
+      await tester.pump();
+      await tester.tap(check);
+      await tester.pumpAndSettle();
+
+      await pumpRound(tester, roundFor(card(id: 'b')), onAnswer: (_) {});
+
+      expect(find.textContaining('% match'), findsNothing);
+      expect(tester.widget<TextField>(field).controller?.text, isEmpty);
+      expect(checkEnabled(tester), isFalse);
+    });
+
+    testWidgets('it does not raise the keyboard by itself', (tester) async {
+      await pumpRound(tester, roundFor(card()), onAnswer: (_) {});
+
+      expect(tester.widget<TextField>(field).autofocus, isFalse);
+      expect(tester.testTextInput.isVisible, isFalse);
+    });
+
+    testWidgets('the keyboard does not correct the spelling being practised', (
+      tester,
+    ) async {
+      await pumpRound(tester, roundFor(card()), onAnswer: (_) {});
+
+      final input = tester.widget<TextField>(field);
+      expect(input.autocorrect, isFalse);
+      expect(input.enableSuggestions, isFalse);
+    });
+
+    testWidgets('fits at 200% text with the keyboard taking the height', (
+      tester,
+    ) async {
+      // 320dp wide, with what a keyboard leaves of a small phone.
+      tester.view.physicalSize = const Size(320, 320);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await pumpRound(
+        tester,
+        roundFor(card(), isFirstRound: true),
+        onAnswer: (_) {},
+        onSpeak: () {},
+        textScale: 2,
+      );
+      expect(tester.takeException(), isNull, reason: 'the front');
+
+      await tester.enterText(field, 'air');
+      await tester.pump();
+      await tester.ensureVisible(check);
+      await tester.pumpAndSettle();
+      await tester.tap(check);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull, reason: 'the back');
+      expect(find.text('50% match', skipOffstage: false), findsOneWidget);
     });
   });
 

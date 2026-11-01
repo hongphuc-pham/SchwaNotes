@@ -105,11 +105,25 @@ class _Score extends StatelessWidget {
     return Column(
       children: <Widget>[
         Text(
-          l10n.summaryScore(summary.correctRounds, summary.totalRounds),
+          // Every card skipped: "Nice work - 0 of 0" would be praise for
+          // nothing, and a score of nothing.
+          summary.totalRounds == 0
+              ? l10n.summaryNothingGraded
+              : l10n.summaryScore(summary.correctRounds, summary.totalRounds),
           style: context.type.displayWord,
           textAlign: TextAlign.center,
         ),
         const VnGap(VnSpace.sm),
+        if (summary.skippedRounds > 0) ...<Widget>[
+          Text(
+            l10n.summarySkipped(summary.skippedRounds),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const VnGap(VnSpace.sm),
+        ],
         Text(
           l10n.summaryTime(
             summary.duration.inMinutes,

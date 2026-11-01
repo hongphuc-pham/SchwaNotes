@@ -282,15 +282,17 @@ class PracticeDao extends DatabaseAccessor<AppDatabase>
   /// How many different words were answered at or after [since].
   ///
   /// Today's progress towards the daily goal (F-065): a word asked twice today
-  /// — a repeat, or two sessions — is one word practised.
+  /// — a repeat, or two sessions — is one word practised. A skipped card was
+  /// not practised, so it does not count.
   Future<int> countWordsAnsweredSince(DateTime since) {
     final words = practiceAnswers.wordId.count(distinct: true);
     final query = selectOnly(practiceAnswers)
       ..addColumns(<Expression<Object>>[words])
       ..where(
         practiceAnswers.answeredAt.isBiggerOrEqualValue(
-          since.toUtc().millisecondsSinceEpoch,
-        ),
+              since.toUtc().millisecondsSinceEpoch,
+            ) &
+            practiceAnswers.result.isNotIn(const <String>['skipped']),
       );
     return query.map((row) => row.read(words) ?? 0).getSingle();
   }
@@ -307,7 +309,7 @@ class PracticeDao extends DatabaseAccessor<AppDatabase>
   Stream<List<DateTime>> watchAnswerQuarterHours(DateTime since) {
     return customSelect(
       'SELECT DISTINCT answered_at / $_quarterHourMs AS quarter '
-      'FROM practice_answers WHERE answered_at >= ?',
+      "FROM practice_answers WHERE answered_at >= ? AND result <> 'skipped'",
       variables: <Variable<Object>>[
         Variable.withInt(since.toUtc().millisecondsSinceEpoch),
       ],

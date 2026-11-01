@@ -268,9 +268,47 @@
   "@gameFlashcardDescription": {
     "description": "One-line description of the flashcard game."
   },
-  "flashcardTapToReveal": "Tap to reveal",
+  "flashcardTapToReveal": "Tap to reveal, swipe to skip",
   "@flashcardTapToReveal": {
     "description": "Hint on the first card of a session only."
+  },
+  "flashcardSkip": "Skip",
+  "@flashcardSkip": {
+    "description": "Button that moves to the next card without grading this one. The schedule does not change."
+  },
+  "flashcardShowAnswer": "Show answer",
+  "@flashcardShowAnswer": {
+    "description": "Button that flips the card, without typing anything."
+  },
+  "flashcardCheck": "Check",
+  "@flashcardCheck": {
+    "description": "Button that compares what the user typed with the card and flips it."
+  },
+  "flashcardTypeMeaning": "Type the meaning",
+  "@flashcardTypeMeaning": {
+    "description": "Label of the answer field when the card shows the word."
+  },
+  "flashcardTypeWord": "Type the word",
+  "@flashcardTypeWord": {
+    "description": "Label of the answer field when the card shows the meaning or the sounds."
+  },
+  "flashcardMatch": "{percent}% match",
+  "@flashcardMatch": {
+    "description": "How close the typed answer was to the card. Advice: the user still grades the card.",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "flashcardYouWrote": "You wrote: {answer}",
+  "@flashcardYouWrote": {
+    "description": "The user's typed answer, shown under the match percentage.",
+    "placeholders": {
+      "answer": {
+        "type": "String"
+      }
+    }
   },
   "flashcardPlaySoundLabel": "Play this sound",
   "@flashcardPlaySoundLabel": {
@@ -1631,6 +1669,19 @@
         "type": "int"
       },
       "total": {
+        "type": "int"
+      }
+    }
+  },
+  "summaryNothingGraded": "Nothing graded this time",
+  "@summaryNothingGraded": {
+    "description": "In place of the score when every card was skipped. Warm, never a grade."
+  },
+  "summarySkipped": "{count, plural, =1{1 card skipped} other{{count} cards skipped}}",
+  "@summarySkipped": {
+    "description": "Under the score: cards the user moved past without grading.",
+    "placeholders": {
+      "count": {
         "type": "int"
       }
     }

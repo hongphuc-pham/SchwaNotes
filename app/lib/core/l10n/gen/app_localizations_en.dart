@@ -219,7 +219,32 @@ class AppL10nEn extends AppL10n {
       'See a word, recall it, then say how it went.';
 
   @override
-  String get flashcardTapToReveal => 'Tap to reveal';
+  String get flashcardTapToReveal => 'Tap to reveal, swipe to skip';
+
+  @override
+  String get flashcardSkip => 'Skip';
+
+  @override
+  String get flashcardShowAnswer => 'Show answer';
+
+  @override
+  String get flashcardCheck => 'Check';
+
+  @override
+  String get flashcardTypeMeaning => 'Type the meaning';
+
+  @override
+  String get flashcardTypeWord => 'Type the word';
+
+  @override
+  String flashcardMatch(int percent) {
+    return '$percent% match';
+  }
+
+  @override
+  String flashcardYouWrote(String answer) {
+    return 'You wrote: $answer';
+  }
 
   @override
   String get flashcardPlaySoundLabel => 'Play this sound';
@@ -1530,6 +1555,20 @@ class AppL10nEn extends AppL10n {
   @override
   String summaryScore(int correct, int total) {
     return 'Nice work - $correct of $total';
+  }
+
+  @override
+  String get summaryNothingGraded => 'Nothing graded this time';
+
+  @override
+  String summarySkipped(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count cards skipped',
+      one: '1 card skipped',
+    );
+    return '$_temp0';
   }
 
   @override

@@ -161,6 +161,44 @@ void main() {
     expect(find.text('Worth another look'), findsNothing);
   });
 
+  testWidgets('a skipped card is reported apart from the score', (
+    tester,
+  ) async {
+    await finishSession(tester, quickTest(), <ReviewOutcome>[
+      ReviewOutcome.good,
+      ReviewOutcome.skipped,
+      ReviewOutcome.good,
+      ReviewOutcome.skipped,
+    ]);
+
+    expect(find.text('Nice work - 2 of 2'), findsOneWidget);
+    expect(find.text('2 cards skipped'), findsOneWidget);
+  });
+
+  testWidgets('no skips, no line about skips', (tester) async {
+    await finishSession(
+      tester,
+      quickTest(),
+      List<ReviewOutcome>.filled(4, ReviewOutcome.good),
+    );
+
+    expect(find.textContaining('skipped'), findsNothing);
+  });
+
+  testWidgets('skipping everything is not praised with a score of nothing', (
+    tester,
+  ) async {
+    await finishSession(
+      tester,
+      quickTest(),
+      List<ReviewOutcome>.filled(4, ReviewOutcome.skipped),
+    );
+
+    expect(find.text('Nothing graded this time'), findsOneWidget);
+    expect(find.textContaining('Nice work'), findsNothing);
+    expect(find.text('4 cards skipped'), findsOneWidget);
+  });
+
   group('Practise again (UI-UX §4.8)', () {
     testWidgets('after a quick test: the same choices, a fresh sample', (
       tester,

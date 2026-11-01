@@ -102,9 +102,9 @@ class FlashcardGame implements PracticeGame<FlashcardRound> {
 
   @override
   ReviewOutcome grade(FlashcardRound round, GameAnswer answer) {
-    // Self-graded: the button the user tapped *is* the result. There is
-    // nothing to check it against, and pretending otherwise would invent an
-    // opinion the game does not have.
+    // Self-graded: the button the user tapped *is* the result. The percentage
+    // from a typed answer only advises it: it compares letters, not meanings,
+    // and a right answer in other words must not lapse a card.
     return answer.result;
   }
 
@@ -178,4 +178,16 @@ class FlashcardRound extends GameRound {
   /// there would give the card away.
   bool get wordIsHidden =>
       !frontIsFallback && promptSide == PromptSide.meaningFirst;
+
+  /// Whether the card is asking for the word, not the word's meaning.
+  bool get asksForWord =>
+      !frontIsFallback && promptSide != PromptSide.wordFirst;
+
+  /// What a typed answer is compared with, or null when the card has no answer
+  /// to type: a card showing the word of a word with no definition.
+  String? get expectedAnswer {
+    if (asksForWord) return card.word.headword.value;
+    final definition = card.word.definition;
+    return definition == null || definition.trim().isEmpty ? null : definition;
+  }
 }

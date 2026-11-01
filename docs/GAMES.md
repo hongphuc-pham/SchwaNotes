@@ -214,11 +214,25 @@ in is a single provider override with **no migration**.
 - `grade` → self-graded: the tapped button *is* the result
 - `buildRoundView` → front (prompt side per config, with the play button — except a
   meaning-first front, where the word is the answer; there the button moves to the back, and
-  on an IPA front its label does not name the word) → tap or swipe up to
-  flip → back (word + IPA with the user's highlights + definition + first note) → Again /
-  Good / Easy, each showing its next interval. After the flip, swipe left = Again and right =
-  Good, at ≥ 300 px/s so a thumb resting on the card does not grade it — a shortcut for the
-  buttons, never instead of them.
+  on an IPA front its label does not name the word) → tap, swipe up, **Show answer** or
+  **Check** to flip → back (word + IPA with the user's highlights + definition + first note) →
+  Again / Good / Easy, each showing its next interval. After the flip, swipe left = Again and
+  right = Good, at ≥ 300 px/s so a thumb resting on the card does not grade it — a shortcut for
+  the buttons, never instead of them.
+- **Skip** (a button on both sides; a sideways swipe on the front) answers
+  `ReviewOutcome.skipped`: the §5 rule for a skip applies, the card is not repeated, and the
+  summary reports it apart. It counts as neither right nor answered, and earns neither the
+  daily goal nor the streak.
+- **Typing an answer** is optional and never raises the keyboard by itself. A front that shows
+  the word asks for the meaning; a front that shows the meaning or the sounds asks for the word.
+  A word with no definition, shown as the word, has no answer to type, so the field is absent.
+  **Check** flips the card and shows `answerMatchPercent` (`core/utils/answer_match.dart`): the
+  better of letter similarity over the whole answer and word overlap (a Dice score over the
+  words left after filler, forgiving a typo in each, ignoring order), over the whole expected
+  text or any one meaning split on `;`, `/` or a new line. Case, punctuation and accents are
+  ignored, so "hon dao" fully answers "hòn đảo". It compares text and knows no
+  synonyms, so **the percentage advises and never grades**: a right answer in other words must
+  not lapse a card, and `grade` still echoes the user's button.
 
 ## 7. Adding game #2 — the checklist
 

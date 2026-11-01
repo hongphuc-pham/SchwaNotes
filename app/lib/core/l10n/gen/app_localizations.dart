@@ -480,8 +480,50 @@ abstract class AppL10n {
   /// Hint on the first card of a session only.
   ///
   /// In en, this message translates to:
-  /// **'Tap to reveal'**
+  /// **'Tap to reveal, swipe to skip'**
   String get flashcardTapToReveal;
+
+  /// Button that moves to the next card without grading this one. The schedule does not change.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get flashcardSkip;
+
+  /// Button that flips the card, without typing anything.
+  ///
+  /// In en, this message translates to:
+  /// **'Show answer'**
+  String get flashcardShowAnswer;
+
+  /// Button that compares what the user typed with the card and flips it.
+  ///
+  /// In en, this message translates to:
+  /// **'Check'**
+  String get flashcardCheck;
+
+  /// Label of the answer field when the card shows the word.
+  ///
+  /// In en, this message translates to:
+  /// **'Type the meaning'**
+  String get flashcardTypeMeaning;
+
+  /// Label of the answer field when the card shows the meaning or the sounds.
+  ///
+  /// In en, this message translates to:
+  /// **'Type the word'**
+  String get flashcardTypeWord;
+
+  /// How close the typed answer was to the card. Advice: the user still grades the card.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}% match'**
+  String flashcardMatch(int percent);
+
+  /// The user's typed answer, shown under the match percentage.
+  ///
+  /// In en, this message translates to:
+  /// **'You wrote: {answer}'**
+  String flashcardYouWrote(String answer);
 
   /// Screen-reader label for the play button on a card showing IPA. Must not name the word: it is the answer.
   ///
@@ -2438,6 +2480,18 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Nice work - {correct} of {total}'**
   String summaryScore(int correct, int total);
+
+  /// In place of the score when every card was skipped. Warm, never a grade.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing graded this time'**
+  String get summaryNothingGraded;
+
+  /// Under the score: cards the user moved past without grading.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 card skipped} other{{count} cards skipped}}'**
+  String summarySkipped(int count);
 
   /// How long the session took.
   ///

@@ -106,9 +106,18 @@ void main() {
 
     final ratio = tester.view.devicePixelRatio;
     final screenBottom = tester.view.physicalSize.height / ratio;
+    final safeBottom = screenBottom - inset.bottom / ratio;
+
+    // The front's controls hold the same edge the grades do.
+    final show = find.byKey(const ValueKey<String>('flashcard-show-answer'));
+    expect(tester.getRect(show).bottom, lessThanOrEqualTo(safeBottom));
+
+    await tester.tap(show);
+    await tester.pumpAndSettle();
+
     final good = tester.getRect(
       find.byKey(const ValueKey<String>('grade-good')),
     );
-    expect(good.bottom, lessThanOrEqualTo(screenBottom - inset.bottom / ratio));
+    expect(good.bottom, lessThanOrEqualTo(safeBottom));
   });
 }

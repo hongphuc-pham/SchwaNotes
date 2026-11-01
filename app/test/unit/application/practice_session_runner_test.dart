@@ -422,6 +422,101 @@ void main() {
         expect(summary.missed, hasLength(1));
       },
     );
+
+    test('a skipped card is not a right answer', () async {
+      // Skipping is "not now". Counted as answered, it scored as correct, so
+      // skipping a whole session read "Nice work - 3 of 3".
+      await seedDue(3);
+      await runner().start(
+        config: configFor(PracticeMode.quickTest),
+        game: DummyGame(),
+      );
+      final game = DummyGame();
+      for (final result in <ReviewOutcome>[
+        ReviewOutcome.good,
+        ReviewOutcome.skipped,
+        ReviewOutcome.again,
+      ]) {
+        await runner().answer(
+          game,
+          GameAnswer(result: result, elapsed: Duration.zero),
+        );
+      }
+      // The repeat of the card graded Again.
+      await playThrough(ReviewOutcome.good);
+
+      final summary = container.read(practiceSessionRunnerProvider)!.summary!;
+      expect(summary.skippedRounds, 1);
+      expect(summary.totalRounds, 3);
+      expect(summary.correctRounds, 2);
+      expect(summary.missed, hasLength(1));
+    });
+
+    test('a session of nothing but skips has nothing to score', () async {
+      await seedDue(2);
+      await runner().start(
+        config: configFor(PracticeMode.quickTest),
+        game: DummyGame(),
+      );
+      await playThrough(ReviewOutcome.skipped);
+
+      final summary = container.read(practiceSessionRunnerProvider)!.summary!;
+      expect(summary.skippedRounds, 2);
+      expect(summary.totalRounds, 0);
+      expect(summary.correctRounds, 0);
+      expect(summary.missed, isEmpty);
+
+      final session = await db.select(db.practiceSessions).getSingle();
+      expect(session.totalRounds, 0, reason: 'the stored row agrees');
+    });
+
+    test('a skip is not repeated later in the session', () async {
+      await seedDue(1);
+      await runner().start(
+        config: configFor(PracticeMode.quickTest),
+        game: DummyGame(),
+      );
+      await playThrough(ReviewOutcome.skipped);
+
+      expect(
+        container.read(practiceSessionRunnerProvider)!.rounds,
+        hasLength(1),
+      );
+    });
+
+    test('skips from the last session do not carry into the next', () async {
+      await seedDue(2);
+      await runner().start(
+        config: configFor(PracticeMode.quickTest),
+        game: DummyGame(),
+      );
+      await playThrough(ReviewOutcome.skipped);
+      await runner().start(
+        config: configFor(PracticeMode.quickTest),
+        game: DummyGame(),
+      );
+      await playThrough(ReviewOutcome.good);
+
+      final summary = container.read(practiceSessionRunnerProvider)!.summary!;
+      expect(summary.skippedRounds, 0);
+      expect(summary.totalRounds, 2);
+    });
+
+    test('a skip in a daily review leaves the card due', () async {
+      await seedDue(1);
+      final before = await db.select(db.studyCards).getSingle();
+      await runner().start(
+        config: configFor(PracticeMode.daily, selection: CardSelection.due),
+        game: DummyGame(),
+      );
+      await playThrough(ReviewOutcome.skipped);
+
+      final after = await db.select(db.studyCards).getSingle();
+      expect(after.box, before.box);
+      expect(after.dueAt, before.dueAt);
+      expect(after.repetitions, before.repetitions);
+      expect(after.lapses, before.lapses);
+    });
   });
 
   group('starting', () {

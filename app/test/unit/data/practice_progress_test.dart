@@ -3,6 +3,7 @@ import 'package:vocabnote/data/db/app_database.dart';
 import 'package:vocabnote/data/repositories/practice_repository_impl.dart';
 import 'package:vocabnote/domain/entities/practice_progress.dart';
 import 'package:vocabnote/domain/entities/practice_session.dart';
+import 'package:vocabnote/domain/entities/study_card.dart';
 
 import 'db_fixtures.dart';
 
@@ -29,12 +30,17 @@ void main() {
 
   tearDown(() => db.close());
 
-  Future<void> answer(String wordId, DateTime at) => seedAnswer(
+  Future<void> answer(
+    String wordId,
+    DateTime at, {
+    ReviewOutcome result = ReviewOutcome.good,
+  }) => seedAnswer(
     db,
     id: 'a${answers++}',
     sessionId: 's1',
     wordId: wordId,
     answeredAt: at,
+    result: result,
   );
 
   Future<PracticeProgress> progress() async {
@@ -74,6 +80,32 @@ void main() {
     await answer('w3', DateTime(2026, 9, 7, 7));
 
     expect((await progress()).streak, 3);
+  });
+
+  test('a skipped card is not a word practised today', () async {
+    // Found on the emulator: five words graded and three skipped read
+    // "8 of 20 today".
+    await answer('w1', DateTime(2026, 9, 11, 9));
+    await answer(
+      'w2',
+      DateTime(2026, 9, 11, 10),
+      result: ReviewOutcome.skipped,
+    );
+
+    expect((await progress()).wordsToday, 1);
+  });
+
+  test('skipping every card does not keep a streak alive', () async {
+    await answer('w1', DateTime(2026, 9, 10, 20));
+    await answer(
+      'w2',
+      DateTime(2026, 9, 11, 10),
+      result: ReviewOutcome.skipped,
+    );
+
+    final day = await progress();
+    expect(day.wordsToday, 0);
+    expect(day.daysPractised, <DateTime>{DateTime(2026, 9, 10)});
   });
 
   test('with no answers at all there is nothing, not an error', () async {

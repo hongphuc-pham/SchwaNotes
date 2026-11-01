@@ -250,17 +250,30 @@ quick-test sheet with that list chosen, and is disabled on an empty list.
 - A session that cannot start says so and offers **Try again** — *Built at M7*: the start is
   fire-and-forget, so a failure left the screen spinning with nothing to read and nothing to
   do. Nothing due, or a pool with no cards, keeps its own empty state.
-- Front: the prompt side, centred, with the play button. "Tap to reveal" hint on round 1 only.
-  A meaning-first front has no play button: the word is the answer.
+- Front: the prompt side, centred, with the play button. "Tap to reveal, swipe to skip" hint on
+  round 1 only. A meaning-first front has no play button: the word is the answer.
+- Under the front: an answer field ("Type the meaning" / "Type the word"), **Show answer**
+  (outline) and **Check** (filled, enabled once something is typed). No autofocus, no autocorrect:
+  the keyboard must not rise on every card, or correct the spelling being practised. With nothing
+  to type against, only **Show answer**. With the keyboard up the card and the controls each keep
+  a share of the height and scroll inside it.
 - Back: word · IPA with highlights · definition · first note. The play button sits under the
   IPA on a card that opened on its meaning.
+- After Check, above the grades: "82% match" and "You wrote: …", announced as a live region.
+  The user still grades: the percentage compares text and cannot know synonyms.
 - Grading: three wide buttons — **Again** (outline), **Good** (filled), **Easy** (tonal) —
-  each showing its next interval ("2d") so the schedule is never mysterious.
-- Swipe left = Again, right = Good, as an alternative to tapping, never the only way.
+  each showing its next interval ("2d") so the schedule is never mysterious. They appear with
+  the back, not disabled on the front.
+- **Skip** (text button with a skip icon, top right) on both sides: next card, no grade, the card
+  stays due.
+- On the back, swipe left = Again, right = Good; on the front, either way = Skip. Alternatives to
+  tapping, never the only way.
 
 ### 4.8 Summary
 Score ring, time, words to review again, **Add missed words to a list**, **Practise again**,
 **Done**. Copy is warm: "Nice work — 8 of 10." Missed words are "worth another look", not wrong.
+Skipped cards are in neither number: a line says how many, and a session of nothing but skips
+reads "Nothing graded this time" rather than a score of 0 of 0.
 
 ### 4.9 Settings
 ```
