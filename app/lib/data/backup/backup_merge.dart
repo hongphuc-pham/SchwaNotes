@@ -188,16 +188,20 @@ class BackupMerge {
   }
 
   Future<void> _lists() async {
-    String key(Object? name) => (name! as String).trim().toLowerCase();
+    // By kind as well as name: a list "Verbs" and a tag "verbs" are two
+    // things. A backup from before tags has no kind, and only lists.
+    String key(BackupRow row) =>
+        '${row['kind'] ?? 'list'}|'
+        '${(row['name']! as String).trim().toLowerCase()}';
 
     final local = await _db.selectRows(
-      'SELECT id, name, updated_at FROM word_lists',
+      'SELECT id, name, kind, updated_at FROM word_lists',
     );
     final byId = <String, BackupRow>{
       for (final row in local) row['id']! as String: row,
     };
     final byName = <String, String>{
-      for (final row in local) key(row['name']): row['id']! as String,
+      for (final row in local) key(row): row['id']! as String,
     };
     final highest = (await _db.selectRows(
       'SELECT max(sort_order) AS top FROM word_lists',
@@ -209,7 +213,7 @@ class BackupMerge {
       ..sort((a, b) => (a['sort_order']! as int) - (b['sort_order']! as int));
     for (final row in incoming) {
       final id = row['id']! as String;
-      final match = byId.containsKey(id) ? id : byName[key(row['name'])];
+      final match = byId.containsKey(id) ? id : byName[key(row)];
       if (match == null) {
         await _db.insertRow('word_lists', <String, Object?>{
           ...row,
@@ -217,7 +221,7 @@ class BackupMerge {
         });
         _listIds[id] = id;
         byId[id] = row;
-        byName[key(row['name'])] = id;
+        byName[key(row)] = id;
         _listsAdded++;
         continue;
       }
@@ -228,6 +232,7 @@ class BackupMerge {
           <String, Object?>{
             for (final column in <String>[
               'name',
+              'kind',
               'color_token',
               'icon_key',
               'updated_at',

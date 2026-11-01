@@ -97,7 +97,8 @@ void main() {
       expect(row.headword, 'cough');
       expect(row.ipa, 'kɒf');
       expect(row.meaning, 'ho');
-      expect(row.listNames, <String>['Health', 'body', 'verbs']);
+      expect(row.category, 'Health');
+      expect(row.tagNames, <String>['body', 'verbs']);
     });
 
     test('square brackets around the IPA are stripped too', () {
@@ -108,34 +109,39 @@ void main() {
       final row = parse('cough').rows.single;
       expect(row.ipa, isNull);
       expect(row.meaning, isNull);
-      expect(row.listNames, isEmpty);
+      expect(row.category, isNull);
+      expect(row.tagNames, isEmpty);
     });
 
     test('blank cells are null, not empty strings', () {
       final row = parse('cough, , ,  ,').rows.single;
       expect(row.ipa, isNull);
       expect(row.meaning, isNull);
-      expect(row.listNames, isEmpty);
+      expect(row.category, isNull);
+      expect(row.tagNames, isEmpty);
     });
 
     test('tags split on | as well as ;', () {
-      expect(parse('a,,,,x | y').rows.single.listNames, <String>['x', 'y']);
+      expect(parse('a,,,,x | y').rows.single.tagNames, <String>['x', 'y']);
     });
 
     test('columns after the fifth are more tags', () {
       // An unquoted `x;y` in a semicolon file arrives as two columns.
-      expect(parse('a;;;Cat;x;y').rows.single.listNames, <String>[
-        'Cat',
-        'x',
-        'y',
+      expect(parse('a;;;Cat;x;y').rows.single.tagNames, <String>['x', 'y']);
+    });
+
+    test('a tag named twice, in any case, is kept once', () {
+      expect(parse('a,,,,food;FOOD;Drink').rows.single.tagNames, <String>[
+        'food',
+        'Drink',
       ]);
     });
 
-    test('a list named twice, in any case, is kept once', () {
-      expect(parse('a,,,Food,food;FOOD;Drink').rows.single.listNames, <String>[
-        'Food',
-        'Drink',
-      ]);
+    test('a tag may share its name with the category', () {
+      // They are different things now: a list and a tag.
+      final row = parse('a,,,Food,food').rows.single;
+      expect(row.category, 'Food');
+      expect(row.tagNames, <String>['food']);
     });
 
     test('a row without a word is skipped and counted', () {

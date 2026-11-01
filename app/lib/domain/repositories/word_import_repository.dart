@@ -16,8 +16,12 @@ abstract interface class WordImportRepository {
   ///
   /// A word already in the library is **never overwritten**: only its empty
   /// fields are filled. The IPA goes in the field for [accent].
+  ///
+  /// A row's category is its list. A row without one goes to [fallbackList],
+  /// created if need be, unless its word is already in a list.
   AsyncResult<WordImportReport> import(
     WordImportPreview preview, {
     required TtsLocale accent,
+    required String fallbackList,
   });
 }

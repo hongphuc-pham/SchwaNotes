@@ -10,6 +10,7 @@ import 'package:vocabnote/presentation/design/gap.dart';
 import 'package:vocabnote/presentation/lists/list_detail_screen.dart';
 import 'package:vocabnote/presentation/lists/lists_screen.dart';
 import 'package:vocabnote/presentation/onboarding/onboarding_screen.dart';
+import 'package:vocabnote/presentation/overview/overview_screen.dart';
 import 'package:vocabnote/presentation/practice/practice_hub_screen.dart';
 import 'package:vocabnote/presentation/practice/practice_run_screen.dart';
 import 'package:vocabnote/presentation/practice/practice_summary_screen.dart';
@@ -79,8 +80,19 @@ List<RouteBase> get _routes => <RouteBase>[
 GoRoute get _wordsBranch => GoRoute(
   path: Routes.words,
   name: RouteNames.words,
-  builder: (context, state) => const WordsScreen(),
+  builder: (context, state) => const OverviewScreen(),
   routes: <RouteBase>[
+    // Before `:wordId`, or it would be taken for a word. On this branch's own
+    // navigator, so the bottom bar stays.
+    GoRoute(
+      path: 'all',
+      name: RouteNames.wordsAll,
+      builder: (context, state) => WordsScreen(
+        startSearching: state.uri.queryParameters.containsKey(
+          Routes.searchParam,
+        ),
+      ),
+    ),
     GoRoute(
       path: ':${Routes.wordIdParam}',
       name: RouteNames.wordDetail,

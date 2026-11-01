@@ -3,6 +3,7 @@ import 'package:vocabnote/data/backup/backup_codec.dart';
 import 'package:vocabnote/data/backup/backup_importer.dart';
 import 'package:vocabnote/data/db/app_database.dart';
 import 'package:vocabnote/domain/entities/backup.dart';
+import 'package:vocabnote/domain/entities/word_list.dart';
 
 import 'backup_support.dart';
 import 'db_fixtures.dart';
@@ -267,6 +268,38 @@ void main() {
         'mine',
       );
     });
+
+    test('a tag and a list of one name stay two things', () async {
+      await seedList(phone, id: 'list', name: 'Verbs');
+      await seedWord(other, id: 'w1', headword: 'cough');
+      await seedList(other, id: 'tag', name: 'verbs', kind: ListKind.tag);
+      await seedMembership(other, listId: 'tag', wordId: 'w1');
+
+      await merge();
+
+      final lists = await rowsOf(phone, 'word_lists');
+      expect(lists.map((l) => l['id']), <String>['list', 'tag']);
+      expect(lists.last['kind'], 'tag');
+      expect((await rowsOf(phone, 'word_list_items')).single['list_id'], 'tag');
+    });
+
+    test(
+      'a list made a tag since, on the other phone, arrives a tag',
+      () async {
+        await seedList(phone, id: 'same', name: 'body');
+        await seedList(
+          other,
+          id: 'same',
+          name: 'body',
+          kind: ListKind.tag,
+          createdAt: testNow.add(const Duration(days: 1)),
+        );
+
+        await merge();
+
+        expect((await rowsOf(phone, 'word_lists')).single['kind'], 'tag');
+      },
+    );
   });
 
   group('study cards', () {

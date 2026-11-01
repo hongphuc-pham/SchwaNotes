@@ -89,3 +89,47 @@ final class PracticeProgressProvider
 }
 
 String _$practiceProgressHash() => r'1bb6851f3ca5cc8ff49016b3760c086694391917';
+
+/// The numbers behind the home screen's overview.
+
+@ProviderFor(wordOverview)
+final wordOverviewProvider = WordOverviewProvider._();
+
+/// The numbers behind the home screen's overview.
+
+final class WordOverviewProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<WordOverview>,
+          WordOverview,
+          Stream<WordOverview>
+        >
+    with $FutureModifier<WordOverview>, $StreamProvider<WordOverview> {
+  /// The numbers behind the home screen's overview.
+  WordOverviewProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'wordOverviewProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$wordOverviewHash();
+
+  @$internal
+  @override
+  $StreamProviderElement<WordOverview> $createElement(
+    $ProviderPointer pointer,
+  ) => $StreamProviderElement(pointer);
+
+  @override
+  Stream<WordOverview> create(Ref ref) {
+    return wordOverview(ref);
+  }
+}
+
+String _$wordOverviewHash() => r'ac1008955a393f5e66f5405e3dddc8a5c8f11872';

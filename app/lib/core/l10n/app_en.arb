@@ -272,6 +272,10 @@
   "@flashcardTapToReveal": {
     "description": "Hint on the first card of a session only."
   },
+  "flashcardPlaySoundLabel": "Play this sound",
+  "@flashcardPlaySoundLabel": {
+    "description": "Screen-reader label for the play button on a card showing IPA. Must not name the word: it is the answer."
+  },
   "flashcardFrontLabel": "Card front. Tap to reveal the answer.",
   "@flashcardFrontLabel": {
     "description": "Screen-reader label for the unflipped card."
@@ -471,14 +475,25 @@
       }
     }
   },
-  "quickTestSizeAll": "All (max {max})",
-  "@quickTestSizeAll": {
-    "description": "The All size chip, naming the hard cap out loud.",
-    "placeholders": {
-      "max": {
-        "type": "int"
-      }
-    }
+  "quickTestSizeFull": "Full list",
+  "@quickTestSizeFull": {
+    "description": "Size chip: every word in the chosen source."
+  },
+  "quickTestSizeCustom": "Custom",
+  "@quickTestSizeCustom": {
+    "description": "Size chip that opens a number field."
+  },
+  "quickTestCustomLabel": "How many words",
+  "@quickTestCustomLabel": {
+    "description": "Label of the custom size number field."
+  },
+  "quickTestSourceList": "A list",
+  "@quickTestSourceList": {
+    "description": "Source chip that reveals the list picker."
+  },
+  "quickTestPickList": "Which list",
+  "@quickTestPickList": {
+    "description": "Label of the list picker in the quick-test sheet."
   },
   "settingsPracticeSection": "Practice",
   "@settingsPracticeSection": {
@@ -751,7 +766,7 @@
   "@settingsBackup": {
     "description": "Row that opens export and import."
   },
-  "settingsBackupHint": "Keep a copy of your words, or move them to a new phone",
+  "settingsBackupHint": "Keep a copy of your words, move them to a new phone, or import many from a CSV file",
   "@settingsBackupHint": {
     "description": "Under the Backup & restore row."
   },
@@ -818,7 +833,7 @@
   },
   "csvImport": "Import words from CSV",
   "@csvImport": {"description": "Button on Backup & restore that imports a CSV deck."},
-  "csvImportHint": "A spreadsheet saved as CSV, one word per line with no header row: word, IPA, meaning, category, tags. Separate tags with ; — the category and each tag become lists. Words you already have are never overwritten: only their empty fields are filled in.",
+  "csvImportHint": "A spreadsheet saved as CSV, one word per line with no header row: word, IPA, meaning, category, tags. Only the word is required. The category is the word's list; with none, you choose the list before importing, or it goes to General. Separate tags with ;.\n\nExample line:\ncough,kɒf,ho,Health,body;verbs\n\nWords you already have are never overwritten: only their empty fields are filled in.",
   "@csvImportHint": {"description": "Under the CSV import button. Must state the never-overwrite rule."},
   "csvImporting": "Importing…",
   "@csvImporting": {"description": "CSV import button label while the import runs."},
@@ -832,6 +847,10 @@
   "@csvPreviewSkipped": {"description": "Preview: lines without a word in the first column.", "placeholders": {"count": {"type": "int"}}},
   "csvPreviewNewLists": "New lists: {names}",
   "@csvPreviewNewLists": {"description": "Preview: the lists the import will create.", "placeholders": {"names": {"type": "String"}}},
+  "csvPreviewNewTags": "New tags: {names}",
+  "@csvPreviewNewTags": {"description": "Preview: the tags the import will create.", "placeholders": {"names": {"type": "String"}}},
+  "csvPreviewFallback": "Words with no category go to",
+  "@csvPreviewFallback": {"description": "Preview: label of the list picker for rows without a category."},
   "csvPreviewRule": "Words you already have keep everything you wrote. Only their empty fields are filled in from this file.",
   "@csvPreviewRule": {"description": "Preview: the duplicate rule, said before importing."},
   "csvPreviewSample": "First lines",
@@ -850,6 +869,8 @@
   "@csvReportSkipped": {"description": "Report: lines without a word.", "placeholders": {"count": {"type": "int"}}},
   "csvReportLists": "{count, plural, =1{1 new list} other{{count} new lists}}",
   "@csvReportLists": {"description": "Report: lists created.", "placeholders": {"count": {"type": "int"}}},
+  "csvReportTags": "{count, plural, =1{1 new tag} other{{count} new tags}}",
+  "@csvReportTags": {"description": "Report: tags created.", "placeholders": {"count": {"type": "int"}}},
   "csvProblemNotText": "That file isn't plain text. In your spreadsheet, save it as \"CSV UTF-8\" and try again.",
   "@csvProblemNotText": {"description": "Refusal: UTF-16 or binary file."},
   "csvProblemTooLarge": "That file is too big. Split it into files under 2 MB.",
@@ -1346,6 +1367,10 @@
   "@faqQ12": {"description": "FAQ question 12."},
   "faqA12": "From Wiktionary, through FreeDictionaryAPI.com, shared under CC BY-SA 4.0. Offline pronunciations come from the CMU Pronouncing Dictionary. Settings → Data sources & licences has the details.",
   "@faqA12": {"description": "FAQ answer 12."},
+  "faqQ13": "How do I import many words at once?",
+  "@faqQ13": {"description": "FAQ question 13: bulk import."},
+  "faqA13": "Settings → Backup & restore → Import words from CSV. Make a spreadsheet with one word per line and no header row, in five columns: word, IPA, meaning, category, tags. Only the word is required. The category is the word's list; with none, you choose the list before importing, or it goes to General. Separate tags with ;.\n\nExample line:\ncough,kɒf,ho,Health,body;verbs\n\nSave it as \"CSV UTF-8\", copy it to your phone, then pick it. You see what's in the file before anything is saved. Words you already have are never overwritten: only their empty fields are filled in. A file can hold up to 5,000 words and be up to 2 MB, so split a bigger one.",
+  "@faqA13": {"description": "FAQ answer 13: bulk import. Must state the never-overwrite rule and the limits in WordImportLimits."},
   "helpStillStuck": "Still stuck?",
   "@helpStillStuck": {
     "description": "Heading above the ways to reach a person."
@@ -1860,13 +1885,39 @@
   "@fieldNoteHint": {
     "description": "Hint for the first-note field."
   },
-  "fieldLists": "Add to lists",
+  "fieldTags": "Tags",
+  "@fieldTags": {"description": "Heading of the tags on the word form."},
+  "addTagAction": "Add a tag",
+  "@addTagAction": {"description": "Chip on the word form that opens the tag search, and that sheet's title."},
+  "addListAction": "Add to a list",
+  "@addListAction": {"description": "Chip on the word form that opens the list search, and that sheet's title."},
+  "labelSearchTags": "Find or create a tag",
+  "@labelSearchTags": {"description": "Search box hint in the tag picker."},
+  "labelSearchLists": "Find or create a list",
+  "@labelSearchLists": {"description": "Search box hint in the list picker."},
+  "labelCreateTag": "Create tag \"{name}\"",
+  "@labelCreateTag": {"description": "Row that creates a new tag from what was typed.", "placeholders": {"name": {"type": "String"}}},
+  "labelCreateList": "Create list \"{name}\"",
+  "@labelCreateList": {"description": "Row that creates a new list from what was typed.", "placeholders": {"name": {"type": "String"}}},
+  "labelRemove": "Remove {name}",
+  "@labelRemove": {"description": "Screen-reader label for the x on a chosen list or tag.", "placeholders": {"name": {"type": "String"}}},
+  "labelPickerDone": "Done",
+  "@labelPickerDone": {"description": "Closes the list or tag picker."},
+  "detailLabels": "Lists and tags",
+  "@detailLabels": {"description": "Heading on word detail above the word's lists and tags."},
+  "listGeneral": "General",
+  "@listGeneral": {"description": "The list imported words go to when nothing else is chosen. Stored as the list's name."},
+  "makeTagAction": "Make this a tag",
+  "@makeTagAction": {"description": "List card menu: turns a list into a tag, keeping its words."},
+  "deleteTagAction": "Delete tag",
+  "@deleteTagAction": {"description": "Tag screen menu: deletes the tag."},
+  "deleteTagTitle": "Delete this tag?",
+  "@deleteTagTitle": {"description": "Title of the delete-tag confirmation."},
+  "deleteTagBody": "The tag goes, but every word with it stays in your words.",
+  "@deleteTagBody": {"description": "Body of the delete-tag confirmation. Must say the words survive."},
+  "fieldLists": "Lists",
   "@fieldLists": {
     "description": "Label for the list-membership chips."
-  },
-  "fieldListsEmpty": "No lists yet",
-  "@fieldListsEmpty": {
-    "description": "Shown in place of list chips when the user has no lists."
   },
   "posNoun": "noun",
   "@posNoun": {
@@ -2394,5 +2445,205 @@
   "voiceFallbackDismiss": "Got it",
   "@voiceFallbackDismiss": {
     "description": "Button that dismisses the one-time voice notice for good."
+  },
+  "allWordsTitle": "All words",
+  "@allWordsTitle": {
+    "description": "Title of the full words list, opened from the home overview."
+  },
+  "overviewSeeAll": "See all words",
+  "@overviewSeeAll": {
+    "description": "Button from the home overview to the full words list."
+  },
+  "overviewWordCountLabel": "{count, plural, =1{word} other{words}}",
+  "@overviewWordCountLabel": {
+    "description": "Beside the big total on the home overview.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "overviewAddedThisWeek": "{count, plural, =1{1 new this week} other{{count} new this week}}",
+  "@overviewAddedThisWeek": {
+    "description": "Under the total. Hidden when none.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "overviewDueLabel": "Due now",
+  "@overviewDueLabel": {
+    "description": "Stat tile: words due for review."
+  },
+  "overviewTodayLabel": "Practised today",
+  "@overviewTodayLabel": {
+    "description": "Stat tile: different words practised today."
+  },
+  "overviewStreakLabel": "Days in a row",
+  "@overviewStreakLabel": {
+    "description": "Stat tile. Hidden at zero: a streak of zero is never shown (RULES 6)."
+  },
+  "overviewRememberedLabel": "Remembered",
+  "@overviewRememberedLabel": {
+    "description": "Stat tile: share of answers marked Good or Easy in the last 14 days."
+  },
+  "overviewRememberedValue": "{percent}%",
+  "@overviewRememberedValue": {
+    "description": "The remembered share as a whole percentage.",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "overviewStagesTitle": "How well you know them",
+  "@overviewStagesTitle": {
+    "description": "Heading of the chart of words by stage."
+  },
+  "overviewStagesHint": "Words move up as you do Daily review.",
+  "@overviewStagesHint": {
+    "description": "Under the stage chart. A quick test never moves a word."
+  },
+  "stageFresh": "New",
+  "@stageFresh": {
+    "description": "Stage: not reviewed yet, or back at the start."
+  },
+  "stageLearning": "Learning",
+  "@stageLearning": {
+    "description": "Stage: Leitner boxes 1 and 2."
+  },
+  "stageFamiliar": "Familiar",
+  "@stageFamiliar": {
+    "description": "Stage: Leitner boxes 3 and 4."
+  },
+  "stageStrong": "Strong",
+  "@stageStrong": {
+    "description": "Stage: Leitner boxes 5 and 6."
+  },
+  "overviewActivityTitle": "Last 14 days",
+  "@overviewActivityTitle": {
+    "description": "Heading of the chart of answers per day."
+  },
+  "overviewActivityEmpty": "Practise and your days fill in here.",
+  "@overviewActivityEmpty": {
+    "description": "Shown instead of the chart when nothing was answered. Encouraging, never a warning."
+  },
+  "overviewActivitySummary": "{count, plural, =1{1 answer} other{{count} answers}}",
+  "@overviewActivitySummary": {
+    "description": "Total under the activity chart.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "overviewActivityPeak": "Busiest day: {count}",
+  "@overviewActivityPeak": {
+    "description": "Most answers on one day, under the activity chart.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "overviewDayAnswers": "{date}: {count}",
+  "@overviewDayAnswers": {
+    "description": "Tooltip on one day's bar.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "overviewToday": "Today",
+  "@overviewToday": {
+    "description": "Label at the right end of the activity chart."
+  },
+  "overviewTopListsTitle": "Biggest lists",
+  "@overviewTopListsTitle": {
+    "description": "Heading of the chart of lists by word count."
+  },
+  "overviewRecentTitle": "Recent words",
+  "@overviewRecentTitle": {
+    "description": "Heading of the few words shown on the home overview."
+  },
+  "listsSelectAction": "Select lists",
+  "@listsSelectAction": {
+    "description": "Lists tab: enters selection, to act on many lists at once."
+  },
+  "listsCancelSelection": "Cancel selection",
+  "@listsCancelSelection": {
+    "description": "Lists tab: leaves selection."
+  },
+  "listsSelectAll": "Select all",
+  "@listsSelectAll": {
+    "description": "Lists tab: selects every list."
+  },
+  "listsSelectedCount": "{count} selected",
+  "@listsSelectedCount": {
+    "description": "Lists tab app bar while selecting.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "listsMakeTagsAction": "Make tags",
+  "@listsMakeTagsAction": {
+    "description": "Lists tab: turns the selected lists into tags."
+  },
+  "listsMakeTagsTitle": "{count, plural, =1{Make this list a tag?} other{Make these {count} lists tags?}}",
+  "@listsMakeTagsTitle": {
+    "description": "Confirmation before turning lists into tags.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "listsMakeTagsBody": "Every word stays, and a tag can still be practised. A tag can't be turned back into a list.",
+  "@listsMakeTagsBody": {
+    "description": "Confirmation body."
+  },
+  "listsMadeTagsSnack": "{count, plural, =1{1 list is now a tag} other{{count} lists are now tags}}",
+  "@listsMadeTagsSnack": {
+    "description": "After turning lists into tags.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "listsTagsTitle": "Tags",
+  "@listsTagsTitle": {
+    "description": "Heading of the tags under the lists."
+  },
+  "listRowCounts": "{words} · {due}",
+  "@listRowCounts": {
+    "description": "A list's word count and due count on one line.",
+    "placeholders": {
+      "words": {
+        "type": "String"
+      },
+      "due": {
+        "type": "String"
+      }
+    }
+  },
+  "tagChipLabel": "#{name}, {count}",
+  "@tagChipLabel": {
+    "description": "A tag and its word count.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

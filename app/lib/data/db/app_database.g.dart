@@ -2322,6 +2322,16 @@ class $WordListsTable extends WordLists
         requiredDuringInsert: true,
       ).withConverter<DateTime>($WordListsTable.$converterupdatedAt);
   @override
+  late final GeneratedColumnWithTypeConverter<ListKind, String> kind =
+      GeneratedColumn<String>(
+        'kind',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('list'),
+      ).withConverter<ListKind>($WordListsTable.$converterkind);
+  @override
   List<GeneratedColumn> get $columns => [
     id,
     name,
@@ -2330,6 +2340,7 @@ class $WordListsTable extends WordLists
     sortOrder,
     createdAt,
     updatedAt,
+    kind,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2413,6 +2424,12 @@ class $WordListsTable extends WordLists
           data['${effectivePrefix}updated_at'],
         )!,
       ),
+      kind: $WordListsTable.$converterkind.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}kind'],
+        )!,
+      ),
     );
   }
 
@@ -2427,6 +2444,8 @@ class $WordListsTable extends WordLists
       epochMillisConverter;
   static TypeConverter<DateTime, int> $converterupdatedAt =
       epochMillisConverter;
+  static JsonTypeConverter2<ListKind, String, String> $converterkind =
+      const EnumNameConverter<ListKind>(ListKind.values);
 }
 
 class WordListRow extends DataClass implements Insertable<WordListRow> {
@@ -2450,6 +2469,9 @@ class WordListRow extends DataClass implements Insertable<WordListRow> {
 
   /// Epoch milliseconds UTC.
   final DateTime updatedAt;
+
+  /// `list` or `tag`. Added at v4; every row from before then is a list.
+  final ListKind kind;
   const WordListRow({
     required this.id,
     required this.name,
@@ -2458,6 +2480,7 @@ class WordListRow extends DataClass implements Insertable<WordListRow> {
     required this.sortOrder,
     required this.createdAt,
     required this.updatedAt,
+    required this.kind,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2483,6 +2506,11 @@ class WordListRow extends DataClass implements Insertable<WordListRow> {
         $WordListsTable.$converterupdatedAt.toSql(updatedAt),
       );
     }
+    {
+      map['kind'] = Variable<String>(
+        $WordListsTable.$converterkind.toSql(kind),
+      );
+    }
     return map;
   }
 
@@ -2497,6 +2525,7 @@ class WordListRow extends DataClass implements Insertable<WordListRow> {
       sortOrder: Value(sortOrder),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
+      kind: Value(kind),
     );
   }
 
@@ -2513,6 +2542,9 @@ class WordListRow extends DataClass implements Insertable<WordListRow> {
       sortOrder: serializer.fromJson<int>(json['sortOrder']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      kind: $WordListsTable.$converterkind.fromJson(
+        serializer.fromJson<String>(json['kind']),
+      ),
     );
   }
   @override
@@ -2526,6 +2558,9 @@ class WordListRow extends DataClass implements Insertable<WordListRow> {
       'sortOrder': serializer.toJson<int>(sortOrder),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'kind': serializer.toJson<String>(
+        $WordListsTable.$converterkind.toJson(kind),
+      ),
     };
   }
 
@@ -2537,6 +2572,7 @@ class WordListRow extends DataClass implements Insertable<WordListRow> {
     int? sortOrder,
     DateTime? createdAt,
     DateTime? updatedAt,
+    ListKind? kind,
   }) => WordListRow(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -2545,6 +2581,7 @@ class WordListRow extends DataClass implements Insertable<WordListRow> {
     sortOrder: sortOrder ?? this.sortOrder,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
+    kind: kind ?? this.kind,
   );
   WordListRow copyWithCompanion(WordListsCompanion data) {
     return WordListRow(
@@ -2557,6 +2594,7 @@ class WordListRow extends DataClass implements Insertable<WordListRow> {
       sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      kind: data.kind.present ? data.kind.value : this.kind,
     );
   }
 
@@ -2569,7 +2607,8 @@ class WordListRow extends DataClass implements Insertable<WordListRow> {
           ..write('iconKey: $iconKey, ')
           ..write('sortOrder: $sortOrder, ')
           ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('kind: $kind')
           ..write(')'))
         .toString();
   }
@@ -2583,6 +2622,7 @@ class WordListRow extends DataClass implements Insertable<WordListRow> {
     sortOrder,
     createdAt,
     updatedAt,
+    kind,
   );
   @override
   bool operator ==(Object other) =>
@@ -2594,7 +2634,8 @@ class WordListRow extends DataClass implements Insertable<WordListRow> {
           other.iconKey == this.iconKey &&
           other.sortOrder == this.sortOrder &&
           other.createdAt == this.createdAt &&
-          other.updatedAt == this.updatedAt);
+          other.updatedAt == this.updatedAt &&
+          other.kind == this.kind);
 }
 
 class WordListsCompanion extends UpdateCompanion<WordListRow> {
@@ -2605,6 +2646,7 @@ class WordListsCompanion extends UpdateCompanion<WordListRow> {
   final Value<int> sortOrder;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
+  final Value<ListKind> kind;
   final Value<int> rowid;
   const WordListsCompanion({
     this.id = const Value.absent(),
@@ -2614,6 +2656,7 @@ class WordListsCompanion extends UpdateCompanion<WordListRow> {
     this.sortOrder = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.kind = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   WordListsCompanion.insert({
@@ -2624,6 +2667,7 @@ class WordListsCompanion extends UpdateCompanion<WordListRow> {
     required int sortOrder,
     required DateTime createdAt,
     required DateTime updatedAt,
+    this.kind = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        name = Value(name),
@@ -2639,6 +2683,7 @@ class WordListsCompanion extends UpdateCompanion<WordListRow> {
     Expression<int>? sortOrder,
     Expression<int>? createdAt,
     Expression<int>? updatedAt,
+    Expression<String>? kind,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -2649,6 +2694,7 @@ class WordListsCompanion extends UpdateCompanion<WordListRow> {
       if (sortOrder != null) 'sort_order': sortOrder,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
+      if (kind != null) 'kind': kind,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -2661,6 +2707,7 @@ class WordListsCompanion extends UpdateCompanion<WordListRow> {
     Value<int>? sortOrder,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
+    Value<ListKind>? kind,
     Value<int>? rowid,
   }) {
     return WordListsCompanion(
@@ -2671,6 +2718,7 @@ class WordListsCompanion extends UpdateCompanion<WordListRow> {
       sortOrder: sortOrder ?? this.sortOrder,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      kind: kind ?? this.kind,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -2705,6 +2753,11 @@ class WordListsCompanion extends UpdateCompanion<WordListRow> {
         $WordListsTable.$converterupdatedAt.toSql(updatedAt.value),
       );
     }
+    if (kind.present) {
+      map['kind'] = Variable<String>(
+        $WordListsTable.$converterkind.toSql(kind.value),
+      );
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -2721,6 +2774,7 @@ class WordListsCompanion extends UpdateCompanion<WordListRow> {
           ..write('sortOrder: $sortOrder, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
+          ..write('kind: $kind, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -7981,6 +8035,7 @@ typedef $$WordListsTableCreateCompanionBuilder = WordListsCompanion Function({
   required int sortOrder,
   required DateTime createdAt,
   required DateTime updatedAt,
+  Value<ListKind> kind,
   Value<int> rowid,
 });
 typedef $$WordListsTableUpdateCompanionBuilder = WordListsCompanion Function({
@@ -7991,6 +8046,7 @@ typedef $$WordListsTableUpdateCompanionBuilder = WordListsCompanion Function({
   Value<int> sortOrder,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
+  Value<ListKind> kind,
   Value<int> rowid,
 });
 
@@ -8064,6 +8120,12 @@ class $$WordListsTableFilterComposer
         builder: (column) => ColumnWithTypeConverterFilters(column),
       );
 
+  ColumnWithTypeConverterFilters<ListKind, ListKind, String> get kind =>
+      $composableBuilder(
+        column: $table.kind,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
   Expression<bool> wordListItemsRefs(
     Expression<bool> Function($$WordListItemsTableFilterComposer f) f,
   ) {
@@ -8133,6 +8195,11 @@ class $$WordListsTableOrderingComposer
     column: $table.updatedAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$WordListsTableAnnotationComposer
@@ -8167,6 +8234,9 @@ class $$WordListsTableAnnotationComposer
 
   GeneratedColumnWithTypeConverter<DateTime, int> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<ListKind, String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
 
   Expression<T> wordListItemsRefs<T extends Object>(
     Expression<T> Function($$WordListItemsTableAnnotationComposer a) f,
@@ -8229,6 +8299,7 @@ class $$WordListsTableTableManager
                 Value<int> sortOrder = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
+                Value<ListKind> kind = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => WordListsCompanion(
                 id: id,
@@ -8238,6 +8309,7 @@ class $$WordListsTableTableManager
                 sortOrder: sortOrder,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
+                kind: kind,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -8249,6 +8321,7 @@ class $$WordListsTableTableManager
                 required int sortOrder,
                 required DateTime createdAt,
                 required DateTime updatedAt,
+                Value<ListKind> kind = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => WordListsCompanion.insert(
                 id: id,
@@ -8258,6 +8331,7 @@ class $$WordListsTableTableManager
                 sortOrder: sortOrder,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
+                kind: kind,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

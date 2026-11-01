@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui' show FrameTiming;
 
@@ -11,6 +12,8 @@ import 'package:integration_test/integration_test.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:vocabnote/app.dart';
+import 'package:vocabnote/core/router/app_router.dart';
+import 'package:vocabnote/core/router/routes.dart';
 import 'package:vocabnote/data/composition_root.dart';
 import 'package:vocabnote/data/db/app_database.dart';
 import 'package:vocabnote/data/db/database_provider.dart';
@@ -61,6 +64,8 @@ void main() {
           child: const VocabNoteApp(),
         ),
       );
+      await tester.pumpAndSettle();
+      unawaited(container.read(appRouterProvider).push(Routes.wordsAll));
       await tester.pumpAndSettle();
       // Not a headword: the default sort is `WordSort.recent` (updated_at
       // DESC), so `word0000` is the 5,000th row and a `ListView.builder`

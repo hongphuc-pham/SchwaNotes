@@ -1,8 +1,7 @@
-import 'dart:math';
-
 import 'package:drift/drift.dart';
 import 'package:vocabnote/core/failure.dart';
 import 'package:vocabnote/core/result.dart';
+import 'package:vocabnote/core/utils/combine_latest.dart';
 import 'package:vocabnote/data/db/app_database.dart';
 import 'package:vocabnote/data/db/daos/practice_dao.dart';
 import 'package:vocabnote/data/repositories/mappers.dart';
@@ -10,6 +9,7 @@ import 'package:vocabnote/domain/entities/ipa_highlight.dart';
 import 'package:vocabnote/domain/entities/practice_progress.dart';
 import 'package:vocabnote/domain/entities/practice_session.dart';
 import 'package:vocabnote/domain/entities/study_card.dart';
+import 'package:vocabnote/domain/entities/word_overview.dart';
 import 'package:vocabnote/domain/repositories/practice_repository.dart';
 
 /// Drift-backed [PracticeRepository].
@@ -32,33 +32,26 @@ class PracticeRepositoryImpl implements PracticeRepository {
     String? sourceId,
     int? seed,
   }) => Results.guard(() async {
-    // The 30-card ceiling, enforced again at the query. GameConfig also
-    // clamps it; neither layer is the only thing between a user and a
-    // 500-card session (docs/GAMES.md §4).
-    final effectiveLimit = mode == PracticeMode.quickTest
-        ? min(limit, PracticeRepository.quickTestMaxCards)
-        : limit;
-
     final pool = switch (selection) {
       CardSelection.due => await _db.practiceDao.dueCards(
-        limit: effectiveLimit,
+        limit: limit,
         now: _now(),
         source: source,
         sourceId: sourceId,
       ),
       CardSelection.random => await _db.practiceDao.randomCards(
-        limit: effectiveLimit,
+        limit: limit,
         source: source,
         sourceId: sourceId,
         seed: seed,
       ),
       CardSelection.weakest => await _db.practiceDao.weakestCards(
-        limit: effectiveLimit,
+        limit: limit,
         source: source,
         sourceId: sourceId,
       ),
       CardSelection.newest => await _db.practiceDao.newestCards(
-        limit: effectiveLimit,
+        limit: limit,
         source: source,
         sourceId: sourceId,
       ),
@@ -202,6 +195,55 @@ class PracticeRepositoryImpl implements PracticeRepository {
           ),
         )
         .guarded(onError: (_, _) => _dbFailure('watch practice progress'));
+  }
+
+  @override
+  ResultStream<WordOverview> watchOverview() {
+    final now = _now();
+    final since = DateTime(
+      now.year,
+      now.month,
+      now.day - (WordOverview.windowDays - 1),
+    );
+    final weekAgo = DateTime(now.year, now.month, now.day - 6);
+
+    return combineLatest3(
+      _db.practiceDao.watchBoxCounts(),
+      _db.practiceDao.watchAnswerTallies(since),
+      _db.practiceDao.watchWordsAddedSince(weekAgo),
+      (boxes, tallies, added) {
+        final stages = <KnowledgeStage, int>{};
+        boxes.forEach((box, words) {
+          stages.update(
+            KnowledgeStage.ofBox(box),
+            (count) => count + words,
+            ifAbsent: () => words,
+          );
+        });
+
+        final answersOn = <DateTime, int>{};
+        var remembered = 0;
+        for (final tally in tallies) {
+          answersOn.update(
+            _localDate(tally.at),
+            (count) => count + tally.answers,
+            ifAbsent: () => tally.answers,
+          );
+          remembered += tally.remembered;
+        }
+
+        return WordOverview(
+          addedThisWeek: added,
+          stages: stages,
+          days: List<DayActivity>.generate(WordOverview.windowDays, (i) {
+            // By calendar fields: see `PracticeProgress._dayBefore`.
+            final date = DateTime(since.year, since.month, since.day + i);
+            return DayActivity(date: date, answers: answersOn[date] ?? 0);
+          }),
+          remembered: remembered,
+        );
+      },
+    ).guarded(onError: (_, _) => _dbFailure('watch overview'));
   }
 
   /// The date [instant] falls on, on this device, at local midnight.

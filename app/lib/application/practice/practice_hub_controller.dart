@@ -4,6 +4,7 @@ library;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:vocabnote/application/repositories.dart';
 import 'package:vocabnote/domain/entities/practice_progress.dart';
+import 'package:vocabnote/domain/entities/word_overview.dart';
 
 part 'practice_hub_controller.g.dart';
 
@@ -27,5 +28,17 @@ Stream<PracticeProgress> practiceProgress(Ref ref) {
       .map(
         (result) =>
             result.fold((progress) => progress, (failure) => throw failure),
+      );
+}
+
+/// The numbers behind the home screen's overview.
+@riverpod
+Stream<WordOverview> wordOverview(Ref ref) {
+  return ref
+      .watch(practiceRepositoryProvider)
+      .watchOverview()
+      .map(
+        (result) =>
+            result.fold((overview) => overview, (failure) => throw failure),
       );
 }

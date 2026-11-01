@@ -4,6 +4,7 @@ import 'package:vocabnote/domain/entities/practice_progress.dart';
 import 'package:vocabnote/domain/entities/practice_session.dart';
 import 'package:vocabnote/domain/entities/study_card.dart';
 import 'package:vocabnote/domain/entities/word.dart';
+import 'package:vocabnote/domain/entities/word_overview.dart';
 
 /// A word, its study state and its highlights - one practice card.
 ///
@@ -52,16 +53,10 @@ enum CardSelection {
 ///
 /// The session runner owns all of this; games never touch the database.
 abstract interface class PracticeRepository {
-  /// The hard ceiling on a quick test, from `docs/GAMES.md` section 4.
-  ///
-  /// Enforced here as well as in `GameConfig`, so neither layer is the only
-  /// thing between a user and a 500-card session.
-  static const int quickTestMaxCards = 30;
+  /// A limit that asks for every card: a quick test of the full list.
+  static const int everyCard = 0x7FFFFFFF;
 
-  /// Loads a pool of cards.
-  ///
-  /// [limit] is clamped to [quickTestMaxCards] when [mode] is
-  /// [PracticeMode.quickTest].
+  /// Loads a pool of up to [limit] cards.
   AsyncResult<List<PracticeCardData>> loadPool({
     required CardSelection selection,
     required PracticeMode mode,
@@ -114,4 +109,7 @@ abstract interface class PracticeRepository {
   /// Not built on [watchRecentSessions]: that stops at a number of sessions,
   /// and a busy day can use them all.
   ResultStream<PracticeProgress> watchProgress();
+
+  /// Watches the numbers behind the home screen's overview.
+  ResultStream<WordOverview> watchOverview();
 }

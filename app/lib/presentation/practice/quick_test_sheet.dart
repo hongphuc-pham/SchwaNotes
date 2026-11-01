@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vocabnote/application/lists/list_controller.dart';
 import 'package:vocabnote/application/practice/game_contracts.dart';
@@ -15,10 +16,7 @@ import 'package:vocabnote/presentation/practice/mix_options.dart';
 
 /// Configures a quick test (`docs/UI-UX.md` §4.6, F-062).
 ///
-/// Source · size · prompt side · autoplay · Start. Everything the sheet can
-/// produce is already capped at 30 by [GameConfig]'s constructor, so the *All*
-/// chip advertising "max 30" is a description of the truth rather than a
-/// promise the UI has to keep.
+/// Source · size · prompt side · autoplay · Start.
 class QuickTestSheet extends ConsumerStatefulWidget {
   /// Creates the sheet.
   const new({required this.gameId, this.listId, super.key});
@@ -49,14 +47,17 @@ class QuickTestSheet extends ConsumerStatefulWidget {
 }
 
 class _QuickTestSheetState extends ConsumerState<QuickTestSheet> {
-  /// The sizes `UI-UX.md` §4.6 offers. Null is *All*, meaning "up to the cap".
-  static const List<int?> _sizes = <int?>[5, 10, 20, null];
+  /// The fixed sizes `UI-UX.md` §4.6 offers, beside *Custom* and *Full list*.
+  static const List<int> _sizes = <int>[5, 10, 20];
 
   late CardSourceKind _source = widget.listId == null
       ? CardSourceKind.all
       : CardSourceKind.list;
   late String? _listId = widget.listId;
+  // Null is the full list.
   int? _size = 10;
+  bool _customSize = false;
+  final TextEditingController _custom = TextEditingController();
   PromptSide _promptSide = PromptSide.wordFirst;
   // Starts from the user's settings; changing it here is for this test only.
   late Set<PromptSide> _mixSides = ref
@@ -65,13 +66,31 @@ class _QuickTestSheetState extends ConsumerState<QuickTestSheet> {
   late MixOrder _mixOrder = ref.read(appSettingsOrDefaultsProvider).mixOrder;
   bool _autoplay = true;
 
+  @override
+  void dispose() {
+    _custom.dispose();
+    super.dispose();
+  }
+
+  /// The custom number, or null until it is a usable one.
+  int? get _customValue => switch (int.tryParse(_custom.text)) {
+    final int value when value > 0 => value,
+    _ => null,
+  };
+
+  bool get _canStart =>
+      (!_customSize || _customValue != null) &&
+      (_source != CardSourceKind.list || _listId != null);
+
   void _start() {
     Navigator.of(context).pop(
       GameConfig(
         gameId: widget.gameId,
         mode: PracticeMode.quickTest,
         selection: CardSelection.random,
-        limit: _size ?? PracticeRepository.quickTestMaxCards,
+        limit: _customSize
+            ? _customValue!
+            : _size ?? PracticeRepository.everyCard,
         source: _source,
         sourceId: _source == CardSourceKind.list ? _listId : null,
         promptSide: _promptSide,
@@ -89,8 +108,11 @@ class _QuickTestSheetState extends ConsumerState<QuickTestSheet> {
     final theme = Theme.of(context);
     final l10n = AppL10n.of(context);
     final metrics = context.metrics;
-    final lists =
-        ref.watch(listSummariesProvider).value ?? const <WordListSummary>[];
+    // Tags as well: *Practise this list* can open this sheet from one.
+    final lists = <WordListSummary>[
+      ...?ref.watch(listSummariesProvider).value,
+      ...?ref.watch(tagSummariesProvider).value,
+    ];
 
     return Padding(
       padding: EdgeInsets.only(
@@ -125,19 +147,40 @@ class _QuickTestSheetState extends ConsumerState<QuickTestSheet> {
                   onSelected: (_) =>
                       setState(() => _source = CardSourceKind.favourites),
                 ),
-                for (final summary in lists)
+                if (lists.isNotEmpty)
                   ChoiceChip(
-                    label: Text(summary.list.name),
-                    selected:
-                        _source == CardSourceKind.list &&
-                        _listId == summary.list.id,
+                    label: Text(l10n.quickTestSourceList),
+                    selected: _source == CardSourceKind.list,
                     onSelected: (_) => setState(() {
                       _source = CardSourceKind.list;
-                      _listId = summary.list.id;
+                      _listId ??= lists.first.list.id;
                     }),
                   ),
               ],
             ),
+            // A dropdown, not a chip each: a deck can bring dozens of lists.
+            if (_source == CardSourceKind.list &&
+                lists.any((s) => s.list.id == _listId)) ...<Widget>[
+              const VnGap(VnSpace.md),
+              DropdownButtonFormField<String>(
+                initialValue: _listId,
+                isExpanded: true,
+                decoration: InputDecoration(labelText: l10n.quickTestPickList),
+                items: <DropdownMenuItem<String>>[
+                  for (final summary in lists)
+                    DropdownMenuItem<String>(
+                      value: summary.list.id,
+                      child: Text(
+                        '${summary.list.kind == ListKind.tag ? '#' : ''}'
+                        '${summary.list.name} · '
+                        '${l10n.listWordCount(summary.wordCount)}',
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                ],
+                onChanged: (id) => setState(() => _listId = id),
+              ),
+            ],
             const VnGap(VnSpace.lg),
 
             Text(l10n.quickTestSize, style: theme.textTheme.labelLarge),
@@ -147,20 +190,43 @@ class _QuickTestSheetState extends ConsumerState<QuickTestSheet> {
               children: <Widget>[
                 for (final size in _sizes)
                   ChoiceChip(
-                    label: Text(
-                      size == null
-                          // Says the cap out loud rather than silently
-                          // trimming a 200-word list to 30.
-                          ? l10n.quickTestSizeAll(
-                              PracticeRepository.quickTestMaxCards,
-                            )
-                          : '$size',
-                    ),
-                    selected: _size == size,
-                    onSelected: (_) => setState(() => _size = size),
+                    label: Text('$size'),
+                    selected: !_customSize && _size == size,
+                    onSelected: (_) => setState(() {
+                      _customSize = false;
+                      _size = size;
+                    }),
                   ),
+                ChoiceChip(
+                  label: Text(l10n.quickTestSizeCustom),
+                  selected: _customSize,
+                  onSelected: (_) => setState(() => _customSize = true),
+                ),
+                ChoiceChip(
+                  label: Text(l10n.quickTestSizeFull),
+                  selected: !_customSize && _size == null,
+                  onSelected: (_) => setState(() {
+                    _customSize = false;
+                    _size = null;
+                  }),
+                ),
               ],
             ),
+            if (_customSize) ...<Widget>[
+              const VnGap(VnSpace.md),
+              TextField(
+                controller: _custom,
+                autofocus: true,
+                keyboardType: TextInputType.number,
+                inputFormatters: <TextInputFormatter>[
+                  FilteringTextInputFormatter.digitsOnly,
+                ],
+                decoration: InputDecoration(
+                  labelText: l10n.quickTestCustomLabel,
+                ),
+                onChanged: (_) => setState(() {}),
+              ),
+            ],
             const VnGap(VnSpace.lg),
 
             Text(l10n.quickTestPromptSide, style: theme.textTheme.labelLarge),
@@ -199,7 +265,7 @@ class _QuickTestSheetState extends ConsumerState<QuickTestSheet> {
             Align(
               alignment: Alignment.centerRight,
               child: FilledButton(
-                onPressed: _start,
+                onPressed: _canStart ? _start : null,
                 child: Text(l10n.quickTestStart),
               ),
             ),

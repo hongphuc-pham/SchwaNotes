@@ -180,7 +180,11 @@ class _Card extends StatelessWidget {
                 transitionBuilder: (child, animation) =>
                     FadeTransition(opacity: animation, child: child),
                 child: revealed
-                    ? _Back(key: const ValueKey<bool>(true), round: round)
+                    ? _Back(
+                        key: const ValueKey<bool>(true),
+                        round: round,
+                        onSpeak: onSpeak,
+                      )
                     : _Front(
                         key: const ValueKey<bool>(false),
                         round: round,
@@ -229,17 +233,14 @@ class _Front extends StatelessWidget {
             style: context.type.displayWord,
             textAlign: TextAlign.center,
           ),
-        if (onSpeak != null) ...<Widget>[
+        if (onSpeak case final VoidCallback speak
+            when !round.wordIsHidden) ...<Widget>[
           const VnGap(VnSpace.lg),
-          IconButton.filledTonal(
-            icon: const Icon(Icons.volume_up),
-            tooltip: l10n.detailPlayLabel(
-              round.card.word.headword.value,
-              round.card.word.ipaUk != null
-                  ? l10n.detailAccentUk
-                  : l10n.detailAccentUs,
-            ),
-            onPressed: onSpeak,
+          _PlayButton(
+            round: round,
+            onSpeak: speak,
+            // The sound is what an IPA front is for; the word's name is not.
+            nameWord: !round.frontIsIpa,
           ),
         ],
         if (showHint) ...<Widget>[
@@ -256,11 +257,41 @@ class _Front extends StatelessWidget {
   }
 }
 
-/// The answer side: word · IPA with highlights · definition · first note.
-class _Back extends StatelessWidget {
-  const new({required this.round, super.key});
+/// Speaks the word.
+class _PlayButton extends StatelessWidget {
+  const new({required this.round, required this.onSpeak, this.nameWord = true});
 
   final FlashcardRound round;
+  final VoidCallback onSpeak;
+
+  /// Whether the label may say the word: the tooltip and a screen reader both
+  /// read it, so it must not where the word is still the answer.
+  final bool nameWord;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
+    final word = round.card.word;
+
+    return IconButton.filledTonal(
+      icon: const Icon(Icons.volume_up),
+      tooltip: nameWord
+          ? l10n.detailPlayLabel(
+              word.headword.value,
+              word.ipaUk != null ? l10n.detailAccentUk : l10n.detailAccentUs,
+            )
+          : l10n.flashcardPlaySoundLabel,
+      onPressed: onSpeak,
+    );
+  }
+}
+
+/// The answer side: word · IPA with highlights · definition · first note.
+class _Back extends StatelessWidget {
+  const new({required this.round, this.onSpeak, super.key});
+
+  final FlashcardRound round;
+  final VoidCallback? onSpeak;
 
   @override
   Widget build(BuildContext context) {
@@ -283,6 +314,13 @@ class _Back extends StatelessWidget {
               highlights: round.card.highlights,
               style: context.type.ipaLarge,
             ),
+          ],
+          // The one card whose front had no button (F-063): without this, a
+          // user with autoplay off could never hear the word on it.
+          if (onSpeak case final VoidCallback speak
+              when round.wordIsHidden) ...<Widget>[
+            const VnGap(VnSpace.sm),
+            _PlayButton(round: round, onSpeak: speak),
           ],
           if (word.definition case final String definition
               when definition.isNotEmpty) ...<Widget>[

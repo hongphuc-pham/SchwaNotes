@@ -5,6 +5,7 @@ import 'package:vocabnote/core/l10n/gen/app_localizations.dart';
 import 'package:vocabnote/core/router/app_router.dart';
 import 'package:vocabnote/core/theme/app_theme.dart';
 import 'package:vocabnote/domain/entities/app_settings.dart';
+import 'package:vocabnote/presentation/design/system_bar_inset.dart';
 
 /// The root widget: `MaterialApp.router` plus theme and localisation wiring.
 ///
@@ -27,6 +28,11 @@ class VocabNoteApp extends ConsumerWidget {
     return MaterialApp.router(
       routerConfig: router,
       debugShowCheckedModeBanner: false,
+
+      // Outside the navigator, so screens, sheets and dialogs are all covered
+      // and none has to remember to.
+      builder: (context, child) =>
+          VnSystemBarInset(child: child ?? const SizedBox.shrink()),
 
       // The title shown in the OS task switcher. Localised via
       // onGenerateTitle so it follows the device language.

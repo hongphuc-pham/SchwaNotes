@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:vocabnote/data/db/converters/converters.dart';
+import 'package:vocabnote/domain/entities/word_list.dart';
 
 /// `word_lists` - the decks a user groups words into (F-042).
 ///
@@ -31,6 +32,10 @@ class WordLists extends Table {
   /// Epoch milliseconds UTC.
   IntColumn get updatedAt =>
       integer().named('updated_at').map(epochMillisConverter)();
+
+  /// `list` or `tag`. Added at v4; every row from before then is a list.
+  TextColumn get kind =>
+      textEnum<ListKind>().withDefault(const Constant('list'))();
 
   @override
   Set<Column<Object>> get primaryKey => {id};

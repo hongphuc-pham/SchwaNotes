@@ -143,6 +143,55 @@ final class WordListProvider
 
 String _$wordListHash() => r'45fde492cf66beaed7e2ea0197087a578b0e5728';
 
+/// The few words the home overview shows. Never filtered: the words screen's
+/// filter belongs to the words screen.
+
+@ProviderFor(recentWords)
+final recentWordsProvider = RecentWordsProvider._();
+
+/// The few words the home overview shows. Never filtered: the words screen's
+/// filter belongs to the words screen.
+
+final class RecentWordsProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<WordListEntry>>,
+          List<WordListEntry>,
+          Stream<List<WordListEntry>>
+        >
+    with
+        $FutureModifier<List<WordListEntry>>,
+        $StreamProvider<List<WordListEntry>> {
+  /// The few words the home overview shows. Never filtered: the words screen's
+  /// filter belongs to the words screen.
+  RecentWordsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'recentWordsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$recentWordsHash();
+
+  @$internal
+  @override
+  $StreamProviderElement<List<WordListEntry>> $createElement(
+    $ProviderPointer pointer,
+  ) => $StreamProviderElement(pointer);
+
+  @override
+  Stream<List<WordListEntry>> create(Ref ref) {
+    return recentWords(ref);
+  }
+}
+
+String _$recentWordsHash() => r'a24cabf624dd458c96263874d066039377ceab21';
+
 /// How many live words there are.
 ///
 /// Separate from [wordList] because it must not change when a filter does -

@@ -78,12 +78,15 @@ class WordImportActions extends _$WordImportActions {
 
   /// Brings [preview]'s words in, or returns null if it could not - in which
   /// case nothing changed. The IPA goes in the field for the user's accent.
-  Future<WordImportReport?> importDeck(WordImportPreview preview) async {
+  Future<WordImportReport?> importDeck(
+    WordImportPreview preview, {
+    required String fallbackList,
+  }) async {
     final accent = ref.read(appSettingsOrDefaultsProvider).ttsLocale;
     final report =
         (await ref
                 .read(wordImportRepositoryProvider)
-                .import(preview, accent: accent))
+                .import(preview, accent: accent, fallbackList: fallbackList))
             .valueOrNull;
     if (report != null) ref.invalidate(storageUsedProvider);
     return report;

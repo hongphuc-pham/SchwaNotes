@@ -62,8 +62,9 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
           preview = ready;
       }
 
-      if (!await WordImportSheet.show(context, preview) || !mounted) return;
-      final report = await actions.importDeck(preview);
+      final fallback = await WordImportSheet.show(context, preview);
+      if (fallback == null || !mounted) return;
+      final report = await actions.importDeck(preview, fallbackList: fallback);
       if (!mounted) return;
       if (report == null) {
         messenger.showSnackBar(SnackBar(content: Text(l10n.csvImportFailed)));

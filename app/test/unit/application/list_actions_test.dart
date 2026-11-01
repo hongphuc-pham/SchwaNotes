@@ -154,26 +154,14 @@ void main() {
     });
   });
 
-  group('reorder', () {
-    test('writes the given order and it survives a re-read', () async {
-      final a = await makeList('A');
-      final b = await makeList('B');
-      final c = await makeList('C');
-
-      await actions().reorder(<String>[c.id, a.id, b.id]);
+  group('order', () {
+    test('lists read A-Z, whatever the case and the order made', () async {
+      await makeList('verbs');
+      await makeList('Animals');
+      await makeList('Food');
 
       final all = await summaries();
-      expect(all.map((s) => s.list.name), <String>['C', 'A', 'B']);
-    });
-
-    test('leaves no two lists claiming the same position', () async {
-      final a = await makeList('A');
-      final b = await makeList('B');
-      final c = await makeList('C');
-      await actions().reorder(<String>[b.id, c.id, a.id]);
-
-      final orders = (await summaries()).map((s) => s.list.sortOrder).toList();
-      expect(orders.toSet(), hasLength(orders.length));
+      expect(all.map((s) => s.list.name), <String>['Animals', 'Food', 'verbs']);
     });
   });
 

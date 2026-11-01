@@ -2,7 +2,8 @@
 ///
 /// The file has **no header**, and its columns are, in order:
 /// `front, ipa, back, category, tags`. `back` is the meaning in the user's own
-/// language and goes into `definition`. `category` and each tag become lists.
+/// language and goes into `definition`. `category` is the word's list, and each
+/// tag becomes a tag.
 library;
 
 import 'package:meta/meta.dart';
@@ -16,7 +17,8 @@ class WordImportRow {
     required this.headword,
     this.ipa,
     this.meaning,
-    this.listNames = const <String>[],
+    this.category,
+    this.tagNames = const <String>[],
   });
 
   /// The 1-based line the row started on, for the preview.
@@ -31,9 +33,12 @@ class WordImportRow {
   /// The `back` column, or null when blank.
   final String? meaning;
 
-  /// The category first, then each tag; trimmed, no blanks, no repeats
-  /// (compared case-insensitively, keeping the first spelling).
-  final List<String> listNames;
+  /// The `category` column, or null when blank. The word's list.
+  final String? category;
+
+  /// Each tag; trimmed, no blanks, no repeats (compared case-insensitively,
+  /// keeping the first spelling).
+  final List<String> tagNames;
 }
 
 /// Why a file cannot be imported at all. Nothing is written for any of these.
@@ -75,6 +80,7 @@ class WordImportPreview {
     this.newWords = 0,
     this.existingWords = 0,
     this.newListNames = const <String>[],
+    this.newTagNames = const <String>[],
     this.problem,
   });
 
@@ -84,7 +90,8 @@ class WordImportPreview {
       skippedLines = 0,
       newWords = 0,
       existingWords = 0,
-      newListNames = const <String>[];
+      newListNames = const <String>[],
+      newTagNames = const <String>[];
 
   /// Every usable row, in file order.
   final List<WordImportRow> rows;
@@ -102,6 +109,12 @@ class WordImportPreview {
   /// Lists that do not exist yet and will be created.
   final List<String> newListNames;
 
+  /// Tags that do not exist yet and will be created.
+  final List<String> newTagNames;
+
+  /// Whether any word needs a list chosen for it.
+  bool get needsFallbackList => rows.any((row) => row.category == null);
+
   /// Set when the file cannot be imported; everything else is then empty.
   final WordImportProblem? problem;
 }
@@ -116,6 +129,7 @@ class WordImportReport {
     this.unchanged = 0,
     this.skipped = 0,
     this.listsCreated = 0,
+    this.tagsCreated = 0,
   });
 
   /// New words.
@@ -132,4 +146,7 @@ class WordImportReport {
 
   /// Lists created for categories and tags.
   final int listsCreated;
+
+  /// Tags that did not exist before.
+  final int tagsCreated;
 }

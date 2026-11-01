@@ -8,7 +8,8 @@ part of 'list_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Every list with its word and due counts (F-042).
+/// Every list with its word and due counts, A-Z (F-042). Tags are not lists:
+/// they have [tagSummaries].
 ///
 /// Used by the lists grid (M4) and, from M2, by the filter chips row - the
 /// user's lists appear as chips after the four fixed ones.
@@ -19,7 +20,8 @@ part of 'list_controller.dart';
 @ProviderFor(listSummaries)
 final listSummariesProvider = ListSummariesProvider._();
 
-/// Every list with its word and due counts (F-042).
+/// Every list with its word and due counts, A-Z (F-042). Tags are not lists:
+/// they have [tagSummaries].
 ///
 /// Used by the lists grid (M4) and, from M2, by the filter chips row - the
 /// user's lists appear as chips after the four fixed ones.
@@ -37,7 +39,8 @@ final class ListSummariesProvider
     with
         $FutureModifier<List<WordListSummary>>,
         $StreamProvider<List<WordListSummary>> {
-  /// Every list with its word and due counts (F-042).
+  /// Every list with its word and due counts, A-Z (F-042). Tags are not lists:
+  /// they have [tagSummaries].
   ///
   /// Used by the lists grid (M4) and, from M2, by the filter chips row - the
   /// user's lists appear as chips after the four fixed ones.
@@ -70,7 +73,53 @@ final class ListSummariesProvider
   }
 }
 
-String _$listSummariesHash() => r'a0cd4ba53bec022373b0d44eb615c7f25bb94eeb';
+String _$listSummariesHash() => r'dba4d76a2b83bab09f420edbef2aa5d5f45033b9';
+
+/// Every tag with its word and due counts, A-Z.
+
+@ProviderFor(tagSummaries)
+final tagSummariesProvider = TagSummariesProvider._();
+
+/// Every tag with its word and due counts, A-Z.
+
+final class TagSummariesProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<WordListSummary>>,
+          List<WordListSummary>,
+          Stream<List<WordListSummary>>
+        >
+    with
+        $FutureModifier<List<WordListSummary>>,
+        $StreamProvider<List<WordListSummary>> {
+  /// Every tag with its word and due counts, A-Z.
+  TagSummariesProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'tagSummariesProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$tagSummariesHash();
+
+  @$internal
+  @override
+  $StreamProviderElement<List<WordListSummary>> $createElement(
+    $ProviderPointer pointer,
+  ) => $StreamProviderElement(pointer);
+
+  @override
+  Stream<List<WordListSummary>> create(Ref ref) {
+    return tagSummaries(ref);
+  }
+}
+
+String _$tagSummariesHash() => r'499923d26794edbf9cb571b00264169eefefb858';
 
 /// Which lists a given word belongs to - drives the selected chips on the
 /// add/edit form.

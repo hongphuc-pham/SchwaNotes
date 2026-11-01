@@ -19,7 +19,7 @@ before the milestone is closed.
 | F-007 | S | Edit any field later | Editing IPA re-validates highlights (F-023). |
 | F-008 | M | Delete a word | Soft delete + 5-second Undo snackbar; purged after 30 days. |
 | F-009 | C | Quick-add from share sheet | Sharing selected text from any app opens the add screen pre-filled. |
-| F-010 | P2 | Bulk import from CSV | *Built 30 Oct 2026.* Backup & restore → *Import words from CSV*. No header; columns `front, ipa, back, category, tags`. `back` → definition, IPA → the field for the user's accent, category and each tag (split on `;` or `|`, extra columns count as tags) → lists, matched case-insensitively or created. **Never overwrites**: an existing word only has empty fields filled, said under the button, in the preview and in the report. Preview before writing; one transaction. Comma, semicolon or tab; BOM stripped; UTF-16 refused with advice; 2 MB / 5,000 words. Sample: `docs/samples/sample-deck.csv`. |
+| F-010 | P2 | Bulk import from CSV | *Built 30 Oct 2026.* Backup & restore → *Import words from CSV*. No header; columns `front, ipa, back, category, tags`. `back` → definition, IPA → the field for the user's accent, `category` → the word's list, each tag (split on `;` or `|`, extra columns count as tags) → a tag, each matched case-insensitively within its kind or created. A row with no category goes to the list chosen in the preview, **General** by default, unless its word is already in a list. **Never overwrites**: an existing word only has empty fields filled, said under the button, in the preview and in the report. Preview before writing; one transaction. Comma, semicolon or tab; BOM stripped; UTF-16 refused with advice; 2 MB / 5,000 words. Sample: `docs/samples/sample-deck.csv`. |
 
 ## F-02x · Pronunciation & IPA
 
@@ -41,9 +41,11 @@ before the milestone is closed.
 |---|---|---|---|
 | F-040 | M | My Words list | Sort by recent / A–Z / least known. Shows headword, IPA preview with highlight colours, note count. |
 | F-041 | M | Search | Instant, ≤100ms on 5,000 words, matches headword, definition, example and note bodies (FTS5). |
-| F-042 | M | Lists (decks) | Create, rename, recolour, reorder, delete (deleting a list never deletes words). A word can be in many lists. |
+| F-042 | M | Lists (decks) | Create, rename, recolour, delete (deleting a list never deletes words). A word can be in many lists. Shown A-Z: *hand reordering was removed on 31 Oct 2026 at the owner's request.* Several lists can be turned into tags at once. |
+| F-046 | S | Tags | *Built 31 Oct 2026.* A word can carry many tags. The word form shows only what is chosen; **Add a tag** opens a search that offers the most-used, narrows as you type and creates what isn't there. Word detail shows the word's lists and tags, and each opens the words that share it, where a tag can be practised, renamed or deleted (deleting one never deletes words). A list can be turned into a tag from its card. |
 | F-043 | S | Filter chips | All · Favourites · Due today · **No IPA yet** · by list. *Corrected at M4: this row said "Not practised", which disagreed with `UI-UX.md` §4.1 and with the shipped code. They are different filters over different data — one is about transcription, the other about study history. §4.1 is the source of truth, and "No IPA yet" serves the app's core job of getting a transcription onto every word.* |
 | F-044 | S | Favourite a word | Star toggle from list and detail. |
+| F-047 | S | Overview | *Built 31 Oct 2026.* The home tab shows the total, what is due, today's practice, the streak, how much is remembered, words by stage, the last 14 days, the biggest lists and five recent words. The full list, with search, filters and sort, is a tap away. |
 | F-045 | C | Archive a word | Hidden from lists, kept in stats. |
 
 ## F-06x · Practice (see `docs/GAMES.md`)
@@ -52,7 +54,7 @@ before the milestone is closed.
 |---|---|---|---|
 | F-060 | M | Practice hub | Cards for each registered game, each showing availability and a one-line description. Empty state when fewer than 4 words exist, with a link to add words. |
 | F-061 | M | Flashcards — **Daily review** | Pool = cards with `due_at <= now`, ordered by due then random, capped at the daily goal (default 20). Grading updates the Leitner schedule. |
-| F-062 | M | Flashcards — **Quick test** | User chooses source (All / a list / Favourites) and size (5 / 10 / 20 / All), **hard-capped at 30**. Random selection with a stored seed. Does **not** change the review schedule; it records stats only. |
+| F-062 | M | Flashcards — **Quick test** | User chooses source (All / a list or tag / Favourites) and size (5 / 10 / 20 / a custom number / the full list). *The 30-card cap was removed on 31 Oct 2026 at the owner's request: a quick test never touches the schedule, so nothing depends on it.* Random selection with a stored seed. Does **not** change the review schedule; it records stats only. |
 | F-063 | M | Card interaction | Front shows the prompt side (word, IPA, meaning, or **Mix** — configurable; Mix draws each card from the faces the user ticks, at least two, in *Random* (seeded) or *Take turns* order, and only from faces the card has); tap or swipe up to flip; then *Again* / *Good* / *Easy*. Optional TTS autoplay on reveal. |
 | F-064 | M | Session summary | Score, time, list of missed words with a one-tap "add all to a list". |
 | F-065 | S | Streak & daily goal | Days practised in a row; goal ring on the hub. Non-punitive copy — no guilt language. *Built at M5: the goal counts different words practised today in any mode; the streak runs back from yesterday until today has practice, and zero is never announced — see `UI-UX.md` §4.6.* |

@@ -11,20 +11,39 @@ import 'package:vocabnote/core/theme/app_metrics.dart';
 import 'package:vocabnote/domain/entities/word_list.dart';
 import 'package:vocabnote/presentation/common/empty_state.dart';
 import 'package:vocabnote/presentation/common/settings_action.dart';
-import 'package:vocabnote/presentation/lists/list_card.dart';
+import 'package:vocabnote/presentation/design/section.dart';
 import 'package:vocabnote/presentation/lists/list_editor_sheet.dart';
+import 'package:vocabnote/presentation/lists/list_row.dart';
 
-/// The lists (decks) grid (`docs/UI-UX.md` §4.5, F-042).
-class ListsScreen extends ConsumerWidget {
+/// The Lists tab: lists A-Z, then the tags (`docs/UI-UX.md` §4.5, F-042).
+///
+/// Selecting several lists turns them into tags in one go, which is what a
+/// library imported before tags existed needs: there, every tag is a list.
+class ListsScreen extends ConsumerStatefulWidget {
   /// Creates the lists screen.
   const new({super.key});
 
-  Future<void> _create(BuildContext context, WidgetRef ref) async {
-    // The notifier is read *before* the await, not after. A `WidgetRef` is
-    // only good for the build that produced it; reading it once the sheet has
-    // closed can throw, and because this runs unawaited the throw is swallowed
-    // and the list is silently never created. Same lesson as M3's
-    // `ref.read` inside `onDispose`.
+  @override
+  ConsumerState<ListsScreen> createState() => _ListsScreenState();
+}
+
+class _ListsScreenState extends ConsumerState<ListsScreen> {
+  /// The ticked lists, or null when not selecting.
+  Set<String>? _selected;
+
+  void _toggle(String id) {
+    setState(() {
+      final selected = _selected ??= <String>{};
+      if (!selected.remove(id)) selected.add(id);
+    });
+  }
+
+  void _stopSelecting() => setState(() => _selected = null);
+
+  Future<void> _create() async {
+    // The notifier is read *before* the await, not after: this runs unawaited,
+    // so a throw from a stale `ref` would be swallowed and the list silently
+    // never created.
     final actions = ref.read(listActionsProvider.notifier);
     final messenger = ScaffoldMessenger.of(context);
     final failedMessage = AppL10n.of(context).listSaveFailed;
@@ -40,64 +59,151 @@ class ListsScreen extends ConsumerWidget {
     }
   }
 
+  Future<void> _makeTags() async {
+    final ids = _selected?.toList() ?? const <String>[];
+    if (ids.isEmpty) return;
+    final l10n = AppL10n.of(context);
+    final actions = ref.read(listActionsProvider.notifier);
+    final messenger = ScaffoldMessenger.of(context);
+
+    // Confirmed, because there is no way back: a tag cannot become a list.
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.listsMakeTagsTitle(ids.length)),
+        content: Text(l10n.listsMakeTagsBody),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(l10n.cancelAction),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(l10n.listsMakeTagsAction),
+          ),
+        ],
+      ),
+    );
+    if (!(confirmed ?? false)) return;
+
+    final result = await actions.makeTags(ids);
+    if (mounted && result.isOk) _stopSelecting();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          result.isOk
+              ? l10n.listsMadeTagsSnack(ids.length)
+              : l10n.listSaveFailed,
+        ),
+      ),
+    );
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
     final lists = ref.watch(listSummariesProvider);
+    final tags =
+        ref.watch(tagSummariesProvider).value ?? const <WordListSummary>[];
+    final selected = _selected;
+    final all = lists.value ?? const <WordListSummary>[];
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.listsTitle),
-        actions: const <Widget>[SettingsAction()],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        // Unique per branch - see the note on the words screen's FAB.
-        heroTag: Routes.lists,
-        onPressed: () => unawaited(_create(context, ref)),
-        icon: const Icon(Icons.add),
-        label: Text(l10n.newListAction),
-      ),
-      body: lists.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => EmptyState(
-          icon: Icons.error_outline,
-          title: l10n.listsLoadFailedTitle,
-          body: l10n.listsLoadFailedBody,
-        ),
-        data: (data) => data.isEmpty
-            ? EmptyState(
-                icon: Icons.folder_copy_outlined,
-                title: l10n.listsEmptyTitle,
-                body: l10n.listsEmptyBody,
-                actionLabel: l10n.newListAction,
-                onAction: () => unawaited(_create(context, ref)),
+    return PopScope(
+      // Back leaves selection before it leaves anything else.
+      canPop: selected == null,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _stopSelecting();
+      },
+      child: Scaffold(
+        appBar: selected == null
+            ? AppBar(
+                title: Text(l10n.listsTitle),
+                actions: <Widget>[
+                  if (all.isNotEmpty)
+                    IconButton(
+                      icon: const Icon(Icons.checklist),
+                      tooltip: l10n.listsSelectAction,
+                      onPressed: () => setState(() => _selected = <String>{}),
+                    ),
+                  const SettingsAction(),
+                ],
               )
-            : _Grid(lists: data),
+            : AppBar(
+                leading: IconButton(
+                  icon: const Icon(Icons.close),
+                  tooltip: l10n.listsCancelSelection,
+                  onPressed: _stopSelecting,
+                ),
+                title: Text(l10n.listsSelectedCount(selected.length)),
+                actions: <Widget>[
+                  IconButton(
+                    icon: const Icon(Icons.select_all),
+                    tooltip: l10n.listsSelectAll,
+                    onPressed: () => setState(
+                      () => _selected = <String>{
+                        for (final summary in all) summary.list.id,
+                      },
+                    ),
+                  ),
+                ],
+              ),
+        floatingActionButton: selected == null
+            ? FloatingActionButton.extended(
+                // Unique per branch - see the note on the overview's FAB.
+                heroTag: Routes.lists,
+                onPressed: () => unawaited(_create()),
+                icon: const Icon(Icons.add),
+                label: Text(l10n.newListAction),
+              )
+            : selected.isEmpty
+            ? null
+            : FloatingActionButton.extended(
+                heroTag: Routes.lists,
+                onPressed: () => unawaited(_makeTags()),
+                icon: const Icon(Icons.sell_outlined),
+                label: Text(l10n.listsMakeTagsAction),
+              ),
+        body: lists.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, _) => EmptyState(
+            icon: Icons.error_outline,
+            title: l10n.listsLoadFailedTitle,
+            body: l10n.listsLoadFailedBody,
+          ),
+          data: (data) => data.isEmpty && tags.isEmpty
+              ? EmptyState(
+                  icon: Icons.folder_copy_outlined,
+                  title: l10n.listsEmptyTitle,
+                  body: l10n.listsEmptyBody,
+                  actionLabel: l10n.newListAction,
+                  onAction: () => unawaited(_create()),
+                )
+              : _Rows(
+                  lists: data,
+                  tags: tags,
+                  selected: selected,
+                  onToggle: _toggle,
+                ),
+        ),
       ),
     );
   }
 }
 
-/// The grid itself.
-class _Grid extends ConsumerWidget {
-  const new({required this.lists});
+/// The lists, then the tags. The tags step aside while selecting: only a list
+/// can be selected.
+class _Rows extends ConsumerWidget {
+  const new({
+    required this.lists,
+    required this.tags,
+    required this.selected,
+    required this.onToggle,
+  });
 
   final List<WordListSummary> lists;
-
-  /// Moves [list] one place, by rewriting the whole order.
-  ///
-  /// The repository takes the complete order rather than a moved pair: a
-  /// partial write would leave two lists claiming the same position.
-  List<String> _moved(WordList list, {required int by}) {
-    final ids = lists.map((s) => s.list.id).toList();
-    final from = ids.indexOf(list.id);
-    final to = (from + by).clamp(0, ids.length - 1);
-    if (from == to) return ids;
-    ids
-      ..removeAt(from)
-      ..insert(to, list.id);
-    return ids;
-  }
+  final List<WordListSummary> tags;
+  final Set<String>? selected;
+  final ValueChanged<String> onToggle;
 
   Future<void> _actions(
     BuildContext context,
@@ -106,9 +212,6 @@ class _Grid extends ConsumerWidget {
   ) async {
     // Read before the first await - see the note on `_create`.
     final actions = ref.read(listActionsProvider.notifier);
-    final index = lists.indexWhere((s) => s.list.id == list.id);
-    final isFirst = index <= 0;
-    final isLast = index == lists.length - 1;
     final chosen = await showModalBottomSheet<_ListAction>(
       context: context,
       builder: (context) {
@@ -122,21 +225,11 @@ class _Grid extends ConsumerWidget {
                 title: Text(l10n.renameListAction),
                 onTap: () => Navigator.of(context).pop(_ListAction.edit),
               ),
-              // Reordering is a drag, and `docs/UI-UX.md` §1 forbids an action
-              // that only a gesture can reach - a screen-reader user cannot
-              // pan. These two are the same operation, one step at a time.
-              if (!isFirst)
-                ListTile(
-                  leading: const Icon(Icons.arrow_upward),
-                  title: Text(l10n.moveListUpAction),
-                  onTap: () => Navigator.of(context).pop(_ListAction.moveUp),
-                ),
-              if (!isLast)
-                ListTile(
-                  leading: const Icon(Icons.arrow_downward),
-                  title: Text(l10n.moveListDownAction),
-                  onTap: () => Navigator.of(context).pop(_ListAction.moveDown),
-                ),
+              ListTile(
+                leading: const Icon(Icons.sell_outlined),
+                title: Text(l10n.makeTagAction),
+                onTap: () => Navigator.of(context).pop(_ListAction.makeTag),
+              ),
               ListTile(
                 leading: const Icon(Icons.delete_outline),
                 title: Text(l10n.deleteListAction),
@@ -156,10 +249,8 @@ class _Grid extends ConsumerWidget {
         await actions.rename(list.copyWith(color: draft.color), draft.name);
       case _ListAction.delete:
         await _confirmDelete(context, actions, list);
-      case _ListAction.moveUp:
-        await actions.reorder(_moved(list, by: -1));
-      case _ListAction.moveDown:
-        await actions.reorder(_moved(list, by: 1));
+      case _ListAction.makeTag:
+        await actions.makeTag(list.id);
     }
   }
 
@@ -195,52 +286,64 @@ class _Grid extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppL10n.of(context);
     final metrics = context.metrics;
-    // How much the user's text size enlarges a card's name, which is what the
-    // card has to fit.
-    final nameSize =
-        Theme.of(context).textTheme.titleMedium?.fontSize ?? metrics.spaceLg;
-    final nameScale =
-        MediaQuery.textScalerOf(context).scale(nameSize) / nameSize;
+    final picked = selected;
+    final showTags = picked == null && tags.isNotEmpty;
 
-    // ReorderableGridView is not in Flutter, and RULES §18 prefers the
-    // platform or a short helper over a package for one small job. The drag is
-    // therefore the *fast* path over the same `reorder` call the Move up /
-    // Move down items make - exactly the shape M3 settled on for the IPA
-    // editor's selection (`context.md` §4).
-    return GridView.builder(
-      padding: EdgeInsets.fromLTRB(
-        metrics.spaceLg,
-        metrics.spaceLg,
-        metrics.spaceLg,
-        // Room for the FAB not to cover the last card.
-        metrics.fabClearance,
+    return ListView.builder(
+      padding: EdgeInsets.only(
+        top: metrics.spaceSm,
+        // Room for the FAB not to cover the last row.
+        bottom: metrics.fabClearance,
       ),
-      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-        // Extent rather than a fixed column count: two columns on a phone,
-        // more on a foldable, with no breakpoint to maintain.
-        //
-        // Scaled with the text. A fixed 220 left 146dp cards at 200% on
-        // 320dp: the name broke mid-word beside the actions button and the
-        // counts spilled out of the card (found on the emulator). Scaled,
-        // large text gets fewer, wider cards - and one column when it must.
-        maxCrossAxisExtent: 220 * nameScale,
-        mainAxisSpacing: metrics.spaceMd,
-        crossAxisSpacing: metrics.spaceMd,
-        childAspectRatio: 1.1,
-      ),
-      itemCount: lists.length,
+      itemCount: lists.length + (showTags ? 1 : 0),
       itemBuilder: (context, index) {
+        if (index == lists.length) {
+          return Padding(
+            padding: EdgeInsets.fromLTRB(
+              metrics.spaceLg,
+              metrics.spaceLg,
+              metrics.spaceLg,
+              0,
+            ),
+            child: VnSection(
+              heading: l10n.listsTagsTitle,
+              padded: false,
+              child: Wrap(
+                spacing: metrics.spaceSm,
+                children: <Widget>[
+                  for (final tag in tags)
+                    ActionChip(
+                      label: Text(
+                        l10n.tagChipLabel(tag.list.name, tag.wordCount),
+                      ),
+                      onPressed: () =>
+                          context.push(Routes.listDetailOf(tag.list.id)),
+                    ),
+                ],
+              ),
+            ),
+          );
+        }
+
         final summary = lists[index];
-        return ListCard(
-          key: ValueKey<String>(summary.list.id),
+        final id = summary.list.id;
+        return ListRow(
+          key: ValueKey<String>(id),
           summary: summary,
-          onTap: () => context.push(Routes.listDetailOf(summary.list.id)),
-          onActions: () => unawaited(_actions(context, ref, summary.list)),
+          selected: picked?.contains(id),
+          onTap: picked == null
+              ? () => context.push(Routes.listDetailOf(id))
+              : () => onToggle(id),
+          onLongPress: () => onToggle(id),
+          onActions: picked == null
+              ? () => unawaited(_actions(context, ref, summary.list))
+              : null,
         );
       },
     );
   }
 }
 
-enum _ListAction { edit, delete, moveUp, moveDown }
+enum _ListAction { edit, delete, makeTag }

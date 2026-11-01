@@ -106,6 +106,25 @@ void main() {
 
   bool showing(Finder finder) => finder.evaluate().isNotEmpty;
 
+  testWidgets('the import instructions end above the system bar', (
+    tester,
+  ) async {
+    // They are the last thing on this screen, so a fixed list padding left
+    // them under Android's navigation bar (found on a real phone).
+    final ratio = tester.view.devicePixelRatio;
+    tester.view.padding = FakeViewPadding(bottom: 48 * ratio);
+    tester.view.viewPadding = FakeViewPadding(bottom: 48 * ratio);
+    addTearDown(tester.view.reset);
+    await openBackup(tester);
+
+    await tester.drag(find.byType(ListView), const Offset(0, -3000));
+    await tester.pumpAndSettle();
+
+    final hint = find.textContaining('one word per line');
+    final screen = tester.view.physicalSize.height / ratio;
+    expect(tester.getBottomLeft(hint).dy, lessThanOrEqualTo(screen - 48));
+  });
+
   testWidgets('says plainly when there has never been a backup', (
     tester,
   ) async {
@@ -361,7 +380,8 @@ void main() {
 
       expect(find.text('1 word added'), findsOneWidget);
       expect(find.text('1 word you had was filled in'), findsOneWidget);
-      expect(find.text('3 new lists'), findsOneWidget);
+      expect(find.text('2 new lists'), findsOneWidget);
+      expect(find.text('1 new tag'), findsOneWidget);
       await tapText(tester, 'Done');
 
       expect(

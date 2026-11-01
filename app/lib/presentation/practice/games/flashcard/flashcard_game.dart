@@ -173,4 +173,9 @@ class FlashcardRound extends GameRound {
 
   /// Whether the front is showing a transcription rather than plain text.
   bool get frontIsIpa => !frontIsFallback && promptSide == PromptSide.ipaFirst;
+
+  /// Whether the word is the answer the front is asking for, so saying it
+  /// there would give the card away.
+  bool get wordIsHidden =>
+      !frontIsFallback && promptSide == PromptSide.meaningFirst;
 }

@@ -16,13 +16,17 @@ import 'package:vocabnote/presentation/common/settings_action.dart';
 import 'package:vocabnote/presentation/words/word_filter_bar.dart';
 import 'package:vocabnote/presentation/words/word_tile.dart';
 
-/// The words list - the app's home (`docs/UI-UX.md` §4.1, F-040, F-041).
+/// Every word, opened from the overview (`docs/UI-UX.md` §4.1, F-040, F-041).
 ///
 /// One primary action: **Add word**. Everything else - search, filters, sort -
 /// narrows what is already there.
 class WordsScreen extends ConsumerStatefulWidget {
   /// Creates the words screen.
-  const new({super.key});
+  const new({this.startSearching = false, super.key});
+
+  /// Whether to open with the search field ready, as the overview's search
+  /// button does.
+  final bool startSearching;
 
   @override
   ConsumerState<WordsScreen> createState() => _WordsScreenState();
@@ -31,7 +35,13 @@ class WordsScreen extends ConsumerStatefulWidget {
 class _WordsScreenState extends ConsumerState<WordsScreen> {
   final TextEditingController _search = TextEditingController();
   final FocusNode _searchFocus = FocusNode();
-  bool _searching = false;
+  late bool _searching = widget.startSearching;
+
+  @override
+  void initState() {
+    super.initState();
+    if (_searching) _searchFocus.requestFocus();
+  }
 
   @override
   void dispose() {
@@ -67,7 +77,7 @@ class _WordsScreenState extends ConsumerState<WordsScreen> {
                     .read(wordListQueryProvider.notifier)
                     .setSearchTerm(term),
               )
-            : Text(l10n.wordsTitle),
+            : Text(l10n.allWordsTitle),
         actions: <Widget>[
           if (_searching)
             IconButton(
@@ -94,7 +104,7 @@ class _WordsScreenState extends ConsumerState<WordsScreen> {
         // The shell is an indexed stack, so every branch's FAB is in the tree
         // at once and the default hero tag collides. The route path is already
         // unique per branch.
-        heroTag: Routes.words,
+        heroTag: Routes.wordsAll,
         onPressed: () => context.push(Routes.wordAdd),
         icon: const Icon(Icons.add),
         label: Text(l10n.addWordAction),

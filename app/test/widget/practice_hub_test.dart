@@ -295,16 +295,39 @@ void main() {
       expect(quick.width, closeTo(daily.width, 0.5));
     });
 
-    testWidgets('the quick-test sheet names the cap out loud', (tester) async {
-      // The user picking "All" from a 5000-word library deserves to know they
-      // are getting 30, rather than being silently trimmed.
+    testWidgets('the quick-test sheet offers every size', (tester) async {
       await openHub(tester);
 
       await tester.tap(find.text('Quick test'));
       await tester.pumpAndSettle();
 
-      expect(find.text('All (max 30)'), findsOneWidget);
+      for (final label in <String>['5', '10', '20', 'Custom', 'Full list']) {
+        expect(find.text(label), findsOneWidget, reason: label);
+      }
       expect(find.text('Start'), findsOneWidget);
+    });
+
+    testWidgets('a custom size needs a number before it can start', (
+      tester,
+    ) async {
+      await openHub(tester);
+      await tester.tap(find.text('Quick test'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Custom'));
+      await tester.pumpAndSettle();
+      FilledButton start() => tester.widget<FilledButton>(
+        find.widgetWithText(FilledButton, 'Start'),
+      );
+      expect(start().onPressed, isNull);
+
+      await tester.enterText(find.byType(TextField), '0');
+      await tester.pumpAndSettle();
+      expect(start().onPressed, isNull, reason: 'a session of no cards');
+
+      await tester.enterText(find.byType(TextField), '37');
+      await tester.pumpAndSettle();
+      expect(start().onPressed, isNotNull);
     });
 
     testWidgets('the sheet offers every source and prompt side', (

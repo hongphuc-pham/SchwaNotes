@@ -1,11 +1,14 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vocabnote/data/db/app_database.dart';
 import 'package:vocabnote/data/import/word_import_repository_impl.dart';
 import 'package:vocabnote/domain/entities/app_settings.dart';
 import 'package:vocabnote/domain/entities/word_import.dart';
+import 'package:vocabnote/domain/entities/word_list.dart';
+import 'package:vocabnote/domain/value_objects/ipa_color_token.dart';
 
 import 'db_fixtures.dart';
 
@@ -30,8 +33,12 @@ void main() {
   Future<WordImportReport> import(
     String csv, {
     TtsLocale accent = TtsLocale.enGb,
-  }) async =>
-      (await repo.import(await preview(csv), accent: accent)).valueOrNull!;
+    String fallbackList = 'General',
+  }) async => (await repo.import(
+    await preview(csv),
+    accent: accent,
+    fallbackList: fallbackList,
+  )).valueOrNull!;
 
   Future<WordRow> word(String normalized) async =>
       (await db.wordsDao.findByNormalized(normalized))!;
@@ -63,7 +70,8 @@ void main() {
       expect(row.ipaUs, isNull);
       expect(row.definition, 'ho');
       expect(report.added, 1);
-      expect(report.listsCreated, 2);
+      expect(report.listsCreated, 1);
+      expect(report.tagsCreated, 1);
       expect(await membership(), <String, Set<String>>{
         'Health': <String>{'cough'},
         'verbs': <String>{'cough'},
@@ -97,6 +105,57 @@ void main() {
       expect(await membership(), <String, Set<String>>{
         'Health': <String>{'cough'},
       });
+    });
+
+    test('a word with no category goes to General by default', () async {
+      final report = await import('cough\nthrough,,,Travel');
+
+      expect(await membership(), <String, Set<String>>{
+        'General': <String>{'cough'},
+        'Travel': <String>{'through'},
+      });
+      expect(report.listsCreated, 2);
+    });
+
+    test('a word with no category goes to the list the user chose', () async {
+      await seedList(db, id: 'l1', name: 'Mine');
+
+      final report = await import('cough', fallbackList: 'Mine');
+
+      expect(await membership(), <String, Set<String>>{
+        'Mine': <String>{'cough'},
+      });
+      expect(report.listsCreated, 0);
+    });
+
+    test('a category beats the list the user chose', () async {
+      await import('cough,,,Health', fallbackList: 'Mine');
+
+      expect(await membership(), <String, Set<String>>{
+        'Health': <String>{'cough'},
+      });
+    });
+
+    test('tags become tags, never lists', () async {
+      final report = await import('cough,,,Health,tricky');
+
+      final kinds = <String, ListKind>{
+        for (final row in await db.select(db.wordLists).get())
+          row.name: row.kind,
+      };
+      expect(kinds, <String, ListKind>{
+        'Health': ListKind.list,
+        'tricky': ListKind.tag,
+      });
+      expect(report.tagsCreated, 1);
+    });
+
+    test('a list and a tag of one name stay two things', () async {
+      // The sample deck does this: the category Verbs and the tag verbs.
+      await import('a,,,Verbs\nb,,,Other,verbs');
+
+      final rows = await db.select(db.wordLists).get();
+      expect(rows.where((r) => r.name.toLowerCase() == 'verbs'), hasLength(2));
     });
 
     test('a word twice in the file is one word, first value first', () async {
@@ -157,6 +216,38 @@ void main() {
       });
     });
 
+    test('one already in a list is not moved to the fallback', () async {
+      await seedWord(db, id: 'w1', headword: 'cough', ipaUk: 'kɒf');
+      await seedList(db, id: 'l1', name: 'Mine');
+      await db.listsDao.addWord(listId: 'l1', wordId: 'w1', addedAt: testNow);
+
+      await import('cough');
+
+      expect(await membership(), <String, Set<String>>{
+        'Mine': <String>{'cough'},
+      });
+    });
+
+    test('one with only tags still takes the fallback', () async {
+      await seedWord(db, id: 'w1', headword: 'cough', ipaUk: 'kɒf');
+      await db.listsDao.insertList(
+        WordListsCompanion.insert(
+          id: 't1',
+          name: 'tricky',
+          colorToken: IpaColorToken.values.first,
+          sortOrder: 0,
+          createdAt: testNow,
+          updatedAt: testNow,
+          kind: const Value(ListKind.tag),
+        ),
+      );
+      await db.listsDao.addWord(listId: 't1', wordId: 'w1', addedAt: testNow);
+
+      await import('cough');
+
+      expect((await membership())['General'], <String>{'cough'});
+    });
+
     test(
       'importing the same file twice changes nothing the second time',
       () async {
@@ -190,6 +281,7 @@ void main() {
       expect(result.existingWords, 1);
       expect(result.skippedLines, 1);
       expect(result.newListNames, <String>['Travel']);
+      expect(result.newTagNames, <String>['health']);
     });
 
     test('writes nothing', () async {
@@ -214,6 +306,7 @@ void main() {
     final result = await repo.import(
       await preview('cough,kɒf,ho,Health\nboom'),
       accent: TtsLocale.enGb,
+      fallbackList: 'General',
     );
 
     expect(result.isErr, isTrue);

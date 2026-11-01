@@ -437,18 +437,18 @@ void main() {
       );
     });
 
-    test('a quick test is capped at 30 however many words exist', () async {
+    test('a full-list quick test runs every word', () async {
       await seedDue(40);
 
       await runner().start(
-        config: configFor(PracticeMode.quickTest, limit: 500),
+        config: configFor(
+          PracticeMode.quickTest,
+          limit: PracticeRepository.everyCard,
+        ),
         game: DummyGame(),
       );
 
-      expect(
-        container.read(practiceSessionRunnerProvider)!.rounds.length,
-        lessThanOrEqualTo(PracticeRepository.quickTestMaxCards),
-      );
+      expect(container.read(practiceSessionRunnerProvider)!.rounds.length, 40);
     });
   });
 

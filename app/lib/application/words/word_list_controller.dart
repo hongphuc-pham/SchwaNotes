@@ -15,6 +15,9 @@ part 'word_list_controller.g.dart';
 /// before one starts.
 const Duration kSearchDebounce = Duration(milliseconds: 250);
 
+/// How many words the home overview shows.
+const int kRecentWordCount = 5;
+
 /// The filter, sort and search state of the words screen.
 ///
 /// Held here rather than in the widget so it survives navigating to a word and
@@ -91,6 +94,19 @@ Stream<List<WordListEntry>> wordList(Ref ref) {
           // AsyncValue.error for the widget to render.
           (failure) => throw failure,
         ),
+      );
+}
+
+/// The few words the home overview shows. Never filtered: the words screen's
+/// filter belongs to the words screen.
+@riverpod
+Stream<List<WordListEntry>> recentWords(Ref ref) {
+  return ref
+      .watch(wordRepositoryProvider)
+      .watchWords(const WordQuery(limit: kRecentWordCount))
+      .map(
+        (result) =>
+            result.fold((entries) => entries, (failure) => throw failure),
       );
 }
 

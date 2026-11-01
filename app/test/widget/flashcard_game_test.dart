@@ -651,6 +651,96 @@ void main() {
       expect(spoken, 0, reason: 'autoplay off means silent on reveal');
     });
 
+    testWidgets('a meaning-first front does not offer to say the answer', (
+      tester,
+    ) async {
+      // The word is what this card is asking for. The button spoke it, and
+      // its label named it to a screen reader.
+      await pumpRound(
+        tester,
+        roundFor(card(), promptSide: PromptSide.meaningFirst),
+        onAnswer: (_) {},
+        onSpeak: () {},
+      );
+
+      expect(find.byIcon(Icons.volume_up), findsNothing);
+      expect(find.byTooltip('Play cough in UK'), findsNothing);
+    });
+
+    testWidgets('a meaning-first back can be heard with autoplay off', (
+      tester,
+    ) async {
+      // Hiding the front's button must not leave this card with no way to
+      // hear the word at all.
+      var spoken = 0;
+      await pumpRound(
+        tester,
+        roundFor(
+          card(),
+          promptSide: PromptSide.meaningFirst,
+          autoPlayOnReveal: false,
+        ),
+        onAnswer: (_) {},
+        onSpeak: () => spoken++,
+      );
+
+      await tester.tap(find.byType(Card));
+      await tester.pumpAndSettle();
+      expect(spoken, 0);
+
+      await tester.tap(find.byIcon(Icons.volume_up));
+      await tester.pumpAndSettle();
+      expect(spoken, 1);
+    });
+
+    testWidgets('a meaning-first card with no meaning keeps its button', (
+      tester,
+    ) async {
+      // It fell back to showing the word, so there is nothing to give away.
+      await pumpRound(
+        tester,
+        roundFor(card(definition: null), promptSide: PromptSide.meaningFirst),
+        onAnswer: (_) {},
+        onSpeak: () {},
+      );
+
+      expect(find.byIcon(Icons.volume_up), findsOneWidget);
+    });
+
+    testWidgets('an IPA front plays the sound without naming the word', (
+      tester,
+    ) async {
+      // Hearing the transcription is fair; reading the word out in the
+      // button's label is not.
+      var spoken = 0;
+      await pumpRound(
+        tester,
+        roundFor(card(), promptSide: PromptSide.ipaFirst),
+        onAnswer: (_) {},
+        onSpeak: () => spoken++,
+      );
+
+      final button = tester.widget<IconButton>(find.byType(IconButton));
+      expect(button.tooltip, isNot(contains('cough')));
+
+      await tester.tap(find.byIcon(Icons.volume_up));
+      await tester.pumpAndSettle();
+      expect(spoken, 1);
+    });
+
+    testWidgets('a word-first back adds no second button', (tester) async {
+      await pumpRound(
+        tester,
+        roundFor(card()),
+        onAnswer: (_) {},
+        onSpeak: () {},
+      );
+
+      await tester.tap(find.byType(Card));
+      await tester.pumpAndSettle();
+      expect(find.byIcon(Icons.volume_up), findsNothing);
+    });
+
     testWidgets('the play button still works when autoplay is off', (
       tester,
     ) async {

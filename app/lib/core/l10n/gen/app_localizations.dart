@@ -483,6 +483,12 @@ abstract class AppL10n {
   /// **'Tap to reveal'**
   String get flashcardTapToReveal;
 
+  /// Screen-reader label for the play button on a card showing IPA. Must not name the word: it is the answer.
+  ///
+  /// In en, this message translates to:
+  /// **'Play this sound'**
+  String get flashcardPlaySoundLabel;
+
   /// Screen-reader label for the unflipped card.
   ///
   /// In en, this message translates to:
@@ -747,11 +753,35 @@ abstract class AppL10n {
   /// **'{count, plural, =1{Add 1 more word to unlock this} other{Add {count} more words to unlock this}}'**
   String practiceLockedHint(int count);
 
-  /// The All size chip, naming the hard cap out loud.
+  /// Size chip: every word in the chosen source.
   ///
   /// In en, this message translates to:
-  /// **'All (max {max})'**
-  String quickTestSizeAll(int max);
+  /// **'Full list'**
+  String get quickTestSizeFull;
+
+  /// Size chip that opens a number field.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get quickTestSizeCustom;
+
+  /// Label of the custom size number field.
+  ///
+  /// In en, this message translates to:
+  /// **'How many words'**
+  String get quickTestCustomLabel;
+
+  /// Source chip that reveals the list picker.
+  ///
+  /// In en, this message translates to:
+  /// **'A list'**
+  String get quickTestSourceList;
+
+  /// Label of the list picker in the quick-test sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Which list'**
+  String get quickTestPickList;
 
   /// Heading of the practice section in Settings (UI-UX 4.9).
   ///
@@ -1098,7 +1128,7 @@ abstract class AppL10n {
   /// Under the Backup & restore row.
   ///
   /// In en, this message translates to:
-  /// **'Keep a copy of your words, or move them to a new phone'**
+  /// **'Keep a copy of your words, move them to a new phone, or import many from a CSV file'**
   String get settingsBackupHint;
 
   /// Switch that offers or hides the Look up button on the word form.
@@ -1194,7 +1224,7 @@ abstract class AppL10n {
   /// Under the CSV import button. Must state the never-overwrite rule.
   ///
   /// In en, this message translates to:
-  /// **'A spreadsheet saved as CSV, one word per line with no header row: word, IPA, meaning, category, tags. Separate tags with ; — the category and each tag become lists. Words you already have are never overwritten: only their empty fields are filled in.'**
+  /// **'A spreadsheet saved as CSV, one word per line with no header row: word, IPA, meaning, category, tags. Only the word is required. The category is the word\'s list; with none, you choose the list before importing, or it goes to General. Separate tags with ;.\n\nExample line:\ncough,kɒf,ho,Health,body;verbs\n\nWords you already have are never overwritten: only their empty fields are filled in.'**
   String get csvImportHint;
 
   /// CSV import button label while the import runs.
@@ -1232,6 +1262,18 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'New lists: {names}'**
   String csvPreviewNewLists(String names);
+
+  /// Preview: the tags the import will create.
+  ///
+  /// In en, this message translates to:
+  /// **'New tags: {names}'**
+  String csvPreviewNewTags(String names);
+
+  /// Preview: label of the list picker for rows without a category.
+  ///
+  /// In en, this message translates to:
+  /// **'Words with no category go to'**
+  String get csvPreviewFallback;
 
   /// Preview: the duplicate rule, said before importing.
   ///
@@ -1286,6 +1328,12 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 new list} other{{count} new lists}}'**
   String csvReportLists(int count);
+
+  /// Report: tags created.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 new tag} other{{count} new tags}}'**
+  String csvReportTags(int count);
 
   /// Refusal: UTF-16 or binary file.
   ///
@@ -1971,6 +2019,18 @@ abstract class AppL10n {
   /// **'From Wiktionary, through FreeDictionaryAPI.com, shared under CC BY-SA 4.0. Offline pronunciations come from the CMU Pronouncing Dictionary. Settings → Data sources & licences has the details.'**
   String get faqA12;
 
+  /// FAQ question 13: bulk import.
+  ///
+  /// In en, this message translates to:
+  /// **'How do I import many words at once?'**
+  String get faqQ13;
+
+  /// FAQ answer 13: bulk import. Must state the never-overwrite rule and the limits in WordImportLimits.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings → Backup & restore → Import words from CSV. Make a spreadsheet with one word per line and no header row, in five columns: word, IPA, meaning, category, tags. Only the word is required. The category is the word\'s list; with none, you choose the list before importing, or it goes to General. Separate tags with ;.\n\nExample line:\ncough,kɒf,ho,Health,body;verbs\n\nSave it as \"CSV UTF-8\", copy it to your phone, then pick it. You see what\'s in the file before anything is saved. Words you already have are never overwritten: only their empty fields are filled in. A file can hold up to 5,000 words and be up to 2 MB, so split a bigger one.'**
+  String get faqA13;
+
   /// Heading above the ways to reach a person.
   ///
   /// In en, this message translates to:
@@ -2655,17 +2715,101 @@ abstract class AppL10n {
   /// **'Something to remind yourself'**
   String get fieldNoteHint;
 
+  /// Heading of the tags on the word form.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags'**
+  String get fieldTags;
+
+  /// Chip on the word form that opens the tag search, and that sheet's title.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a tag'**
+  String get addTagAction;
+
+  /// Chip on the word form that opens the list search, and that sheet's title.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to a list'**
+  String get addListAction;
+
+  /// Search box hint in the tag picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Find or create a tag'**
+  String get labelSearchTags;
+
+  /// Search box hint in the list picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Find or create a list'**
+  String get labelSearchLists;
+
+  /// Row that creates a new tag from what was typed.
+  ///
+  /// In en, this message translates to:
+  /// **'Create tag \"{name}\"'**
+  String labelCreateTag(String name);
+
+  /// Row that creates a new list from what was typed.
+  ///
+  /// In en, this message translates to:
+  /// **'Create list \"{name}\"'**
+  String labelCreateList(String name);
+
+  /// Screen-reader label for the x on a chosen list or tag.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {name}'**
+  String labelRemove(String name);
+
+  /// Closes the list or tag picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get labelPickerDone;
+
+  /// Heading on word detail above the word's lists and tags.
+  ///
+  /// In en, this message translates to:
+  /// **'Lists and tags'**
+  String get detailLabels;
+
+  /// The list imported words go to when nothing else is chosen. Stored as the list's name.
+  ///
+  /// In en, this message translates to:
+  /// **'General'**
+  String get listGeneral;
+
+  /// List card menu: turns a list into a tag, keeping its words.
+  ///
+  /// In en, this message translates to:
+  /// **'Make this a tag'**
+  String get makeTagAction;
+
+  /// Tag screen menu: deletes the tag.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete tag'**
+  String get deleteTagAction;
+
+  /// Title of the delete-tag confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this tag?'**
+  String get deleteTagTitle;
+
+  /// Body of the delete-tag confirmation. Must say the words survive.
+  ///
+  /// In en, this message translates to:
+  /// **'The tag goes, but every word with it stays in your words.'**
+  String get deleteTagBody;
+
   /// Label for the list-membership chips.
   ///
   /// In en, this message translates to:
-  /// **'Add to lists'**
+  /// **'Lists'**
   String get fieldLists;
-
-  /// Shown in place of list chips when the user has no lists.
-  ///
-  /// In en, this message translates to:
-  /// **'No lists yet'**
-  String get fieldListsEmpty;
 
   /// Part-of-speech chip.
   ///
@@ -3446,6 +3590,210 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Got it'**
   String get voiceFallbackDismiss;
+
+  /// Title of the full words list, opened from the home overview.
+  ///
+  /// In en, this message translates to:
+  /// **'All words'**
+  String get allWordsTitle;
+
+  /// Button from the home overview to the full words list.
+  ///
+  /// In en, this message translates to:
+  /// **'See all words'**
+  String get overviewSeeAll;
+
+  /// Beside the big total on the home overview.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{word} other{words}}'**
+  String overviewWordCountLabel(int count);
+
+  /// Under the total. Hidden when none.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 new this week} other{{count} new this week}}'**
+  String overviewAddedThisWeek(int count);
+
+  /// Stat tile: words due for review.
+  ///
+  /// In en, this message translates to:
+  /// **'Due now'**
+  String get overviewDueLabel;
+
+  /// Stat tile: different words practised today.
+  ///
+  /// In en, this message translates to:
+  /// **'Practised today'**
+  String get overviewTodayLabel;
+
+  /// Stat tile. Hidden at zero: a streak of zero is never shown (RULES 6).
+  ///
+  /// In en, this message translates to:
+  /// **'Days in a row'**
+  String get overviewStreakLabel;
+
+  /// Stat tile: share of answers marked Good or Easy in the last 14 days.
+  ///
+  /// In en, this message translates to:
+  /// **'Remembered'**
+  String get overviewRememberedLabel;
+
+  /// The remembered share as a whole percentage.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}%'**
+  String overviewRememberedValue(int percent);
+
+  /// Heading of the chart of words by stage.
+  ///
+  /// In en, this message translates to:
+  /// **'How well you know them'**
+  String get overviewStagesTitle;
+
+  /// Under the stage chart. A quick test never moves a word.
+  ///
+  /// In en, this message translates to:
+  /// **'Words move up as you do Daily review.'**
+  String get overviewStagesHint;
+
+  /// Stage: not reviewed yet, or back at the start.
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get stageFresh;
+
+  /// Stage: Leitner boxes 1 and 2.
+  ///
+  /// In en, this message translates to:
+  /// **'Learning'**
+  String get stageLearning;
+
+  /// Stage: Leitner boxes 3 and 4.
+  ///
+  /// In en, this message translates to:
+  /// **'Familiar'**
+  String get stageFamiliar;
+
+  /// Stage: Leitner boxes 5 and 6.
+  ///
+  /// In en, this message translates to:
+  /// **'Strong'**
+  String get stageStrong;
+
+  /// Heading of the chart of answers per day.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 14 days'**
+  String get overviewActivityTitle;
+
+  /// Shown instead of the chart when nothing was answered. Encouraging, never a warning.
+  ///
+  /// In en, this message translates to:
+  /// **'Practise and your days fill in here.'**
+  String get overviewActivityEmpty;
+
+  /// Total under the activity chart.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 answer} other{{count} answers}}'**
+  String overviewActivitySummary(int count);
+
+  /// Most answers on one day, under the activity chart.
+  ///
+  /// In en, this message translates to:
+  /// **'Busiest day: {count}'**
+  String overviewActivityPeak(int count);
+
+  /// Tooltip on one day's bar.
+  ///
+  /// In en, this message translates to:
+  /// **'{date}: {count}'**
+  String overviewDayAnswers(String date, int count);
+
+  /// Label at the right end of the activity chart.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get overviewToday;
+
+  /// Heading of the chart of lists by word count.
+  ///
+  /// In en, this message translates to:
+  /// **'Biggest lists'**
+  String get overviewTopListsTitle;
+
+  /// Heading of the few words shown on the home overview.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent words'**
+  String get overviewRecentTitle;
+
+  /// Lists tab: enters selection, to act on many lists at once.
+  ///
+  /// In en, this message translates to:
+  /// **'Select lists'**
+  String get listsSelectAction;
+
+  /// Lists tab: leaves selection.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel selection'**
+  String get listsCancelSelection;
+
+  /// Lists tab: selects every list.
+  ///
+  /// In en, this message translates to:
+  /// **'Select all'**
+  String get listsSelectAll;
+
+  /// Lists tab app bar while selecting.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} selected'**
+  String listsSelectedCount(int count);
+
+  /// Lists tab: turns the selected lists into tags.
+  ///
+  /// In en, this message translates to:
+  /// **'Make tags'**
+  String get listsMakeTagsAction;
+
+  /// Confirmation before turning lists into tags.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Make this list a tag?} other{Make these {count} lists tags?}}'**
+  String listsMakeTagsTitle(int count);
+
+  /// Confirmation body.
+  ///
+  /// In en, this message translates to:
+  /// **'Every word stays, and a tag can still be practised. A tag can\'t be turned back into a list.'**
+  String get listsMakeTagsBody;
+
+  /// After turning lists into tags.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 list is now a tag} other{{count} lists are now tags}}'**
+  String listsMadeTagsSnack(int count);
+
+  /// Heading of the tags under the lists.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags'**
+  String get listsTagsTitle;
+
+  /// A list's word count and due count on one line.
+  ///
+  /// In en, this message translates to:
+  /// **'{words} · {due}'**
+  String listRowCounts(String words, String due);
+
+  /// A tag and its word count.
+  ///
+  /// In en, this message translates to:
+  /// **'#{name}, {count}'**
+  String tagChipLabel(String name, int count);
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

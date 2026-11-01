@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:vocabnote/application/lists/list_controller.dart';
 import 'package:vocabnote/application/settings/settings_controller.dart';
 import 'package:vocabnote/application/words/pronunciation_controller.dart';
 import 'package:vocabnote/application/words/voice_notice_controller.dart';
@@ -17,6 +18,7 @@ import 'package:vocabnote/core/utils/external_links.dart';
 import 'package:vocabnote/domain/entities/app_settings.dart';
 import 'package:vocabnote/domain/entities/ipa_highlight.dart';
 import 'package:vocabnote/domain/entities/word.dart';
+import 'package:vocabnote/domain/entities/word_list.dart';
 import 'package:vocabnote/domain/value_objects/headword.dart';
 import 'package:vocabnote/presentation/common/empty_state.dart';
 import 'package:vocabnote/presentation/design/gap.dart';
@@ -242,11 +244,51 @@ class _DetailBody extends StatelessWidget {
               ),
             ),
           ),
+        _WordLabels(wordId: word.id),
         const VnGap(VnSpace.sm),
         WordNotesSection(wordId: word.id, notes: detail.notes),
         const VnGap(VnSpace.xl),
         _CambridgeLink(headword: word.headword),
       ],
+    );
+  }
+}
+
+/// The word's lists, then its tags. Each opens the words that share it.
+class _WordLabels extends ConsumerWidget {
+  const new({required this.wordId});
+
+  final String wordId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ids =
+        ref.watch(listIdsForWordProvider(wordId)).value ?? const <String>[];
+    final labels = <WordListSummary>[
+      ...?ref.watch(listSummariesProvider).value,
+      ...?ref.watch(tagSummariesProvider).value,
+    ].where((summary) => ids.contains(summary.list.id)).toList();
+    if (labels.isEmpty) return const SizedBox.shrink();
+
+    return VnSection(
+      heading: AppL10n.of(context).detailLabels,
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: <Widget>[
+          for (final summary in labels)
+            ActionChip(
+              avatar: Icon(
+                summary.list.kind == ListKind.tag
+                    ? Icons.sell_outlined
+                    : Icons.folder_outlined,
+              ),
+              label: Text(summary.list.name),
+              onPressed: () =>
+                  context.push(Routes.listDetailOf(summary.list.id)),
+            ),
+        ],
+      ),
     );
   }
 }

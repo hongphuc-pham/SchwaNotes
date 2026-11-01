@@ -222,6 +222,9 @@ class AppL10nEn extends AppL10n {
   String get flashcardTapToReveal => 'Tap to reveal';
 
   @override
+  String get flashcardPlaySoundLabel => 'Play this sound';
+
+  @override
   String get flashcardFrontLabel => 'Card front. Tap to reveal the answer.';
 
   @override
@@ -381,9 +384,19 @@ class AppL10nEn extends AppL10n {
   }
 
   @override
-  String quickTestSizeAll(int max) {
-    return 'All (max $max)';
-  }
+  String get quickTestSizeFull => 'Full list';
+
+  @override
+  String get quickTestSizeCustom => 'Custom';
+
+  @override
+  String get quickTestCustomLabel => 'How many words';
+
+  @override
+  String get quickTestSourceList => 'A list';
+
+  @override
+  String get quickTestPickList => 'Which list';
 
   @override
   String get settingsPracticeSection => 'Practice';
@@ -596,7 +609,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get settingsBackupHint =>
-      'Keep a copy of your words, or move them to a new phone';
+      'Keep a copy of your words, move them to a new phone, or import many from a CSV file';
 
   @override
   String get settingsLookup => 'Dictionary look-up';
@@ -652,7 +665,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get csvImportHint =>
-      'A spreadsheet saved as CSV, one word per line with no header row: word, IPA, meaning, category, tags. Separate tags with ; — the category and each tag become lists. Words you already have are never overwritten: only their empty fields are filled in.';
+      'A spreadsheet saved as CSV, one word per line with no header row: word, IPA, meaning, category, tags. Only the word is required. The category is the word\'s list; with none, you choose the list before importing, or it goes to General. Separate tags with ;.\n\nExample line:\ncough,kɒf,ho,Health,body;verbs\n\nWords you already have are never overwritten: only their empty fields are filled in.';
 
   @override
   String get csvImporting => 'Importing…';
@@ -697,6 +710,14 @@ class AppL10nEn extends AppL10n {
   String csvPreviewNewLists(String names) {
     return 'New lists: $names';
   }
+
+  @override
+  String csvPreviewNewTags(String names) {
+    return 'New tags: $names';
+  }
+
+  @override
+  String get csvPreviewFallback => 'Words with no category go to';
 
   @override
   String get csvPreviewRule =>
@@ -762,6 +783,17 @@ class AppL10nEn extends AppL10n {
       locale: localeName,
       other: '$count new lists',
       one: '1 new list',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String csvReportTags(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count new tags',
+      one: '1 new tag',
     );
     return '$_temp0';
   }
@@ -1260,6 +1292,13 @@ class AppL10nEn extends AppL10n {
       'From Wiktionary, through FreeDictionaryAPI.com, shared under CC BY-SA 4.0. Offline pronunciations come from the CMU Pronouncing Dictionary. Settings → Data sources & licences has the details.';
 
   @override
+  String get faqQ13 => 'How do I import many words at once?';
+
+  @override
+  String get faqA13 =>
+      'Settings → Backup & restore → Import words from CSV. Make a spreadsheet with one word per line and no header row, in five columns: word, IPA, meaning, category, tags. Only the word is required. The category is the word\'s list; with none, you choose the list before importing, or it goes to General. Separate tags with ;.\n\nExample line:\ncough,kɒf,ho,Health,body;verbs\n\nSave it as \"CSV UTF-8\", copy it to your phone, then pick it. You see what\'s in the file before anything is saved. Words you already have are never overwritten: only their empty fields are filled in. A file can hold up to 5,000 words and be up to 2 MB, so split a bigger one.';
+
+  @override
   String get helpStillStuck => 'Still stuck?';
 
   @override
@@ -1686,10 +1725,59 @@ class AppL10nEn extends AppL10n {
   String get fieldNoteHint => 'Something to remind yourself';
 
   @override
-  String get fieldLists => 'Add to lists';
+  String get fieldTags => 'Tags';
 
   @override
-  String get fieldListsEmpty => 'No lists yet';
+  String get addTagAction => 'Add a tag';
+
+  @override
+  String get addListAction => 'Add to a list';
+
+  @override
+  String get labelSearchTags => 'Find or create a tag';
+
+  @override
+  String get labelSearchLists => 'Find or create a list';
+
+  @override
+  String labelCreateTag(String name) {
+    return 'Create tag \"$name\"';
+  }
+
+  @override
+  String labelCreateList(String name) {
+    return 'Create list \"$name\"';
+  }
+
+  @override
+  String labelRemove(String name) {
+    return 'Remove $name';
+  }
+
+  @override
+  String get labelPickerDone => 'Done';
+
+  @override
+  String get detailLabels => 'Lists and tags';
+
+  @override
+  String get listGeneral => 'General';
+
+  @override
+  String get makeTagAction => 'Make this a tag';
+
+  @override
+  String get deleteTagAction => 'Delete tag';
+
+  @override
+  String get deleteTagTitle => 'Delete this tag?';
+
+  @override
+  String get deleteTagBody =>
+      'The tag goes, but every word with it stays in your words.';
+
+  @override
+  String get fieldLists => 'Lists';
 
   @override
   String get posNoun => 'noun';
@@ -2127,4 +2215,159 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get voiceFallbackDismiss => 'Got it';
+
+  @override
+  String get allWordsTitle => 'All words';
+
+  @override
+  String get overviewSeeAll => 'See all words';
+
+  @override
+  String overviewWordCountLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'words',
+      one: 'word',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String overviewAddedThisWeek(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count new this week',
+      one: '1 new this week',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get overviewDueLabel => 'Due now';
+
+  @override
+  String get overviewTodayLabel => 'Practised today';
+
+  @override
+  String get overviewStreakLabel => 'Days in a row';
+
+  @override
+  String get overviewRememberedLabel => 'Remembered';
+
+  @override
+  String overviewRememberedValue(int percent) {
+    return '$percent%';
+  }
+
+  @override
+  String get overviewStagesTitle => 'How well you know them';
+
+  @override
+  String get overviewStagesHint => 'Words move up as you do Daily review.';
+
+  @override
+  String get stageFresh => 'New';
+
+  @override
+  String get stageLearning => 'Learning';
+
+  @override
+  String get stageFamiliar => 'Familiar';
+
+  @override
+  String get stageStrong => 'Strong';
+
+  @override
+  String get overviewActivityTitle => 'Last 14 days';
+
+  @override
+  String get overviewActivityEmpty => 'Practise and your days fill in here.';
+
+  @override
+  String overviewActivitySummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count answers',
+      one: '1 answer',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String overviewActivityPeak(int count) {
+    return 'Busiest day: $count';
+  }
+
+  @override
+  String overviewDayAnswers(String date, int count) {
+    return '$date: $count';
+  }
+
+  @override
+  String get overviewToday => 'Today';
+
+  @override
+  String get overviewTopListsTitle => 'Biggest lists';
+
+  @override
+  String get overviewRecentTitle => 'Recent words';
+
+  @override
+  String get listsSelectAction => 'Select lists';
+
+  @override
+  String get listsCancelSelection => 'Cancel selection';
+
+  @override
+  String get listsSelectAll => 'Select all';
+
+  @override
+  String listsSelectedCount(int count) {
+    return '$count selected';
+  }
+
+  @override
+  String get listsMakeTagsAction => 'Make tags';
+
+  @override
+  String listsMakeTagsTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Make these $count lists tags?',
+      one: 'Make this list a tag?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get listsMakeTagsBody =>
+      'Every word stays, and a tag can still be practised. A tag can\'t be turned back into a list.';
+
+  @override
+  String listsMadeTagsSnack(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count lists are now tags',
+      one: '1 list is now a tag',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get listsTagsTitle => 'Tags';
+
+  @override
+  String listRowCounts(String words, String due) {
+    return '$words · $due';
+  }
+
+  @override
+  String tagChipLabel(String name, int count) {
+    return '#$name, $count';
+  }
 }

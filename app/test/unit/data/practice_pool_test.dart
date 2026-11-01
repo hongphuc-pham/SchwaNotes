@@ -8,11 +8,6 @@ import 'package:vocabnote/domain/repositories/practice_repository.dart';
 import 'db_fixtures.dart';
 
 /// The card pools (`docs/GAMES.md` §1 and §4), against a real database.
-///
-/// Every other 30-cap test goes through `GameConfig`, which clamps first — so
-/// these are the only tests proving the query clamps on its own. GAMES §4 asks
-/// for both, so that neither layer is the only thing between a user and a
-/// 500-card session.
 void main() {
   late AppDatabase db;
   late PracticeRepositoryImpl repository;
@@ -74,22 +69,30 @@ void main() {
     });
   });
 
-  group('the 30 cap holds at the query, not only in GameConfig', () {
+  group('the size of a pool', () {
     setUp(() => seedManyWords(db, 500));
 
     for (final selection in CardSelection.values) {
-      test(
-        'a quick test by ${selection.name} asking for 500 gets 30',
-        () async {
-          expect(
-            await pool(selection: selection, limit: 500, seed: 1),
-            hasLength(PracticeRepository.quickTestMaxCards),
-          );
-        },
-      );
+      test('a quick test by ${selection.name} gets what it asks for', () async {
+        expect(
+          await pool(selection: selection, limit: 40, seed: 1),
+          hasLength(40),
+        );
+      });
+
+      test('a full list by ${selection.name} gets every card', () async {
+        expect(
+          await pool(
+            selection: selection,
+            limit: PracticeRepository.everyCard,
+            seed: 1,
+          ),
+          hasLength(500),
+        );
+      });
     }
 
-    test('a daily review is capped by the goal, not by 30', () async {
+    test('a daily review is capped by the goal', () async {
       expect(
         await pool(
           selection: CardSelection.due,

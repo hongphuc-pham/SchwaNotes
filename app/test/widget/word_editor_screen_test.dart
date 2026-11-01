@@ -11,6 +11,8 @@ import 'package:vocabnote/core/router/routes.dart';
 import 'package:vocabnote/data/composition_root.dart';
 import 'package:vocabnote/data/db/app_database.dart';
 import 'package:vocabnote/data/db/database_provider.dart';
+import 'package:vocabnote/domain/entities/word_list.dart';
+import 'package:vocabnote/presentation/words/word_label_picker.dart';
 
 import '../unit/data/db_fixtures.dart';
 
@@ -160,25 +162,40 @@ void main() {
       await seedList(db, id: 'l2', name: 'Tricky');
     });
 
-    testWidgets('offers a chip per list', (tester) async {
+    /// Opens the search for lists or tags from the word form.
+    Future<void> openPicker(WidgetTester tester, String action) async {
+      await scrollTo(tester, find.text(action));
+      await tester.tap(find.text(action));
+      await tester.pumpAndSettle();
+    }
+
+    Future<void> done(WidgetTester tester) async {
+      await tester.tap(find.widgetWithText(FilledButton, 'Done'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('the form shows only what is chosen, not every list', (
+      tester,
+    ) async {
       await openAddWord(tester);
 
-      await scrollTo(tester, find.widgetWithText(FilterChip, 'IELTS'));
+      await scrollTo(tester, find.text('Add to a list'));
 
-      expect(find.widgetWithText(FilterChip, 'IELTS'), findsOneWidget);
-      expect(find.widgetWithText(FilterChip, 'Tricky'), findsOneWidget);
+      expect(find.text('IELTS'), findsNothing);
+      expect(find.text('Tricky'), findsNothing);
     });
 
-    testWidgets('a word saved with a list selected is in that list', (
+    testWidgets('a word saved with a list chosen is in that list', (
       tester,
     ) async {
       await openAddWord(tester);
 
       await tester.enterText(find.byType(TextField).first, 'cough');
       await tester.pumpAndSettle();
-      await scrollTo(tester, find.widgetWithText(FilterChip, 'IELTS'));
-      await tester.tap(find.widgetWithText(FilterChip, 'IELTS'));
+      await openPicker(tester, 'Add to a list');
+      await tester.tap(find.text('IELTS'));
       await tester.pumpAndSettle();
+      await done(tester);
       await tester.tap(find.widgetWithText(TextButton, 'Save'));
       await settleAsync(tester);
 
@@ -191,16 +208,92 @@ void main() {
 
       await tester.enterText(find.byType(TextField).first, 'through');
       await tester.pumpAndSettle();
-      await scrollTo(tester, find.widgetWithText(FilterChip, 'IELTS'));
-      await tester.tap(find.widgetWithText(FilterChip, 'IELTS'));
+      await openPicker(tester, 'Add to a list');
+      await tester.tap(find.text('IELTS'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilterChip, 'Tricky'));
+      await tester.tap(find.text('Tricky'));
       await tester.pumpAndSettle();
+      await done(tester);
       await tester.tap(find.widgetWithText(TextButton, 'Save'));
       await settleAsync(tester);
 
       final members = await db.select(db.wordListItems).get();
       expect(members.map((m) => m.listId).toSet(), <String>{'l1', 'l2'});
+    });
+
+    testWidgets('searching narrows what is offered', (tester) async {
+      await openAddWord(tester);
+      await openPicker(tester, 'Add to a list');
+
+      await tester.enterText(
+        find.descendant(
+          of: find.byType(WordLabelPicker),
+          matching: find.byType(TextField),
+        ),
+        'tri',
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.descendant(
+          of: find.byType(WordLabelPicker),
+          matching: find.text('Tricky'),
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('IELTS'), findsNothing);
+    });
+
+    testWidgets('a tag that does not exist can be created and chosen', (
+      tester,
+    ) async {
+      await openAddWord(tester);
+
+      await tester.enterText(find.byType(TextField).first, 'cough');
+      await tester.pumpAndSettle();
+      await openPicker(tester, 'Add a tag');
+      await tester.enterText(
+        find.descendant(
+          of: find.byType(WordLabelPicker),
+          matching: find.byType(TextField),
+        ),
+        'phrasal',
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Create tag "phrasal"'));
+      await settleAsync(tester);
+      await done(tester);
+
+      expect(find.widgetWithText(InputChip, 'phrasal'), findsOneWidget);
+
+      await tester.tap(find.widgetWithText(TextButton, 'Save'));
+      await settleAsync(tester);
+
+      final tag = (await db.select(db.wordLists).get()).singleWhere(
+        (row) => row.name == 'phrasal',
+      );
+      expect(tag.kind, ListKind.tag);
+      final members = await db.select(db.wordListItems).get();
+      expect(members.map((m) => m.listId), <String>[tag.id]);
+    });
+
+    testWidgets('a name that exists is not offered for creating', (
+      tester,
+    ) async {
+      await seedList(db, id: 't1', name: 'tricky', kind: ListKind.tag);
+      await openAddWord(tester);
+      await openPicker(tester, 'Add a tag');
+
+      await tester.enterText(
+        find.descendant(
+          of: find.byType(WordLabelPicker),
+          matching: find.byType(TextField),
+        ),
+        'TRICKY',
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Create tag'), findsNothing);
     });
   });
 }

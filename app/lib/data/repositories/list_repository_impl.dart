@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:uuid/uuid.dart';
 import 'package:vocabnote/core/failure.dart';
 import 'package:vocabnote/core/result.dart';
@@ -46,6 +47,7 @@ class ListRepositoryImpl implements ListRepository {
   AsyncResult<WordList> createList({
     required String name,
     required IpaColorToken color,
+    ListKind kind = ListKind.list,
   }) => Results.guard(() async {
     final now = _now();
     // Appended to the end of the current order rather than inserted at
@@ -59,10 +61,48 @@ class ListRepositoryImpl implements ListRepository {
       sortOrder: existing.length,
       createdAt: now,
       updatedAt: now,
+      kind: kind,
     );
     await _db.listsDao.insertList(list.toCompanion());
     return list;
   }, onError: (_, _) => _dbFailure('create list'));
+
+  @override
+  AsyncResult<void> makeTag(String listId) => makeTags(<String>[listId]);
+
+  @override
+  AsyncResult<void> makeTags(List<String> listIds) => Results.guard(
+    () => _db.transaction(() async {
+      for (final id in listIds) {
+        await _makeTag(id);
+      }
+    }),
+    onError: (_, _) => _dbFailure('make tags'),
+  );
+
+  Future<void> _makeTag(String listId) async {
+    final list = await _db.listsDao.getById(listId);
+    if (list == null) return;
+    final name = list.name.trim().toLowerCase();
+    for (final other in await _db.listsDao.allLists()) {
+      if (other.kind == ListKind.tag &&
+          other.name.trim().toLowerCase() == name) {
+        await _db.listsDao.mergeInto(
+          fromId: listId,
+          intoId: other.id,
+          addedAt: _now(),
+        );
+        return;
+      }
+    }
+    await _db.listsDao.patchList(
+      listId,
+      WordListsCompanion(
+        kind: const Value(ListKind.tag),
+        updatedAt: Value(_now()),
+      ),
+    );
+  }
 
   @override
   AsyncResult<WordList> updateList(WordList list) => Results.guard(() async {

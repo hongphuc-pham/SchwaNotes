@@ -7,8 +7,17 @@ library;
 
 /// Path segments and full paths for `go_router`.
 abstract final class Routes {
-  /// The words list — the app's home.
+  /// The overview of the user's words — the app's home.
   static const String words = '/words';
+
+  /// Every word, with search, filters and sort.
+  ///
+  /// A segment beside `:wordId`, so it is declared first. A uuid can never
+  /// collide with it, as with [newWordId].
+  static const String wordsAll = '$words/all';
+
+  /// [wordsAll] with its search field already open.
+  static const String wordsSearch = '$wordsAll?$searchParam=1';
 
   /// A single word.
   static const String wordDetail = '$words/:$wordIdParam';
@@ -58,6 +67,9 @@ abstract final class Routes {
   /// A uuid can never collide with it.
   static const String newWordId = 'new';
 
+  /// Query parameter that opens the words list's search.
+  static const String searchParam = 'search';
+
   /// Path parameter holding a word id.
   static const String wordIdParam = 'wordId';
 
@@ -85,13 +97,6 @@ abstract final class Routes {
   /// Builds the path to one list.
   static String listDetailOf(String id) => '$lists/$id';
 
-  /// Practice, scoped to one list (F-042, UI-UX §4.5).
-  ///
-  /// The list travels as a query parameter rather than a path segment: it
-  /// narrows an existing screen rather than naming a different one, and M5
-  /// can ignore it without the route breaking.
-  static String practiceForList(String id) => '$practice?list=$id';
-
   /// Builds the path that runs [gameId].
   static String practiceRunOf(String gameId) => '$practice/$gameId/run';
 
@@ -104,6 +109,9 @@ abstract final class Routes {
 abstract final class RouteNames {
   /// See [Routes.words].
   static const String words = 'words';
+
+  /// See [Routes.wordsAll].
+  static const String wordsAll = 'wordsAll';
 
   /// See [Routes.wordDetail].
   static const String wordDetail = 'wordDetail';

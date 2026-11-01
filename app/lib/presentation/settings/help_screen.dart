@@ -47,6 +47,7 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
   static List<_Faq> _faqs(AppL10n l10n) => <_Faq>[
     (question: l10n.faqQ1, answer: l10n.faqA1),
     (question: l10n.faqQ2, answer: l10n.faqA2),
+    (question: l10n.faqQ13, answer: l10n.faqA13),
     (question: l10n.faqQ3, answer: l10n.faqA3),
     (question: l10n.faqQ4, answer: l10n.faqA4),
     (question: l10n.faqQ5, answer: l10n.faqA5),

@@ -23,6 +23,25 @@ class WordWithCard {
   final StudyCardRow card;
 }
 
+/// The graded answers in one quarter-hour.
+class AnswerTally {
+  /// Creates a tally.
+  const new({
+    required this.at,
+    required this.answers,
+    required this.remembered,
+  });
+
+  /// When the quarter-hour began.
+  final DateTime at;
+
+  /// How many rounds were answered.
+  final int answers;
+
+  /// How many of those were `good` or `easy`.
+  final int remembered;
+}
+
 /// Reads and writes `study_cards`, `practice_sessions` and `practice_answers`
 /// (`docs/GAMES.md`).
 @DriftAccessor(
@@ -305,6 +324,66 @@ class PracticeDao extends DatabaseAccessor<AppDatabase>
   }
 
   static const int _quarterHourMs = 15 * 60 * 1000;
+
+  /// Graded answers since [since], tallied by quarter-hour so the caller can
+  /// date them locally — see [watchAnswerQuarterHours]. Skipped rounds are not
+  /// answers.
+  Stream<List<AnswerTally>> watchAnswerTallies(DateTime since) {
+    return customSelect(
+      'SELECT answered_at / $_quarterHourMs AS quarter, '
+      'COUNT(*) AS answers, '
+      "SUM(result IN ('good', 'easy')) AS remembered "
+      'FROM practice_answers '
+      "WHERE answered_at >= ? AND result <> 'skipped' "
+      'GROUP BY quarter',
+      variables: <Variable<Object>>[
+        Variable.withInt(since.toUtc().millisecondsSinceEpoch),
+      ],
+      readsFrom: <ResultSetImplementation<dynamic, dynamic>>{practiceAnswers},
+    ).watch().map(
+      (rows) => <AnswerTally>[
+        for (final row in rows)
+          AnswerTally(
+            at: DateTime.fromMillisecondsSinceEpoch(
+              row.read<int>('quarter') * _quarterHourMs,
+              isUtc: true,
+            ),
+            answers: row.read<int>('answers'),
+            remembered: row.read<int>('remembered'),
+          ),
+      ],
+    );
+  }
+
+  /// How many live words sit in each Leitner box.
+  Stream<Map<int, int>> watchBoxCounts() {
+    return customSelect(
+      'SELECT c.box AS box, COUNT(*) AS words FROM study_cards c '
+      'JOIN words w ON w.id = c.word_id '
+      'WHERE w.deleted_at IS NULL AND w.is_archived = 0 '
+      'GROUP BY c.box',
+      readsFrom: <ResultSetImplementation<dynamic, dynamic>>{studyCards, words},
+    ).watch().map(
+      (rows) => <int, int>{
+        for (final row in rows) row.read<int>('box'): row.read<int>('words'),
+      },
+    );
+  }
+
+  /// How many live words were added at or after [since].
+  Stream<int> watchWordsAddedSince(DateTime since) {
+    final count = words.id.count();
+    final query = selectOnly(words)
+      ..addColumns(<Expression<Object>>[count])
+      ..where(
+        words.deletedAt.isNull() &
+            words.isArchived.equals(false) &
+            words.createdAt.isBiggerOrEqualValue(
+              since.toUtc().millisecondsSinceEpoch,
+            ),
+      );
+    return query.map((row) => row.read(count) ?? 0).watchSingle();
+  }
 
   /// The most recent finished sessions - the streak and history on the hub.
   Stream<List<PracticeSessionRow>> watchRecentSessions({int limit = 30}) =>

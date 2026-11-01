@@ -68,8 +68,7 @@ abstract final class WordCsvParser {
         continue;
       }
 
-      final names = <String>[
-        ?cell(3),
+      final tags = <String>[
         for (var c = 4; c < row.length; c++)
           for (final tag in row[c].split(_tagSplit))
             if (tag.trim().isNotEmpty) tag.trim(),
@@ -84,8 +83,9 @@ abstract final class WordCsvParser {
             null => null,
           },
           meaning: cell(2),
-          listNames: <String>[
-            for (final name in names)
+          category: cell(3),
+          tagNames: <String>[
+            for (final name in tags)
               if (seen.add(name.toLowerCase())) name,
           ],
         ),

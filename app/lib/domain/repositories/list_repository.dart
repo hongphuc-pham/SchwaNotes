@@ -4,17 +4,28 @@ import 'package:vocabnote/domain/value_objects/ipa_color_token.dart';
 
 /// Everything the app does with lists (decks) - F-042.
 abstract interface class ListRepository {
-  /// Watches every list with its word and due counts, in display order.
+  /// Watches every list and tag with its word and due counts, in display
+  /// order.
   ResultStream<List<WordListSummary>> watchLists();
 
   /// Watches one list.
   ResultStream<WordList?> watchList(String id);
 
-  /// Creates a list, appended to the end of the current order.
+  /// Creates a list or a tag, appended to the end of the current order.
   AsyncResult<WordList> createList({
     required String name,
     required IpaColorToken color,
+    ListKind kind = ListKind.list,
   });
+
+  /// Turns a list into a tag, keeping its words.
+  ///
+  /// A tag of the same name takes the words in and the list goes, so the user
+  /// is never left with two tags that look identical.
+  AsyncResult<void> makeTag(String listId);
+
+  /// Turns several lists into tags, all of them or none, as [makeTag] does.
+  AsyncResult<void> makeTags(List<String> listIds);
 
   /// Renames or recolours a list.
   AsyncResult<WordList> updateList(WordList list);

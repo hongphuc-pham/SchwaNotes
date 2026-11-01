@@ -59,6 +59,8 @@ hex, so themes can change) · `label` TEXT NULL · `created_at`.
 > fits, warning the user first.
 
 ### `word_lists` (decks)
+`kind` TEXT DEFAULT `'list'` *(added at schema v4)*: `list`, or `tag` for a label on a word. Tags
+share this table and `word_list_items`; names are unique per kind, not across both.
 `id` PK · `name` TEXT NOT NULL · `color_token` TEXT NOT NULL · `icon_key` TEXT NULL ·
 `sort_order` INTEGER NOT NULL · `created_at` · `updated_at`.
 
@@ -123,9 +125,9 @@ It is a **derived** table: it may be dropped and rebuilt in any migration withou
 3. **Every new column is nullable or has a non-null DEFAULT.** No exceptions.
 4. **Use generated step-by-step migrations.** After every schema change:
    ```bash
-   dart run drift_dev schema dump  lib/data/db/app_database.dart drift_schemas/
-   dart run drift_dev schema steps drift_schemas/ lib/data/db/schema_versions.dart
-   dart run drift_dev schema generate --data-classes --companions drift_schemas/ test/migration/generated/
+   dart run drift_dev schema dump  lib/data/db/app_database.dart ../drift_schemas/   # from app/
+   dart run drift_dev schema steps ../drift_schemas/ lib/data/db/schema_versions.dart
+   dart run drift_dev schema generate --data-classes --companions ../drift_schemas/ test/migration/generated/
    ```
 
    `drift_schemas/` and `schema_versions.dart` are **committed**.
@@ -260,7 +262,7 @@ Because there is no cloud, export is how a user moves to a new phone.
   | `words` | `id`, then a live word's `headword_normalized` | newer `updated_at` wins the content; a word deleted in the backup is skipped; a word deleted here comes back if the backup's live copy is newer |
   | `word_notes` | `id` (the word remapped to this phone's) | newer `updated_at` wins |
   | `ipa_highlights` | `id` | added only if absent, only onto the transcription it was drawn on, and only if its range fits that transcription's grapheme length |
-  | `word_lists` | `id`, then trimmed case-insensitive `name` | newer `updated_at` wins name, colour and icon; new lists go after this phone's |
+  | `word_lists` | `id`, then `kind` and trimmed case-insensitive `name` | newer `updated_at` wins name, colour and icon; new lists go after this phone's |
   | `word_list_items` | both ids, remapped | added if absent |
   | `study_cards` | the word, remapped | the card reviewed most recently wins |
   | `practice_sessions`, `practice_answers` | `id` | added if absent; a session practised from a list follows that list |

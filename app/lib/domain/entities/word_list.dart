@@ -3,6 +3,19 @@ import 'package:vocabnote/domain/value_objects/ipa_color_token.dart';
 
 part 'word_list.freezed.dart';
 
+/// What a row of `word_lists` is to the user.
+///
+/// One table for both, because a tag does everything a list does: it holds
+/// words, opens the same screen and can be practised. Only where it shows
+/// differs, and a tag never appears in the Lists tab.
+enum ListKind {
+  /// A deck: the word's category, a card on the Lists tab.
+  list,
+
+  /// A label on a word. A word usually has several.
+  tag,
+}
+
 /// A deck the user groups words into - "IELTS speaking", "work vocabulary"
 /// (F-042).
 ///
@@ -38,6 +51,9 @@ abstract class WordList with _$WordList {
 
     /// Optional icon identifier, for a later release.
     String? iconKey,
+
+    /// A list or a tag.
+    @Default(ListKind.list) ListKind kind,
   }) = _WordList;
 
   const new _();

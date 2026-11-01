@@ -30,6 +30,7 @@ import 'package:vocabnote/domain/entities/ipa_highlight.dart';
 import 'package:vocabnote/domain/entities/practice_session.dart';
 import 'package:vocabnote/domain/entities/study_card.dart';
 import 'package:vocabnote/domain/entities/word.dart';
+import 'package:vocabnote/domain/entities/word_list.dart';
 import 'package:vocabnote/domain/value_objects/ipa_color_token.dart';
 
 part 'app_database.g.dart';
@@ -86,7 +87,7 @@ class AppDatabase extends _$AppDatabase {
   /// it against the on-disk version without constructing a database just to
   /// ask - which would both waste an open handle and trip drift's
   /// "instantiated twice" warning.
-  static const int latestSchemaVersion = 3;
+  static const int latestSchemaVersion = 4;
 
   @override
   int get schemaVersion => latestSchemaVersion;
@@ -122,6 +123,12 @@ class AppDatabase extends _$AppDatabase {
       from2To3: (m, schema) async {
         await m.addColumn(schema.settings, schema.settings.mixSides);
         await m.addColumn(schema.settings, schema.settings.mixOrder);
+      },
+
+      // v4: tags, as a kind of row in `word_lists`. Purely additive: the
+      // column defaults to `list`, so every existing row stays what it was.
+      from3To4: (m, schema) async {
+        await m.addColumn(schema.wordLists, schema.wordLists.kind);
       },
     ),
 

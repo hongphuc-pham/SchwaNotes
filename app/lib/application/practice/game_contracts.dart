@@ -13,8 +13,6 @@
 /// database, the contract has been broken and F-067 is already false.
 library;
 
-import 'dart:math';
-
 import 'package:flutter/widgets.dart';
 import 'package:vocabnote/core/l10n/gen/app_localizations.dart';
 import 'package:vocabnote/domain/entities/practice_session.dart';
@@ -64,9 +62,6 @@ class GameDescriptor {
 
   /// When true the game needs the speech engine.
   final bool requiresAudio;
-
-  /// The hard ceiling on a quick test, wherever it is asked about.
-  int get maxQuickTestCards => PracticeRepository.quickTestMaxCards;
 }
 
 /// Everything the user chose in the config sheet.
@@ -82,12 +77,12 @@ class GameDescriptor {
 /// hold an over-limit config at all.
 @immutable
 class GameConfig {
-  /// Creates a config, clamping the limit for a quick test.
+  /// Creates a config.
   new({
     required this.gameId,
     required this.mode,
     required this.selection,
-    required int limit,
+    required this.limit,
     this.source = CardSourceKind.all,
     this.sourceId,
     this.promptSide = PromptSide.wordFirst,
@@ -95,10 +90,7 @@ class GameConfig {
     this.mixOrder = MixOrder.random,
     this.ttsAutoPlay = true,
     this.seed,
-  }) : limit = mode == PracticeMode.quickTest
-           ? min(limit, PracticeRepository.quickTestMaxCards)
-           : limit,
-       mixSides = PromptSide.validMix(mixSides),
+  }) : mixSides = PromptSide.validMix(mixSides),
        assert(limit > 0, 'a session of no cards is not a session');
 
   /// Rebuilds a config from `config_json`.

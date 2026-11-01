@@ -1,4 +1,4 @@
-/// Creating, renaming, recolouring, reordering and deleting lists (F-042).
+/// Creating, renaming, recolouring and deleting lists (F-042).
 library;
 
 // Riverpod 3 ships its own AsyncResult; ours is the Result-based one.
@@ -24,11 +24,22 @@ class ListActions extends _$ListActions {
   @override
   void build() {}
 
-  /// Creates a list, appended to the end of the current order.
+  /// Creates a list or a tag, appended to the end of the current order.
   AsyncResult<WordList> create({
     required String name,
     required IpaColorToken color,
-  }) => ref.read(listRepositoryProvider).createList(name: name, color: color);
+    ListKind kind = ListKind.list,
+  }) => ref
+      .read(listRepositoryProvider)
+      .createList(name: name, color: color, kind: kind);
+
+  /// Turns a list into a tag, keeping its words.
+  AsyncResult<void> makeTag(String listId) =>
+      ref.read(listRepositoryProvider).makeTag(listId);
+
+  /// Turns several lists into tags, all of them or none.
+  AsyncResult<void> makeTags(List<String> listIds) =>
+      ref.read(listRepositoryProvider).makeTags(listIds);
 
   /// Renames a list, leaving everything else as it was.
   AsyncResult<WordList> rename(WordList list, String name) =>
@@ -46,14 +57,6 @@ class ListActions extends _$ListActions {
   /// is spelled out at every layer that touches it.
   AsyncResult<void> delete(String id) =>
       ref.read(listRepositoryProvider).deleteList(id);
-
-  /// Writes a new display order, atomically.
-  ///
-  /// Takes the whole order rather than a moved pair: a partial write would
-  /// leave two lists claiming the same position, and the grid would then order
-  /// them arbitrarily.
-  AsyncResult<void> reorder(List<String> orderedIds) =>
-      ref.read(listRepositoryProvider).reorder(orderedIds);
 
   /// Adds one word to one list. Doing it twice is not an error.
   ///

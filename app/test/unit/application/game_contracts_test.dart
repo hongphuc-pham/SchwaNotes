@@ -26,38 +26,23 @@ void main() {
     limit: limit,
   );
 
-  group('the 30-card cap (F-062, GAMES.md §4)', () {
-    test('a quick test cannot be constructed above 30', () {
-      // The cap is enforced in construction, so there is no way to *hold* an
-      // over-limit config, let alone run one. The repository clamps again in
-      // the query; neither layer is the only thing standing between a user and
-      // a 500-card session.
-      expect(quickTest(limit: 500).limit, 30);
-      expect(quickTest(limit: 31).limit, 30);
-      expect(quickTest(limit: 30).limit, 30);
-    });
-
-    test('a limit under the cap is left alone', () {
-      for (final size in <int>[5, 10, 20]) {
+  group('how many cards (F-062, GAMES.md §4)', () {
+    test('a quick test takes the size it is given', () {
+      for (final size in <int>[1, 5, 31, 500]) {
         expect(quickTest(limit: size).limit, size);
       }
     });
 
-    test('daily review is not capped — the goal decides its size', () {
-      // The cap is a quick-test rule. A user whose daily goal is 50 due cards
-      // must still be given 50.
-      expect(daily(limit: 50).limit, 50);
+    test('the full list is a limit like any other', () {
+      expect(
+        quickTest(limit: PracticeRepository.everyCard).limit,
+        PracticeRepository.everyCard,
+      );
     });
 
-    test(
-      'the cap matches the repository constant, not a second copy of 30',
-      () {
-        expect(
-          quickTest(limit: 999).limit,
-          PracticeRepository.quickTestMaxCards,
-        );
-      },
-    );
+    test('daily review takes the goal', () {
+      expect(daily(limit: 50).limit, 50);
+    });
   });
 
   group('affectsScheduling (F-062 🔴)', () {
@@ -167,16 +152,14 @@ void main() {
       expect(config.mixOrder, MixOrder.random);
     });
 
-    test('a re-read quick test is still capped', () {
-      // The cap has to survive storage: a config_json hand-edited to 500 must
-      // not come back as a 500-card session.
+    test('a re-read quick test keeps its size', () {
       final config = GameConfig.fromJson(const <String, dynamic>{
         'gameId': 'flashcard',
         'mode': 'quick_test',
         'selection': 'random',
         'limit': 500,
       });
-      expect(config.limit, lessThanOrEqualTo(30));
+      expect(config.limit, 500);
     });
   });
 

@@ -10,6 +10,7 @@ import 'package:vocabnote/domain/entities/ipa_highlight.dart';
 import 'package:vocabnote/domain/entities/practice_session.dart';
 import 'package:vocabnote/domain/entities/study_card.dart';
 import 'package:vocabnote/domain/entities/word.dart';
+import 'package:vocabnote/domain/entities/word_list.dart';
 import 'package:vocabnote/domain/value_objects/ipa_color_token.dart';
 
 /// A fixed instant, so timestamp assertions are stable.
@@ -126,6 +127,7 @@ Future<void> seedList(
   IpaColorToken color = IpaColorToken.teal,
   int sortOrder = 0,
   DateTime? createdAt,
+  ListKind kind = ListKind.list,
 }) async {
   final created = createdAt ?? testNow;
   await db
@@ -136,6 +138,7 @@ Future<void> seedList(
           name: name,
           colorToken: color,
           sortOrder: sortOrder,
+          kind: Value(kind),
           createdAt: created,
           updatedAt: created,
         ),

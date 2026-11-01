@@ -88,13 +88,13 @@ void main() {
     );
   });
 
-  test('schemaVersion is 3, and changing it requires a new snapshot', () {
+  test('schemaVersion is 4, and changing it requires a new snapshot', () {
     // A deliberate tripwire. Bumping schemaVersion without adding
     // drift_schemas/drift_schema_vN.json and a vN-1 -> vN test fails here
     // first, with a message that says what to do.
     expect(
       AppDatabase.latestSchemaVersion,
-      3,
+      4,
       reason:
           'If you bumped the schema version, follow the steps in '
           'test/migration/README.md: export the new snapshot, '

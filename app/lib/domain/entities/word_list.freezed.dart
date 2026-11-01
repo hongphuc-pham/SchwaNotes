@@ -23,7 +23,8 @@ mixin _$WordList {
  int get sortOrder;/// When it was created.
  DateTime get createdAt;/// When it was last renamed, recoloured or reordered.
  DateTime get updatedAt;/// Optional icon identifier, for a later release.
- String? get iconKey;
+ String? get iconKey;/// A list or a tag.
+ ListKind get kind;
 /// Create a copy of WordList
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -35,20 +36,20 @@ $WordListCopyWith<WordList> get copyWith => _$WordListCopyWithImpl<WordList>(thi
 @override
 bool operator ==(Object other) {
   final _this = this as WordList;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is WordList&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.color, _this.color) || other.color == _this.color)&&(identical(other.sortOrder, _this.sortOrder) || other.sortOrder == _this.sortOrder)&&(identical(other.createdAt, _this.createdAt) || other.createdAt == _this.createdAt)&&(identical(other.updatedAt, _this.updatedAt) || other.updatedAt == _this.updatedAt)&&(identical(other.iconKey, _this.iconKey) || other.iconKey == _this.iconKey));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is WordList&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.color, _this.color) || other.color == _this.color)&&(identical(other.sortOrder, _this.sortOrder) || other.sortOrder == _this.sortOrder)&&(identical(other.createdAt, _this.createdAt) || other.createdAt == _this.createdAt)&&(identical(other.updatedAt, _this.updatedAt) || other.updatedAt == _this.updatedAt)&&(identical(other.iconKey, _this.iconKey) || other.iconKey == _this.iconKey)&&(identical(other.kind, _this.kind) || other.kind == _this.kind));
 }
 
 
 @override
 int get hashCode {
   final _this = this as WordList;
-  return Object.hash(runtimeType,_this.id,_this.name,_this.color,_this.sortOrder,_this.createdAt,_this.updatedAt,_this.iconKey);
+  return Object.hash(runtimeType,_this.id,_this.name,_this.color,_this.sortOrder,_this.createdAt,_this.updatedAt,_this.iconKey,_this.kind);
 }
 
 @override
 String toString() {
   final _this = this as WordList;
-  return 'WordList(id: ${_this.id}, name: ${_this.name}, color: ${_this.color}, sortOrder: ${_this.sortOrder}, createdAt: ${_this.createdAt}, updatedAt: ${_this.updatedAt}, iconKey: ${_this.iconKey})';
+  return 'WordList(id: ${_this.id}, name: ${_this.name}, color: ${_this.color}, sortOrder: ${_this.sortOrder}, createdAt: ${_this.createdAt}, updatedAt: ${_this.updatedAt}, iconKey: ${_this.iconKey}, kind: ${_this.kind})';
 }
 
 
@@ -59,7 +60,7 @@ abstract mixin class $WordListCopyWith<$Res>  {
   factory $WordListCopyWith(WordList value, $Res Function(WordList) _then) = _$WordListCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, IpaColorToken color, int sortOrder, DateTime createdAt, DateTime updatedAt, String? iconKey
+ String id, String name, IpaColorToken color, int sortOrder, DateTime createdAt, DateTime updatedAt, String? iconKey, ListKind kind
 });
 
 
@@ -76,7 +77,7 @@ class _$WordListCopyWithImpl<$Res>
 
 /// Create a copy of WordList
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? color = null,Object? sortOrder = null,Object? createdAt = null,Object? updatedAt = null,Object? iconKey = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? color = null,Object? sortOrder = null,Object? createdAt = null,Object? updatedAt = null,Object? iconKey = freezed,Object? kind = null,}) {
   return _then(WordList(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -85,7 +86,8 @@ as IpaColorToken,sortOrder: null == sortOrder ? _self.sortOrder : sortOrder // i
 as int,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,iconKey: freezed == iconKey ? _self.iconKey : iconKey // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,kind: null == kind ? _self.kind : kind // ignore: cast_nullable_to_non_nullable
+as ListKind,
   ));
 }
 
@@ -170,10 +172,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  IpaColorToken color,  int sortOrder,  DateTime createdAt,  DateTime updatedAt,  String? iconKey)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  IpaColorToken color,  int sortOrder,  DateTime createdAt,  DateTime updatedAt,  String? iconKey,  ListKind kind)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _WordList() when $default != null:
-return $default(_that.id,_that.name,_that.color,_that.sortOrder,_that.createdAt,_that.updatedAt,_that.iconKey);case _:
+return $default(_that.id,_that.name,_that.color,_that.sortOrder,_that.createdAt,_that.updatedAt,_that.iconKey,_that.kind);case _:
   return orElse();
 
 }
@@ -191,10 +193,10 @@ return $default(_that.id,_that.name,_that.color,_that.sortOrder,_that.createdAt,
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  IpaColorToken color,  int sortOrder,  DateTime createdAt,  DateTime updatedAt,  String? iconKey)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  IpaColorToken color,  int sortOrder,  DateTime createdAt,  DateTime updatedAt,  String? iconKey,  ListKind kind)  $default,) {final _that = this;
 switch (_that) {
 case _WordList():
-return $default(_that.id,_that.name,_that.color,_that.sortOrder,_that.createdAt,_that.updatedAt,_that.iconKey);case _:
+return $default(_that.id,_that.name,_that.color,_that.sortOrder,_that.createdAt,_that.updatedAt,_that.iconKey,_that.kind);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -211,10 +213,10 @@ return $default(_that.id,_that.name,_that.color,_that.sortOrder,_that.createdAt,
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  IpaColorToken color,  int sortOrder,  DateTime createdAt,  DateTime updatedAt,  String? iconKey)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  IpaColorToken color,  int sortOrder,  DateTime createdAt,  DateTime updatedAt,  String? iconKey,  ListKind kind)?  $default,) {final _that = this;
 switch (_that) {
 case _WordList() when $default != null:
-return $default(_that.id,_that.name,_that.color,_that.sortOrder,_that.createdAt,_that.updatedAt,_that.iconKey);case _:
+return $default(_that.id,_that.name,_that.color,_that.sortOrder,_that.createdAt,_that.updatedAt,_that.iconKey,_that.kind);case _:
   return null;
 
 }
@@ -226,7 +228,7 @@ return $default(_that.id,_that.name,_that.color,_that.sortOrder,_that.createdAt,
 
 
 class _WordList extends WordList {
-  const _WordList({required this.id, required this.name, required this.color, required this.sortOrder, required this.createdAt, required this.updatedAt, this.iconKey}): super._();
+  const _WordList({required this.id, required this.name, required this.color, required this.sortOrder, required this.createdAt, required this.updatedAt, this.iconKey, this.kind = ListKind.list}): super._();
   
 
 /// UUID v4.
@@ -244,6 +246,8 @@ class _WordList extends WordList {
 @override final  DateTime updatedAt;
 /// Optional icon identifier, for a later release.
 @override final  String? iconKey;
+/// A list or a tag.
+@override@JsonKey() final  ListKind kind;
 
 /// Create a copy of WordList
 /// with the given fields replaced by the non-null parameter values.
@@ -255,18 +259,18 @@ _$WordListCopyWith<_WordList> get copyWith => __$WordListCopyWithImpl<_WordList>
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _WordList&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.color, color) || other.color == color)&&(identical(other.sortOrder, sortOrder) || other.sortOrder == sortOrder)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.iconKey, iconKey) || other.iconKey == iconKey));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _WordList&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.color, color) || other.color == color)&&(identical(other.sortOrder, sortOrder) || other.sortOrder == sortOrder)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.iconKey, iconKey) || other.iconKey == iconKey)&&(identical(other.kind, kind) || other.kind == kind));
 }
 
 
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,name,color,sortOrder,createdAt,updatedAt,iconKey);
+    return Object.hash(runtimeType,id,name,color,sortOrder,createdAt,updatedAt,iconKey,kind);
 }
 
 @override
 String toString() {
-    return 'WordList(id: $id, name: $name, color: $color, sortOrder: $sortOrder, createdAt: $createdAt, updatedAt: $updatedAt, iconKey: $iconKey)';
+    return 'WordList(id: $id, name: $name, color: $color, sortOrder: $sortOrder, createdAt: $createdAt, updatedAt: $updatedAt, iconKey: $iconKey, kind: $kind)';
 }
 
 
@@ -277,7 +281,7 @@ abstract mixin class _$WordListCopyWith<$Res> implements $WordListCopyWith<$Res>
   factory _$WordListCopyWith(_WordList value, $Res Function(_WordList) _then) = __$WordListCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, IpaColorToken color, int sortOrder, DateTime createdAt, DateTime updatedAt, String? iconKey
+ String id, String name, IpaColorToken color, int sortOrder, DateTime createdAt, DateTime updatedAt, String? iconKey, ListKind kind
 });
 
 
@@ -294,7 +298,7 @@ class __$WordListCopyWithImpl<$Res>
 
 /// Create a copy of WordList
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? color = null,Object? sortOrder = null,Object? createdAt = null,Object? updatedAt = null,Object? iconKey = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? color = null,Object? sortOrder = null,Object? createdAt = null,Object? updatedAt = null,Object? iconKey = freezed,Object? kind = null,}) {
   return _then(_WordList(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -303,7 +307,8 @@ as IpaColorToken,sortOrder: null == sortOrder ? _self.sortOrder : sortOrder // i
 as int,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,iconKey: freezed == iconKey ? _self.iconKey : iconKey // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,kind: null == kind ? _self.kind : kind // ignore: cast_nullable_to_non_nullable
+as ListKind,
   ));
 }
 

@@ -124,10 +124,18 @@ void main() {
       Uri.decodeComponent(uri.toString().split('body=').last);
 
   group('the FAQ', () {
-    testWidgets('holds twelve answers', (tester) async {
+    testWidgets('someone searching for bulk import finds how', (tester) async {
       await openHelp(tester);
 
-      expect(find.text('12 answers'), findsOneWidget);
+      await search(tester, 'csv');
+
+      expect(find.text('How do I import many words at once?'), findsOneWidget);
+    });
+
+    testWidgets('holds thirteen answers', (tester) async {
+      await openHelp(tester);
+
+      expect(find.text('13 answers'), findsOneWidget);
       expect(find.text('Where are my words kept?'), findsOneWidget);
     });
 
@@ -138,7 +146,7 @@ void main() {
 
       await search(tester, 'backup');
 
-      expect(find.text('3 answers'), findsOneWidget);
+      expect(find.text('4 answers'), findsOneWidget);
       expect(find.text('Where are my words kept?'), findsOneWidget);
       expect(find.text('What is IPA?'), findsNothing);
     });
@@ -153,7 +161,7 @@ void main() {
 
       await tester.tap(find.text('Clear search'));
       await tester.pumpAndSettle();
-      expect(find.text('12 answers'), findsOneWidget);
+      expect(find.text('13 answers'), findsOneWidget);
     });
   });
 

@@ -117,14 +117,34 @@ Three bottom tabs, plus settings in the app bar. Flat and obvious — no drawer,
 [ Words ]   [ Practice ]   [ Lists ]                     ⚙ (app bar)
 ```
 
-Routes: `/words`, `/words/:id`, `/words/:id/edit`, `/words/:id/ipa`, `/lists`, `/lists/:id`,
+Routes: `/words`, `/words/all`, `/words/:id`, `/words/:id/edit`, `/words/:id/ipa`, `/lists`, `/lists/:id`,
 `/practice`, `/practice/:gameId/run`, `/practice/summary/:sessionId`, `/settings`,
 `/settings/guide`, `/settings/help`, `/settings/backup`, `/settings/licences`, `/onboarding`.
 
 ## 4. Screens
 
 ### 4.1 Words (home)
-- App bar: title *My words*, search icon (expands to an inline field), settings icon.
+*Changed on 31 Oct 2026 at the owner's request: the tab is an overview, not the whole list.*
+
+`/words`, titled *My words*: search icon (opens the full list with its search ready), settings
+icon, then:
+
+- The total as the one big number, with how many are new this week.
+- Tiles: *Due now* (opens Practice), *Practised today*, *Days in a row* and *Remembered*
+  (`good` + `easy` over all graded answers, last 14 days). The last two appear only with something true to say:
+  a streak of zero is never shown (`RULES.md` §6).
+- *How well you know them*: one segmented bar over four stages (New = box 0, Learning = 1-2,
+  Familiar = 3-4, Strong = 5-6), an ordinal ramp of the primary colour, with a legend carrying the
+  counts. Only Daily review moves a word, and the hint under the bar says so.
+- *Last 14 days*: answers per local day, with the total and the busiest day beneath.
+- *Biggest lists*: the top five by word count.
+- *Recent words*: five word cards, then **See all words**.
+
+Drawn with plain widgets, no chart package. The first-run empty state below stays.
+
+`/words/all`, titled *All words*, is the full list, with the tab bar still showing:
+
+- Search (inline field), sort menu, settings icon.
 - Filter chips row: `All · Favourites · Due today · No IPA yet · <list names>`. **All** and
   each list chip carry a count badge. *Favourites*, *Due today* and *No IPA yet* do not —
   their counts are not streamed today, and three extra queries is feature work, not styling.
@@ -197,8 +217,16 @@ Single scrolling form, save in the app bar (enabled once the headword is non-emp
 - Undo is available for the whole session; nothing is written until *Done*.
 
 ### 4.5 Lists
-Grid of coloured cards: name, word count, a due-today badge. Long-press to reorder.
-Detail = a filtered Words screen with **Practise this list** in the app bar.
+Compact rows, A-Z: a colour dot, the name, the word and due counts, and ⋮ (rename or recolour,
+make a tag, delete). *Changed on 31 Oct 2026 at the owner's request: this was a grid of cards in a
+hand-set order, and reordering is gone with it.*
+
+**Select lists** in the app bar, or a long-press on a row, starts selecting: rows tick, *Select
+all* appears, and **Make tags** turns the ticked lists into tags after a confirmation, since a tag
+cannot become a list again. Under the lists, chips for the tags, each opening its words.
+
+Detail = a filtered Words screen with **Practise this list** in the app bar, which opens the
+quick-test sheet with that list chosen, and is disabled on an empty list.
 
 ### 4.6 Practice hub
 - A goal ring at the top: *12 of 20 today*, with encouraging copy, never a warning.
@@ -213,8 +241,9 @@ Detail = a filtered Words screen with **Practise this list** in the app bar.
 - If the library cannot be counted, the hub says so and offers **Try again** — *Built at M7*:
   the count was read as "0 on failure", so a failed read told someone with a full library to
   add their first word.
-- Quick-test config is a **bottom sheet**: source (All / list / Favourites), size
-  (5 · 10 · 20 · All — the *All* chip shows "max 30"), prompt side, autoplay toggle, **Start**.
+- Quick-test config is a **bottom sheet**: source (All / Favourites / A list, which reveals a
+  dropdown of lists and tags), size (5 · 10 · 20 · Custom, which reveals a number field · Full
+  list), prompt side, autoplay toggle, **Start**.
 
 ### 4.7 Flashcard run
 - Slim progress bar; `3/10` and a close button (confirms before abandoning a daily session).
@@ -222,7 +251,9 @@ Detail = a filtered Words screen with **Practise this list** in the app bar.
   fire-and-forget, so a failure left the screen spinning with nothing to read and nothing to
   do. Nothing due, or a pool with no cards, keeps its own empty state.
 - Front: the prompt side, centred, with the play button. "Tap to reveal" hint on round 1 only.
-- Back: word · IPA with highlights · definition · first note.
+  A meaning-first front has no play button: the word is the answer.
+- Back: word · IPA with highlights · definition · first note. The play button sits under the
+  IPA on a card that opened on its meaning.
 - Grading: three wide buttons — **Again** (outline), **Good** (filled), **Easy** (tonal) —
   each showing its next interval ("2d") so the schedule is never mysterious.
 - Swipe left = Again, right = Good, as an alternative to tapping, never the only way.
@@ -260,6 +291,9 @@ About           Version · Data sources & licences · Privacy · Buy me a coffee
 - **Export and import live one level down**, on *Backup & restore* (`/settings/backup`),
   with the last backup time and the import preview — four rows of data management in the
   main list would bury *Help* below the fold.
+- **The system navigation bar** never covers the app: `VnSystemBarInset`, in `MaterialApp.builder`,
+  lays everything out above it, so no screen or sheet handles it on its own. Android lays apps
+  out behind that bar, and `useSafeArea` on a bottom sheet guards only the top.
 - **Privacy** opens a sheet; the same note is a section of *Data sources & licences*. No
   route of its own.
 - **Buy me a coffee** *(M8)* is the last row of About and exists only when the build has a Ko-fi

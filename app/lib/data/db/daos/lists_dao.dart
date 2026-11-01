@@ -4,6 +4,7 @@ import 'package:vocabnote/data/db/tables/study_cards.dart';
 import 'package:vocabnote/data/db/tables/word_list_items.dart';
 import 'package:vocabnote/data/db/tables/word_lists.dart';
 import 'package:vocabnote/data/db/tables/words.dart';
+import 'package:vocabnote/domain/entities/word_list.dart';
 
 part 'lists_dao.g.dart';
 
@@ -39,6 +40,9 @@ class ListsDao extends DatabaseAccessor<AppDatabase> with _$ListsDaoMixin {
             (l) => OrderingTerm.asc(l.createdAt),
           ]))
           .watch();
+
+  /// Reads every list and tag once.
+  Future<List<WordListRow>> allLists() => select(wordLists).get();
 
   /// Watches every list together with its word and due counts.
   ///
@@ -174,6 +178,36 @@ class ListsDao extends DatabaseAccessor<AppDatabase> with _$ListsDaoMixin {
         ], mode: InsertMode.insertOrIgnore),
       );
     });
+  }
+
+  /// Moves every word in [fromId] into [intoId], then deletes [fromId], in one
+  /// transaction. Words already in [intoId] stay there once.
+  Future<void> mergeInto({
+    required String fromId,
+    required String intoId,
+    required DateTime addedAt,
+  }) async {
+    await transaction(() async {
+      final members = await (select(
+        wordListItems,
+      )..where((i) => i.listId.equals(fromId))).get();
+      for (final member in members) {
+        await addWord(listId: intoId, wordId: member.wordId, addedAt: addedAt);
+      }
+      await deleteList(fromId);
+    });
+  }
+
+  /// Whether [wordId] is in at least one list, tags not counting.
+  Future<bool> isInAnyList(String wordId) async {
+    final query =
+        select(wordListItems).join(<Join<HasResultSet, dynamic>>[
+          innerJoin(wordLists, wordLists.id.equalsExp(wordListItems.listId)),
+        ])..where(
+          wordListItems.wordId.equals(wordId) &
+              wordLists.kind.equalsValue(ListKind.list),
+        );
+    return (await query.get()).isNotEmpty;
   }
 
   /// Watches which lists a word is in - drives the selected chips.

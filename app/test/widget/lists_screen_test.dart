@@ -7,11 +7,13 @@ import 'package:vocabnote/app.dart';
 import 'package:vocabnote/data/composition_root.dart';
 import 'package:vocabnote/data/db/app_database.dart';
 import 'package:vocabnote/data/db/database_provider.dart';
+import 'package:vocabnote/domain/entities/word_list.dart';
 import 'package:vocabnote/presentation/common/empty_state.dart';
 
+import '../unit/application/fake_speech_service.dart';
 import '../unit/data/db_fixtures.dart';
 
-/// The lists grid against a real (in-memory) database (F-042, UI-UX §4.5).
+/// The Lists tab against a real (in-memory) database (F-042, UI-UX §4.5).
 ///
 /// Drives the real app through the real router, so what is asserted here is
 /// what a user would see.
@@ -23,7 +25,7 @@ void main() {
     container = ProviderContainer(
       overrides: <Override>[
         appDatabaseProvider.overrideWithValue(db),
-        ...repositoryOverrides(db),
+        ...repositoryOverrides(db, speechService: FakeSpeechService()),
       ],
     );
     // Container before database, or teardown deadlocks.
@@ -205,7 +207,7 @@ void main() {
       );
       await settleAsync(tester);
 
-      expect(find.text('1 word'), findsOneWidget);
+      expect(find.text('1 word · 1 due'), findsOneWidget);
     });
 
     testWidgets('deleting says plainly that the words survive', (tester) async {
@@ -218,7 +220,7 @@ void main() {
       await tester.tap(find.widgetWithText(FilledButton, 'Save'));
       await settleAsync(tester);
 
-      await tester.longPress(find.text('Doomed'));
+      await tester.tap(find.byTooltip('Actions for Doomed'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Delete list'));
       await tester.pumpAndSettle();
@@ -307,6 +309,69 @@ void main() {
       expect(find.text('Practise this list'), findsOneWidget);
     });
 
+    testWidgets('Practise this list opens a test of that list', (tester) async {
+      // Found by the owner: the button pushed the Practice tab's own route,
+      // which left a blank page and a tab bar that no longer switched. The
+      // test beside this one only ever checked that the button existed.
+      await pumpLists(tester);
+      await tester.tap(find.text('IELTS'));
+      await settleAsync(tester);
+
+      await tester.tap(find.text('Practise this list'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Start'), findsOneWidget, reason: 'the test sheet');
+      expect(
+        find.text('IELTS · 1 word'),
+        findsOneWidget,
+        reason: 'with this list already chosen',
+      );
+
+      await tester.ensureVisible(find.text('Start'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Start'));
+      for (var i = 0; i < 6; i++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 20)),
+        );
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+
+      expect(find.text('cough'), findsOneWidget, reason: 'in the list');
+      expect(find.text('through'), findsNothing, reason: 'not in the list');
+    });
+
+    testWidgets('leaving the sheet leaves the tabs working', (tester) async {
+      await pumpLists(tester);
+      await tester.tap(find.text('IELTS'));
+      await settleAsync(tester);
+      await tester.tap(find.text('Practise this list'));
+      await tester.pumpAndSettle();
+
+      Navigator.of(tester.element(find.text('Start'))).pop();
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(AppBar, 'IELTS'), findsOneWidget);
+
+      await tester.pageBack();
+      await settleAsync(tester);
+      await tester.tap(find.text('Practice'));
+      await settleAsync(tester);
+
+      expect(find.widgetWithText(AppBar, 'Practice'), findsOneWidget);
+    });
+
+    testWidgets('a list with no words has nothing to practise', (tester) async {
+      await seedList(db, id: 'l2', name: 'Empty', sortOrder: 1);
+      await pumpLists(tester);
+      await tester.tap(find.text('Empty'));
+      await settleAsync(tester);
+
+      final button = tester.widget<TextButton>(
+        find.widgetWithText(TextButton, 'Practise this list'),
+      );
+      expect(button.onPressed, isNull);
+    });
+
     testWidgets('an empty list says so rather than looking broken', (
       tester,
     ) async {
@@ -339,88 +404,154 @@ void main() {
     });
   });
 
-  group('reorder (A3)', () {
+  group('order', () {
+    testWidgets('lists read A-Z, not in the order they were made', (
+      tester,
+    ) async {
+      await seedList(db, id: 'l1', name: 'verbs');
+      await seedList(db, id: 'l2', name: 'Animals', sortOrder: 1);
+      await seedList(db, id: 'l3', name: 'Food', sortOrder: 2);
+      await pumpLists(tester);
+
+      final y = <String, double>{
+        for (final name in <String>['verbs', 'Animals', 'Food'])
+          name: tester.getTopLeft(find.text(name)).dy,
+      };
+      expect(y['Animals'], lessThan(y['Food']!));
+      expect(y['Food'], lessThan(y['verbs']!));
+    });
+  });
+
+  group('tags', () {
     setUp(() async {
-      await seedList(db, id: 'l1', name: 'First');
-      await seedList(db, id: 'l2', name: 'Second', sortOrder: 1);
-      await seedList(db, id: 'l3', name: 'Third', sortOrder: 2);
+      await seedWord(db, id: 'w1', headword: 'cough');
+      await seedList(db, id: 'l1', name: 'Health');
+      await seedList(db, id: 't1', name: 'verbs', kind: ListKind.tag);
+      await seedMembership(db, listId: 't1', wordId: 'w1');
     });
 
-    Future<void> openActions(WidgetTester tester, String name) async {
-      await tester.tap(find.byTooltip('Actions for $name'));
+    testWidgets('sit under the lists, and open their words', (tester) async {
+      await pumpLists(tester);
+
+      expect(find.text('Tags'), findsOneWidget);
+      await tester.tap(find.text('#verbs, 1'));
+      await settleAsync(tester);
+
+      expect(find.text('cough'), findsOneWidget);
+    });
+
+    testWidgets('are not offered for selecting', (tester) async {
+      await pumpLists(tester);
+
+      await tester.tap(find.byTooltip('Select lists'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('#verbs, 1'), findsNothing);
+    });
+
+    testWidgets('alone do not count as an empty tab', (tester) async {
+      await db.listsDao.deleteList('l1');
+      await pumpLists(tester);
+
+      expect(find.text('No lists yet'), findsNothing);
+      expect(find.text('#verbs, 1'), findsOneWidget);
+    });
+  });
+
+  group('selecting', () {
+    setUp(() async {
+      await seedWord(db, id: 'w1', headword: 'cough');
+      await seedList(db, id: 'l1', name: 'Health');
+      await seedList(db, id: 'l2', name: 'noun', sortOrder: 1);
+      await seedList(db, id: 'l3', name: 'verb', sortOrder: 2);
+      await seedMembership(db, listId: 'l2', wordId: 'w1');
+    });
+
+    Future<ListKind> kindOf(String id) async =>
+        (await db.listsDao.getById(id))!.kind;
+
+    Future<void> selectTwo(WidgetTester tester) async {
+      await tester.longPress(find.text('noun'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('verb'));
       await tester.pumpAndSettle();
     }
 
-    testWidgets('moving a list down changes the stored order', (tester) async {
+    testWidgets('turns several lists into tags at once', (tester) async {
       await pumpLists(tester);
-      await openActions(tester, 'First');
-      await tester.tap(find.text('Move down'));
+      await selectTwo(tester);
+      expect(find.text('2 selected'), findsOneWidget);
+
+      await tester.tap(find.text('Make tags'));
+      await tester.pumpAndSettle();
+      expect(find.text('Make these 2 lists tags?'), findsOneWidget);
+      await tester.tap(find.widgetWithText(FilledButton, 'Make tags'));
       await settleAsync(tester);
 
-      final rows = await db.select(db.wordLists).get()
-        ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
-      expect(rows.map((r) => r.name), <String>['Second', 'First', 'Third']);
+      expect(await kindOf('l2'), ListKind.tag);
+      expect(await kindOf('l3'), ListKind.tag);
+      expect(await kindOf('l1'), ListKind.list, reason: 'never ticked');
+      expect(find.text('2 lists are now tags'), findsOneWidget);
+      expect(find.text('2 selected'), findsNothing, reason: 'selection over');
+      expect(find.text('#noun, 1'), findsOneWidget);
+      expect(find.text('New list'), findsWidgets, reason: 'the FAB is back');
     });
 
-    testWidgets('moving up is the inverse of moving down', (tester) async {
+    testWidgets('changes nothing when the dialog is cancelled', (tester) async {
       await pumpLists(tester);
-      await openActions(tester, 'Third');
-      await tester.tap(find.text('Move up'));
+      await selectTwo(tester);
+
+      await tester.tap(find.text('Make tags'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Cancel'));
       await settleAsync(tester);
-      await openActions(tester, 'Third');
-      await tester.tap(find.text('Move down'));
-      await settleAsync(tester);
 
-      final rows = await db.select(db.wordLists).get()
-        ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
-      expect(rows.map((r) => r.name), <String>['First', 'Second', 'Third']);
+      expect(await kindOf('l2'), ListKind.list);
+      expect(find.text('2 selected'), findsOneWidget, reason: 'still ticked');
     });
 
-    testWidgets('the first list is not offered Move up', (tester) async {
-      // Offering a move that cannot happen is worse than not offering it: the
-      // user taps, nothing changes, and they cannot tell whether it failed.
-      await pumpLists(tester);
-      await openActions(tester, 'First');
-
-      expect(find.text('Move up'), findsNothing);
-      expect(find.text('Move down'), findsOneWidget);
-    });
-
-    testWidgets('the last list is not offered Move down', (tester) async {
-      await pumpLists(tester);
-      await openActions(tester, 'Third');
-
-      expect(find.text('Move down'), findsNothing);
-      expect(find.text('Move up'), findsOneWidget);
-    });
-
-    testWidgets('the grid renders in the stored order, not insertion order', (
+    testWidgets('can start from the visible button and take everything', (
       tester,
     ) async {
-      // Persistence itself is asserted above, by reading sort_order back out
-      // of the database. What this adds is that the grid *reads* that order -
-      // a stored order the UI ignores would look identical to no reorder at
-      // all.
-      //
-      // Deliberately not a second `pumpLists`: rebuilding the app in one test
-      // leaves the first container's Drift stream timers pending, and the test
-      // fails on "a Timer is still pending" rather than on anything real.
+      // UI-UX section 1: no action may live only behind a gesture.
       await pumpLists(tester);
-      await openActions(tester, 'First');
-      await tester.tap(find.text('Move down'));
-      await settleAsync(tester);
 
-      final names = tester
-          .widgetList<Text>(
-            find.descendant(
-              of: find.byType(GridView),
-              matching: find.byType(Text),
-            ),
-          )
-          .map((t) => t.data)
-          .where((d) => d == 'First' || d == 'Second' || d == 'Third')
-          .toList();
-      expect(names, <String>['Second', 'First', 'Third']);
+      await tester.tap(find.byTooltip('Select lists'));
+      await tester.pumpAndSettle();
+      expect(find.text('0 selected'), findsOneWidget);
+      expect(find.text('Make tags'), findsNothing, reason: 'nothing to do yet');
+
+      await tester.tap(find.byTooltip('Select all'));
+      await tester.pumpAndSettle();
+      expect(find.text('3 selected'), findsOneWidget);
+    });
+
+    testWidgets('a tap while selecting ticks rather than opens', (
+      tester,
+    ) async {
+      await pumpLists(tester);
+      await tester.tap(find.byTooltip('Select lists'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('noun'));
+      await tester.pumpAndSettle();
+      expect(find.text('1 selected'), findsOneWidget);
+      expect(find.text('cough'), findsNothing, reason: 'the list did not open');
+
+      await tester.tap(find.text('noun'));
+      await tester.pumpAndSettle();
+      expect(find.text('0 selected'), findsOneWidget);
+    });
+
+    testWidgets('Cancel selection brings the tab back', (tester) async {
+      await pumpLists(tester);
+      await selectTwo(tester);
+
+      await tester.tap(find.byTooltip('Cancel selection'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Lists'), findsWidgets);
+      expect(find.byType(Checkbox), findsNothing);
     });
   });
 }

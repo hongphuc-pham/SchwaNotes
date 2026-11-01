@@ -142,6 +142,7 @@ extension WordListRowMapper on WordListRow {
     createdAt: createdAt,
     updatedAt: updatedAt,
     iconKey: iconKey,
+    kind: kind,
   );
 }
 
@@ -151,6 +152,7 @@ extension WordListEntityMapper on WordList {
   WordListsCompanion toCompanion() => WordListsCompanion(
     id: Value(id),
     name: Value(name),
+    kind: Value(kind),
     colorToken: Value(color),
     iconKey: Value(iconKey),
     sortOrder: Value(sortOrder),

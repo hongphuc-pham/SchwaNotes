@@ -1,3 +1,5 @@
+import 'dart:async';
+
 // `isNull`/`isNotNull` exist in both drift and matcher; matcher's win here.
 import 'package:drift/drift.dart' hide isNotNull, isNull;
 import 'package:flutter/material.dart';
@@ -7,6 +9,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vocabnote/app.dart';
+import 'package:vocabnote/core/router/app_router.dart';
+import 'package:vocabnote/core/router/routes.dart';
 import 'package:vocabnote/data/composition_root.dart';
 import 'package:vocabnote/data/db/app_database.dart';
 import 'package:vocabnote/data/db/database_provider.dart';
@@ -24,7 +28,7 @@ void main() {
   late AppDatabase db;
   late ProviderContainer container;
 
-  Future<void> pumpApp(WidgetTester tester) async {
+  Future<void> pumpApp(WidgetTester tester, {bool toList = true}) async {
     container = ProviderContainer(
       overrides: <Override>[
         appDatabaseProvider.overrideWithValue(db),
@@ -40,6 +44,10 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    if (toList) {
+      unawaited(container.read(appRouterProvider).push(Routes.wordsAll));
+      await tester.pumpAndSettle();
+    }
   }
 
   setUp(() async {
@@ -51,7 +59,7 @@ void main() {
 
   group('empty state', () {
     testWidgets('teaches the feature when there are no words', (tester) async {
-      await pumpApp(tester);
+      await pumpApp(tester, toList: false);
 
       expect(find.text('Your first word goes here'), findsOneWidget);
       expect(find.text('Add a word'), findsOneWidget);
@@ -59,7 +67,7 @@ void main() {
     });
 
     testWidgets('still offers the Add word button', (tester) async {
-      await pumpApp(tester);
+      await pumpApp(tester, toList: false);
       expect(
         find.widgetWithText(FloatingActionButton, 'Add word'),
         findsOneWidget,

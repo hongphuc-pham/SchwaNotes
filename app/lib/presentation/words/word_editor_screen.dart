@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:vocabnote/application/lists/list_controller.dart';
 import 'package:vocabnote/application/words/highlight_revalidation.dart';
 import 'package:vocabnote/application/words/lookup_controller.dart';
 import 'package:vocabnote/application/words/word_draft.dart';
@@ -19,6 +18,7 @@ import 'package:vocabnote/domain/entities/word_suggestion.dart';
 import 'package:vocabnote/presentation/design/gap.dart';
 import 'package:vocabnote/presentation/words/ipa_keyboard_row.dart';
 import 'package:vocabnote/presentation/words/lookup_card.dart';
+import 'package:vocabnote/presentation/words/word_label_picker.dart';
 
 /// The add / edit word form (`docs/UI-UX.md` §4.2).
 ///
@@ -222,6 +222,14 @@ class _WordEditorScreenState extends ConsumerState<WordEditorScreen> {
     return (confirmed ?? false) ? revalidation : null;
   }
 
+  void _toggleLabel(String id) => _controller.edit(
+    (d) => d.copyWith(
+      listIds: d.listIds.contains(id)
+          ? (<String>[...d.listIds]..remove(id))
+          : <String>[...d.listIds, id],
+    ),
+  );
+
   Future<void> _save(WordDraft draft) async {
     // Asked *before* the word is written, so a user who changes their mind
     // still has both the old transcription and their colours (F-023).
@@ -373,15 +381,16 @@ class _WordEditorScreenState extends ConsumerState<WordEditorScreen> {
                 ),
               ],
               const VnGap(VnSpace.lg),
-              _ListChips(
+              WordLabelsField(
+                kind: ListKind.list,
                 selected: draft.listIds,
-                onToggle: (id) => _controller.edit(
-                  (d) => d.copyWith(
-                    listIds: d.listIds.contains(id)
-                        ? (<String>[...d.listIds]..remove(id))
-                        : <String>[...d.listIds, id],
-                  ),
-                ),
+                onToggle: _toggleLabel,
+              ),
+              const VnGap(VnSpace.lg),
+              WordLabelsField(
+                kind: ListKind.tag,
+                selected: draft.listIds,
+                onToggle: _toggleLabel,
               ),
               const VnGap(VnSpace.xxl),
             ],
@@ -652,48 +661,6 @@ class _MultilineField extends StatelessWidget {
         border: const OutlineInputBorder(),
         alignLabelWithHint: true,
       ),
-    );
-  }
-}
-
-class _ListChips extends ConsumerWidget {
-  const new({required this.selected, required this.onToggle});
-
-  final List<String> selected;
-  final ValueChanged<String> onToggle;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppL10n.of(context);
-    final theme = Theme.of(context);
-    final lists =
-        ref.watch(listSummariesProvider).value ?? const <WordListSummary>[];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Text(l10n.fieldLists, style: theme.textTheme.labelLarge),
-        const VnGap(VnSpace.sm),
-        if (lists.isEmpty)
-          Text(
-            l10n.fieldListsEmpty,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          )
-        else
-          Wrap(
-            spacing: context.metrics.spaceSm,
-            children: <Widget>[
-              for (final summary in lists)
-                FilterChip(
-                  label: Text(summary.list.name),
-                  selected: selected.contains(summary.list.id),
-                  onSelected: (_) => onToggle(summary.list.id),
-                ),
-            ],
-          ),
-      ],
     );
   }
 }

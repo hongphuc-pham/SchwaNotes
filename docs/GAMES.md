@@ -156,10 +156,10 @@ Games never touch the database, never navigate, never own a progress bar.
 - `affects_scheduling = true`.
 
 ### Quick test (`PracticeMode.quickTest`)
-- Source: All words / a specific list / Favourites. A list source with no list is an empty
+- Source: All words / a specific list or tag / Favourites. A list source with no list is an empty
   pool, never the whole library.
-- Size: 5 · 10 · 20 · **All (max 30)**. The 30 cap is enforced in `GameConfig` construction
-  *and* in the query, and is unit-tested with a 500-word fixture.
+- Size: 5 · 10 · 20 · a custom number · **Full list**, which is `PracticeRepository.everyCard`.
+  *There was a 30-card cap until 31 Oct 2026; the owner removed it.*
 - Selection: `random` with a stored `seed` so a session can be replayed or debugged. The
   sample is drawn in Dart from ids in a fixed order — SQL `RANDOM()` cannot be seeded.
   `Random(seed)` is stable within one SDK release, not across them, so a seed replays a
@@ -212,7 +212,9 @@ in is a single provider override with **no migration**.
 - `descriptor.id = 'flashcard'`, modes `{daily, quickTest}`, `minCards = 4`, `requiresIpa = false`
 - `buildRounds` → one `FlashcardRound` per card, shuffled by `seed`
 - `grade` → self-graded: the tapped button *is* the result
-- `buildRoundView` → front (prompt side per config, with the play button) → tap or swipe up to
+- `buildRoundView` → front (prompt side per config, with the play button — except a
+  meaning-first front, where the word is the answer; there the button moves to the back, and
+  on an IPA front its label does not name the word) → tap or swipe up to
   flip → back (word + IPA with the user's highlights + definition + first note) → Again /
   Good / Easy, each showing its next interval. After the flip, swipe left = Again and right =
   Good, at ≥ 300 px/s so a thumb resting on the card does not grade it — a shortcut for the
